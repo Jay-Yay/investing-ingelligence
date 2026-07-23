@@ -6,6 +6,12 @@ import typer
 
 app = typer.Typer(help="Investor Intelligence CLI")
 
+
+@app.callback()
+def callback() -> None:
+    """Investor Intelligence CLI."""
+
+
 VAULT_DIRS = [
     "00_System",
     "10_Sources/Naver",
@@ -203,7 +209,7 @@ def init(
         _write_if_missing(config_dir / "prompts" / filename, content)
 
     _write_if_missing(vault_path / "30_Portfolio" / "portfolio.yaml", PORTFOLIO_YAML)
-    _write_if_missing(Path(".env.example"), ENV_EXAMPLE)
+    _write_if_missing(config_dir.parent / ".env.example", ENV_EXAMPLE)
     _write_if_missing(
         vault_path / "00_System" / "Runbook.md",
         "# Runbook\n\n초기화만 완료된 상태. 운영 절차는 이후 단계에서 채워진다.\n",

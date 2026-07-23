@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from investor_intel.cli import app
@@ -12,7 +13,8 @@ from investor_intel.config.loaders import (
 runner = CliRunner()
 
 
-def test_init_creates_vault_and_config(tmp_path: Path) -> None:
+def test_init_creates_vault_and_config(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
     vault = tmp_path / "vault"
     config_dir = tmp_path / "config"
     result = runner.invoke(
@@ -42,7 +44,10 @@ def test_init_creates_vault_and_config(tmp_path: Path) -> None:
     assert nbis.cik == "0001513845"
 
 
-def test_init_is_idempotent_and_does_not_overwrite_edits(tmp_path: Path) -> None:
+def test_init_is_idempotent_and_does_not_overwrite_edits(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
     vault = tmp_path / "vault"
     config_dir = tmp_path / "config"
     runner.invoke(app, ["init", "--vault-path", str(vault), "--config-dir", str(config_dir)])
