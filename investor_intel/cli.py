@@ -4,6 +4,8 @@ from pathlib import Path
 
 import typer
 
+from investor_intel.config.settings import AppSettings
+
 app = typer.Typer(help="Investor Intelligence CLI")
 
 
@@ -216,3 +218,52 @@ def init(
     )
 
     typer.echo(f"초기화 완료: vault={vault_path}, config={config_dir}")
+
+
+@app.command()
+def doctor(
+    config_dir: Path = typer.Option(Path("./config"), help="Config directory"),
+) -> None:
+    """환경변수, 설정 파일, Vault 쓰기 권한을 점검한다."""
+    settings = AppSettings()
+    checks: list[tuple[str, bool, str]] = [
+        (
+            "ANTHROPIC_API_KEY",
+            settings.anthropic_api_key is not None,
+            "LLM 분석 단계(analyze, report)에 필요",
+        ),
+        (
+            "SEC_USER_AGENT",
+            settings.sec_user_agent is not None,
+            "SEC EDGAR 수집(13F, 기업공시)에 필요",
+        ),
+        ("DART_API_KEY", settings.dart_api_key is not None, "DART 수집에 필요"),
+        (
+            "TELEGRAM_API_ID/HASH",
+            bool(settings.telegram_api_id and settings.telegram_api_hash),
+            "Telethon 기반 수집에만 필요 (공개 웹 미리보기는 불필요)",
+        ),
+    ]
+
+    vault_ok = True
+    try:
+        settings.vault_path.mkdir(parents=True, exist_ok=True)
+        probe = settings.vault_path / ".doctor_write_probe"
+        probe.write_text("ok", encoding="utf-8")
+        probe.unlink()
+    except OSError:
+        vault_ok = False
+    checks.append(("VAULT_WRITE", vault_ok, f"{settings.vault_path} 쓰기 권한"))
+
+    for name in ["sources.yaml", "investors.yaml", "companies.yaml", "settings.yaml"]:
+        path = config_dir / name
+        checks.append((f"config/{name}", path.exists(), "설정 파일 존재 여부"))
+
+    missing_required = False
+    for name, ok, note in checks:
+        status = "OK" if ok else "MISSING"
+        typer.echo(f"[{status}] {name} - {note}")
+        if not ok and name in {"SEC_USER_AGENT", "VAULT_WRITE"}:
+            missing_required = True
+
+    raise typer.Exit(code=1 if missing_required else 0)
