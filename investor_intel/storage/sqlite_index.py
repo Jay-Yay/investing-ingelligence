@@ -154,7 +154,7 @@ def find_duplicate(
         return str(row["id"])
 
     row = conn.execute(
-        "SELECT id FROM documents WHERE title = ? AND author = ? AND published_at = ?",
+        "SELECT id FROM documents WHERE title IS ? AND author IS ? AND published_at = ?",
         (title, author, published_at),
     ).fetchone()
     if row:

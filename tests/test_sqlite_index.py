@@ -89,6 +89,34 @@ def test_find_duplicate_by_content_hash(tmp_path: Path) -> None:
     assert found == doc.id
 
 
+def test_find_duplicate_by_title_author_published_at(tmp_path: Path) -> None:
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    doc = _make_doc("본문")
+    doc.title = "동일 제목"
+    doc.author = "홍길동"
+    upsert_document(conn, doc, "path.md", source_specific_id="1")
+    found = find_duplicate(
+        conn, "telegram", "allbareun", "different-id", "https://t.me/x/other",
+        compute_content_hash("다른 본문"), doc.title, doc.author, doc.published_at.isoformat(),
+    )
+    assert found == doc.id
+
+
+def test_find_duplicate_by_title_published_at_with_null_author(tmp_path: Path) -> None:
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    doc = _make_doc("본문")
+    doc.title = "익명 게시물"
+    doc.author = None
+    upsert_document(conn, doc, "path.md", source_specific_id="1")
+    found = find_duplicate(
+        conn, "telegram", "allbareun", "different-id", "https://t.me/x/other",
+        compute_content_hash("다른 본문"), doc.title, None, doc.published_at.isoformat(),
+    )
+    assert found == doc.id
+
+
 def test_find_duplicate_returns_none_when_no_match(tmp_path: Path) -> None:
     conn = connect(tmp_path / "index.sqlite3")
     init_db(conn)
