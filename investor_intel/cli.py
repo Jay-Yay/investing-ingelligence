@@ -5,6 +5,8 @@ from pathlib import Path
 import typer
 
 from investor_intel.config.settings import AppSettings
+from investor_intel.storage.sqlite_index import connect, init_db
+from investor_intel.storage.sqlite_index import reindex as reindex_vault
 
 app = typer.Typer(help="Investor Intelligence CLI")
 
@@ -267,3 +269,20 @@ def doctor(
             missing_required = True
 
     raise typer.Exit(code=1 if missing_required else 0)
+
+
+@app.command()
+def reindex(
+    vault_path: Path = typer.Option(Path("./vault"), help="Obsidian vault root"),
+    sqlite_path: Path = typer.Option(
+        Path("./data/index.sqlite3"), help="SQLite index path"
+    ),
+) -> None:
+    """Markdown을 기준으로 SQLite 인덱스를 재구축한다."""
+    conn = connect(sqlite_path)
+    try:
+        init_db(conn)
+        count = reindex_vault(conn, vault_path)
+        typer.echo(f"재인덱싱 완료: {count}개 문서")
+    finally:
+        conn.close()
