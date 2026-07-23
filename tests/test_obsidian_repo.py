@@ -78,3 +78,24 @@ def test_list_documents_finds_all_written_files(tmp_path: Path) -> None:
     write_document(tmp_path, _make_doc("첫번째", doc_id="doc1"), "## 원문\n\n첫번째\n")
     write_document(tmp_path, _make_doc("두번째", doc_id="doc2"), "## 원문\n\n두번째\n")
     assert len(list_documents(tmp_path)) == 2
+
+
+def test_round_trip_preserves_leading_blank_lines_in_body(tmp_path: Path) -> None:
+    doc = _make_doc("본문", doc_id="leadingblanklines")
+    body = "\n\n## 원문\n\n본문\n"
+    written_path = write_document(tmp_path, doc, body)
+
+    read_doc, read_body = read_document(written_path)
+    assert read_doc == doc
+    assert read_body == body
+
+
+def test_path_for_document_sanitizes_malicious_id(tmp_path: Path) -> None:
+    doc = _make_doc("본문", doc_id="../../etc/passwd")
+    path = path_for_document(tmp_path, doc)
+
+    resolved = path.resolve()
+    vault_resolved = tmp_path.resolve()
+    assert vault_resolved in resolved.parents
+
+    assert "/" not in path.name

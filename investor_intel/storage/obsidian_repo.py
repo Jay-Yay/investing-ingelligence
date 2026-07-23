@@ -55,7 +55,7 @@ def path_for_document(vault_path: Path, doc: SourceDocument) -> Path:
     source_name = sanitize_path_component(doc.source_name)
     year = f"{doc.published_at:%Y}"
     date_str = f"{doc.published_at:%Y-%m-%d}"
-    filename = f"{date_str}-{doc.id}.md"
+    filename = f"{date_str}-{sanitize_path_component(doc.id)}.md"
     return vault_path / "10_Sources" / source_type_dir / source_name / year / filename
 
 
@@ -77,7 +77,7 @@ def parse_document(text: str) -> tuple[SourceDocument, str]:
         raise ValueError("document missing frontmatter block")
     end_index = text.index("\n---\n", 4)
     frontmatter_yaml = text[4:end_index]
-    body = text[end_index + len("\n---\n") :].lstrip("\n")
+    body = text[end_index + len("\n---\n") :].removeprefix("\n")
     data = yaml.safe_load(frontmatter_yaml)
     return SourceDocument.model_validate(data), body
 
