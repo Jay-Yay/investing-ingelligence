@@ -25,6 +25,7 @@ _FRONTMATTER_FIELD_ORDER = [
     "author",
     "title",
     "source_url",
+    "source_specific_id",
     "published_at",
     "collected_at",
     "updated_at",

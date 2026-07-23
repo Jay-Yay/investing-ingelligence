@@ -26,6 +26,7 @@ def _make_doc(
         source_type=SourceType.TELEGRAM,
         source_name="allbareun",
         source_url=url,
+        source_specific_id=source_specific_id,
         published_at=now,
         collected_at=now,
         language="ko",
@@ -159,6 +160,36 @@ def test_reindex_is_idempotent(tmp_path: Path) -> None:
     reindex(conn, vault)
     total = conn.execute("SELECT COUNT(*) AS c FROM documents").fetchone()["c"]
     assert total == 1
+
+
+def test_reindex_preserves_source_specific_id_for_dedup(tmp_path: Path) -> None:
+    vault = tmp_path / "vault"
+    doc_a = _make_doc("첫번째", url="https://t.me/x/1", source_specific_id="msg-1")
+    doc_b = _make_doc("두번째", url="https://t.me/x/2", source_specific_id="msg-2")
+    write_document(vault, doc_a, "## 원문\n\n첫번째\n")
+    write_document(vault, doc_b, "## 원문\n\n두번째\n")
+
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    count = reindex(conn, vault)
+    assert count == 2
+
+    # Same source_specific_id as doc_a, but a completely different canonical_url,
+    # content_hash, title, author, and published_at - only source_specific_id
+    # should match. If reindex lost source_specific_id (set it to NULL), this
+    # lookup would fall through to the other dedup steps and find nothing.
+    found = find_duplicate(
+        conn,
+        "telegram",
+        "allbareun",
+        "msg-1",
+        "https://t.me/x/1-completely-different-url",
+        compute_content_hash("전혀 다른 내용"),
+        "다른 제목",
+        "다른 작성자",
+        "2099-01-01T00:00:00+00:00",
+    )
+    assert found == doc_a.id
 
 
 def test_collector_state_round_trip(tmp_path: Path) -> None:

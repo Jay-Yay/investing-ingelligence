@@ -32,6 +32,7 @@ class SourceDocument(BaseModel):
     author: str | None = None
     title: str | None = None
     source_url: str
+    source_specific_id: str | None = None
     published_at: datetime
     collected_at: datetime
     updated_at: datetime | None = None

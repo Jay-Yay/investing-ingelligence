@@ -14,7 +14,10 @@ from investor_intel.storage.obsidian_repo import (
 
 
 def _make_doc(
-    body: str, source_name: str = "allbareun", doc_id: str | None = None
+    body: str,
+    source_name: str = "allbareun",
+    doc_id: str | None = None,
+    source_specific_id: str | None = None,
 ) -> SourceDocument:
     now = datetime(2026, 7, 24, 9, 0, tzinfo=UTC)
     return SourceDocument(
@@ -22,6 +25,7 @@ def _make_doc(
         source_type=SourceType.TELEGRAM,
         source_name=source_name,
         source_url="https://t.me/x/1",
+        source_specific_id=source_specific_id,
         published_at=now,
         collected_at=now,
         language="ko",
@@ -52,6 +56,16 @@ def test_write_then_read_round_trip(tmp_path: Path) -> None:
     read_doc, read_body = read_document(written_path)
     assert read_doc == doc
     assert read_body == body
+
+
+def test_write_then_read_round_trip_preserves_source_specific_id(tmp_path: Path) -> None:
+    doc = _make_doc("본문 내용입니다", doc_id="withspecificid", source_specific_id="msg-42")
+    body = "## 원문\n\n본문 내용입니다\n"
+    written_path = write_document(tmp_path, doc, body)
+
+    read_doc, _ = read_document(written_path)
+    assert read_doc == doc
+    assert read_doc.source_specific_id == "msg-42"
 
 
 def test_write_is_idempotent_when_hash_unchanged(tmp_path: Path) -> None:

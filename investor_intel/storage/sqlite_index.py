@@ -170,7 +170,12 @@ def reindex(conn: sqlite3.Connection, vault_path: Path) -> int:
     count = 0
     for path in list_documents(vault_path):
         doc, _ = read_document(path)
-        upsert_document(conn, doc, str(path.relative_to(vault_path)))
+        upsert_document(
+            conn,
+            doc,
+            str(path.relative_to(vault_path)),
+            source_specific_id=doc.source_specific_id,
+        )
         count += 1
     return count
 
