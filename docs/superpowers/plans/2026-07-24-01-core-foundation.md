@@ -2574,7 +2574,7 @@ git commit -m "feat: add CLI reindex command"
 ```bash
 uv run pytest -v
 ```
-Expected: all tests pass (39 tests across the 14 test files above).
+Expected: all tests pass (51 tests across the 14 test files above).
 
 - [ ] **Step 2: Run ruff**
 
