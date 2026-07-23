@@ -135,4 +135,10 @@ def test_path_for_document_sanitizes_malicious_id(tmp_path: Path) -> None:
     resolved = path.resolve()
     assert vault_resolved in resolved.parents
 
+    # Tighter signal than "somewhere under vault_path": the sanitized filename
+    # must land in exactly the expected directory, proving containment rather
+    # than merely non-escape.
+    expected_dir = (tmp_path / "10_Sources" / "Telegram" / "allbareun" / "2026").resolve()
+    assert resolved.parent == expected_dir
+
     assert "/" not in path.name

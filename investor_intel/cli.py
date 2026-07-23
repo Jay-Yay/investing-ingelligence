@@ -249,13 +249,15 @@ def doctor(
     ]
 
     vault_ok = True
+    probe = settings.vault_path / ".doctor_write_probe"
     try:
         settings.vault_path.mkdir(parents=True, exist_ok=True)
-        probe = settings.vault_path / ".doctor_write_probe"
         probe.write_text("ok", encoding="utf-8")
-        probe.unlink()
+        vault_ok = True
     except OSError:
         vault_ok = False
+    finally:
+        probe.unlink(missing_ok=True)
     checks.append(("VAULT_WRITE", vault_ok, f"{settings.vault_path} 쓰기 권한"))
 
     for name in ["sources.yaml", "investors.yaml", "companies.yaml", "settings.yaml"]:
