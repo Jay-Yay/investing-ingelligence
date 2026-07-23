@@ -91,11 +91,32 @@ def test_round_trip_preserves_leading_blank_lines_in_body(tmp_path: Path) -> Non
 
 
 def test_path_for_document_sanitizes_malicious_id(tmp_path: Path) -> None:
-    doc = _make_doc("본문", doc_id="../../etc/passwd")
-    path = path_for_document(tmp_path, doc)
+    # 8 "../" segments: enough to climb past the 5 directory levels between
+    # vault_path and the filename (10_Sources/<type>/<source_name>/<year>/<filename>,
+    # with one more absorbed by the "date_str-" prefix having no separator before
+    # the id) and land genuinely outside the vault if `doc.id` were used unsanitized.
+    doc_id = "../../../../../../../etc/passwd"
+    doc = _make_doc("본문", doc_id=doc_id)
 
-    resolved = path.resolve()
+    date_str = f"{doc.published_at:%Y-%m-%d}"
+
+    # Manually reconstruct what the OLD, unfixed `path_for_document` would have
+    # produced (i.e. `filename = f"{date_str}-{doc.id}.md"` with no
+    # sanitize_path_component call), joined the same way the real function joins
+    # its other path segments. This does NOT call into the fixed implementation.
+    unfixed_filename = f"{date_str}-{doc_id}.md"
+    unfixed_path = tmp_path / "10_Sources" / "Telegram" / "allbareun" / "2026" / unfixed_filename
+    unfixed_resolved = unfixed_path.resolve()
     vault_resolved = tmp_path.resolve()
+
+    # Sanity check: prove the payload is a genuine attack for this construction -
+    # absent the fix, it actually escapes the vault directory.
+    assert vault_resolved not in unfixed_resolved.parents
+
+    # The real, fixed path_for_document must defeat the same payload and stay
+    # confined to the vault.
+    path = path_for_document(tmp_path, doc)
+    resolved = path.resolve()
     assert vault_resolved in resolved.parents
 
     assert "/" not in path.name
