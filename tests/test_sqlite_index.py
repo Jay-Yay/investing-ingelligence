@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from investor_intel.models.common import ContentCaptureMode, SourceType
@@ -17,8 +17,10 @@ from investor_intel.storage.sqlite_index import (
 )
 
 
-def _make_doc(body: str, url: str = "https://t.me/x/1", source_specific_id: str = "1") -> SourceDocument:
-    now = datetime(2026, 7, 24, 9, 0, tzinfo=timezone.utc)
+def _make_doc(
+    body: str, url: str = "https://t.me/x/1", source_specific_id: str = "1"
+) -> SourceDocument:
+    now = datetime(2026, 7, 24, 9, 0, tzinfo=UTC)
     return SourceDocument(
         id=compute_stable_id("telegram", "allbareun", source_specific_id, url),
         source_type=SourceType.TELEGRAM,
@@ -129,8 +131,16 @@ def test_find_duplicate_returns_none_when_no_match(tmp_path: Path) -> None:
 
 def test_reindex_rebuilds_from_vault(tmp_path: Path) -> None:
     vault = tmp_path / "vault"
-    write_document(vault, _make_doc("첫번째", url="https://t.me/x/1", source_specific_id="1"), "## 원문\n\n첫번째\n")
-    write_document(vault, _make_doc("두번째", url="https://t.me/x/2", source_specific_id="2"), "## 원문\n\n두번째\n")
+    write_document(
+        vault,
+        _make_doc("첫번째", url="https://t.me/x/1", source_specific_id="1"),
+        "## 원문\n\n첫번째\n",
+    )
+    write_document(
+        vault,
+        _make_doc("두번째", url="https://t.me/x/2", source_specific_id="2"),
+        "## 원문\n\n두번째\n",
+    )
 
     conn = connect(tmp_path / "index.sqlite3")
     init_db(conn)

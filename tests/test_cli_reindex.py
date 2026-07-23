@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from typer.testing import CliRunner
@@ -14,7 +14,7 @@ runner = CliRunner()
 
 
 def _make_doc(n: int) -> SourceDocument:
-    now = datetime(2026, 7, 24, 9, 0, tzinfo=timezone.utc)
+    now = datetime(2026, 7, 24, 9, 0, tzinfo=UTC)
     body = f"본문 {n}"
     return SourceDocument(
         id=compute_stable_id("telegram", "allbareun", str(n), f"https://t.me/allbareun/{n}"),

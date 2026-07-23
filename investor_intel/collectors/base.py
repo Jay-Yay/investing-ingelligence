@@ -3,7 +3,7 @@ from __future__ import annotations
 import sqlite3
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Protocol
 
 from investor_intel.storage.sqlite_index import get_collector_state, save_collector_state
@@ -126,7 +126,7 @@ class CheckpointStore:
         state = self.get_state(source_id)
         state.failure_count += 1
         backoff = base_backoff_seconds * (2 ** (state.failure_count - 1))
-        state.next_retry_at = datetime.now(timezone.utc) + timedelta(seconds=backoff)
+        state.next_retry_at = datetime.now(UTC) + timedelta(seconds=backoff)
         self.save_state(state)
         return state
 
@@ -134,7 +134,7 @@ class CheckpointStore:
         state = self.get_state(source_id)
         state.failure_count = 0
         state.next_retry_at = None
-        state.last_success_at = datetime.now(timezone.utc)
+        state.last_success_at = datetime.now(UTC)
         if last_seen_id is not None:
             state.last_seen_id = last_seen_id
         self.save_state(state)

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from investor_intel.models.common import ContentCaptureMode, SourceType
@@ -13,8 +13,10 @@ from investor_intel.storage.obsidian_repo import (
 )
 
 
-def _make_doc(body: str, source_name: str = "allbareun", doc_id: str | None = None) -> SourceDocument:
-    now = datetime(2026, 7, 24, 9, 0, tzinfo=timezone.utc)
+def _make_doc(
+    body: str, source_name: str = "allbareun", doc_id: str | None = None
+) -> SourceDocument:
+    now = datetime(2026, 7, 24, 9, 0, tzinfo=UTC)
     return SourceDocument(
         id=doc_id or compute_stable_id("telegram", source_name, "1", "https://t.me/x/1"),
         source_type=SourceType.TELEGRAM,

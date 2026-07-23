@@ -1,5 +1,5 @@
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from freezegun import freeze_time
@@ -43,11 +43,11 @@ def test_record_failure_applies_exponential_backoff(tmp_path: Path) -> None:
     with freeze_time("2026-07-24T00:00:00+00:00"):
         state1 = store.record_failure("sec_13f_duquesne", base_backoff_seconds=60)
         assert state1.failure_count == 1
-        assert state1.next_retry_at == datetime(2026, 7, 24, 0, 1, tzinfo=timezone.utc)
+        assert state1.next_retry_at == datetime(2026, 7, 24, 0, 1, tzinfo=UTC)
 
         state2 = store.record_failure("sec_13f_duquesne", base_backoff_seconds=60)
         assert state2.failure_count == 2
-        assert state2.next_retry_at == datetime(2026, 7, 24, 0, 2, tzinfo=timezone.utc)
+        assert state2.next_retry_at == datetime(2026, 7, 24, 0, 2, tzinfo=UTC)
 
 
 def test_record_success_resets_failure_count(tmp_path: Path) -> None:

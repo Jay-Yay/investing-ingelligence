@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from pydantic import ValidationError
@@ -8,7 +8,7 @@ from investor_intel.models.source_document import ContentCapture, SourceDocument
 
 
 def _now() -> datetime:
-    return datetime(2026, 7, 24, 9, 0, tzinfo=timezone.utc)
+    return datetime(2026, 7, 24, 9, 0, tzinfo=UTC)
 
 
 def test_content_capture_full_requires_no_reason() -> None:

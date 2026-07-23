@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Annotated
 
 import typer
 
@@ -197,8 +198,8 @@ def _write_if_missing(path: Path, content: str) -> None:
 
 @app.command()
 def init(
-    vault_path: Path = typer.Option(Path("./vault"), help="Obsidian vault root"),
-    config_dir: Path = typer.Option(Path("./config"), help="Config directory"),
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    config_dir: Annotated[Path, typer.Option(help="Config directory")] = Path("./config"),
 ) -> None:
     """디렉터리 구조, 기본 설정, 포트폴리오 예제를 생성한다 (기존 파일은 덮어쓰지 않음)."""
     for rel_dir in VAULT_DIRS:
@@ -224,7 +225,7 @@ def init(
 
 @app.command()
 def doctor(
-    config_dir: Path = typer.Option(Path("./config"), help="Config directory"),
+    config_dir: Annotated[Path, typer.Option(help="Config directory")] = Path("./config"),
 ) -> None:
     """환경변수, 설정 파일, Vault 쓰기 권한을 점검한다."""
     settings = AppSettings()
@@ -273,9 +274,9 @@ def doctor(
 
 @app.command()
 def reindex(
-    vault_path: Path = typer.Option(Path("./vault"), help="Obsidian vault root"),
-    sqlite_path: Path = typer.Option(
-        Path("./data/index.sqlite3"), help="SQLite index path"
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    sqlite_path: Annotated[Path, typer.Option(help="SQLite index path")] = Path(
+        "./data/index.sqlite3"
     ),
 ) -> None:
     """Markdown을 기준으로 SQLite 인덱스를 재구축한다."""

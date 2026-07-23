@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 
-class SourceType(str, Enum):
+class SourceType(StrEnum):
     NAVER = "naver"
     TELEGRAM = "telegram"
     SEC_13F = "sec_13f"
@@ -12,42 +12,42 @@ class SourceType(str, Enum):
     ESSAY = "essay"
 
 
-class ContentCaptureMode(str, Enum):
+class ContentCaptureMode(StrEnum):
     FULL = "full"
     EXCERPT = "excerpt"
     METADATA_ONLY = "metadata_only"
 
 
-class Direction(str, Enum):
+class Direction(StrEnum):
     BULLISH = "bullish"
     BEARISH = "bearish"
     NEUTRAL = "neutral"
 
 
-class ConfidenceLevel(str, Enum):
+class ConfidenceLevel(StrEnum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
 
 
-class FactOrOpinion(str, Enum):
+class FactOrOpinion(StrEnum):
     FACT = "fact"
     OPINION = "opinion"
     FORECAST = "forecast"
 
 
-class VerificationStatus(str, Enum):
+class VerificationStatus(StrEnum):
     VERIFIED = "verified"
     PARTIALLY_VERIFIED = "partially_verified"
     UNVERIFIED = "unverified"
 
 
-class DecisionStatus(str, Enum):
+class DecisionStatus(StrEnum):
     COMPLETE = "complete"
     PENDING = "pending"
 
 
-class RecommendationRating(str, Enum):
+class RecommendationRating(StrEnum):
     STRONG_BUY = "strong_buy"
     BUY = "buy"
     HOLD = "hold"
