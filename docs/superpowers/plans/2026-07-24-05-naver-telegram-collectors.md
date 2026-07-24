@@ -44,8 +44,8 @@ Intel/0.1", rate_limiter=None, http_client: httpx.Client | None = None)` with `.
 str`, `.close() -> None`. Same retry-on-{429,500,502,503,504} shape as `SECClient`/`DartClient`;
 no construction-time validation (no auth to validate).
 
-- [ ] Write failing tests, implement, verify pass
-- [ ] Commit: `feat: add shared no-auth retrying HTTP client for naver/telegram collectors`
+- [x] Write failing tests, implement, verify pass
+- [x] Commit: `feat: add shared no-auth retrying HTTP client for naver/telegram collectors`
 
 ### Task 2: Naver RSS parser
 
