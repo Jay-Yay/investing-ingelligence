@@ -2,6 +2,7 @@ from pathlib import Path
 
 from investor_intel.config.loaders import (
     load_companies_yaml,
+    load_dart_companies_yaml,
     load_investors_yaml,
     load_settings_yaml,
     load_sources_yaml,
@@ -68,6 +69,36 @@ def test_load_companies_yaml(tmp_path: Path) -> None:
     companies = load_companies_yaml(path)
     assert companies[0].filing_types == ["20-F", "6-K"]
     assert companies[0].is_foreign_private_issuer is True
+
+
+def test_load_dart_companies_yaml(tmp_path: Path) -> None:
+    path = tmp_path / "dart_companies.yaml"
+    path.write_text(
+        """dart_companies:
+  - ticker: "005930"
+    corp_code: "00126380"
+    name: 삼성전자
+    report_types: [A, B]
+""",
+        encoding="utf-8",
+    )
+    companies = load_dart_companies_yaml(path)
+    assert companies[0].corp_code == "00126380"
+    assert companies[0].report_types == ["A", "B"]
+
+
+def test_load_dart_companies_yaml_default_report_types(tmp_path: Path) -> None:
+    path = tmp_path / "dart_companies.yaml"
+    path.write_text(
+        """dart_companies:
+  - ticker: "005930"
+    corp_code: "00126380"
+    name: 삼성전자
+""",
+        encoding="utf-8",
+    )
+    companies = load_dart_companies_yaml(path)
+    assert companies[0].report_types == ["A", "B"]
 
 
 def test_load_settings_yaml_defaults(tmp_path: Path) -> None:

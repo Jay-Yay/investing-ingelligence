@@ -57,8 +57,8 @@ extend `tests/test_config_loaders.py`.
   list stays empty until the user supplies it (matches design doc §5, a documented non-blocking
   item).
 
-- [ ] Write failing tests, implement, verify pass
-- [ ] Commit: `feat: add KoreanCompanyConfig model and dart_companies.yaml loader`
+- [x] Write failing tests, implement, verify pass
+- [x] Commit: `feat: add KoreanCompanyConfig model and dart_companies.yaml loader`
 
 ### Task 2: DART HTTP client
 

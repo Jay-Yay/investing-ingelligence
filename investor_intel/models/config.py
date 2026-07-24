@@ -24,6 +24,13 @@ class CompanyConfig(BaseModel):
     is_foreign_private_issuer: bool = False
 
 
+class KoreanCompanyConfig(BaseModel):
+    ticker: str
+    corp_code: str
+    name: str
+    report_types: list[str] = ["A", "B"]
+
+
 class InvestorConfig(BaseModel):
     id: str
     name: str

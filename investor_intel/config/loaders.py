@@ -9,6 +9,7 @@ from investor_intel.models.config import (
     AppSettingsYaml,
     CompanyConfig,
     InvestorConfig,
+    KoreanCompanyConfig,
     SourceConfig,
 )
 
@@ -36,3 +37,8 @@ def load_companies_yaml(path: Path) -> list[CompanyConfig]:
 def load_investors_yaml(path: Path) -> list[InvestorConfig]:
     data = _load_yaml(path)
     return [InvestorConfig.model_validate(item) for item in data.get("investors", [])]
+
+
+def load_dart_companies_yaml(path: Path) -> list[KoreanCompanyConfig]:
+    data = _load_yaml(path)
+    return [KoreanCompanyConfig.model_validate(item) for item in data.get("dart_companies", [])]
