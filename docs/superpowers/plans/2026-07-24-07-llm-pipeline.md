@@ -78,11 +78,11 @@ cost tracker never need a second source of truth for which model was used).
   (day/month boundaries computed in the configured timezone — a "daily" budget means the
   project's Asia/Seoul day, not a UTC day), `.is_within_budget() -> bool`.
 
-- [ ] Write failing tests (compute_cost_usd known-model arithmetic + unpriced-model raise;
+- [x] Write failing tests (compute_cost_usd known-model arithmetic + unpriced-model raise;
       ledger round-trip; `CostTracker.record_usage` persists and returns matching cost;
       `daily_total_usd`/`monthly_total_usd` sum correctly across a KST day/month boundary via
       `freeze_time`; `is_within_budget` true under budget, false at/over), implement, verify pass
-- [ ] Commit: `feat: add LLM cost ledger and budget-aware cost tracker`
+- [x] Commit: `feat: add LLM cost ledger and budget-aware cost tracker`
 
 ### Task 3: `Claim`/`ExtractionResult` models
 
