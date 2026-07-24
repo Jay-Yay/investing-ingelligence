@@ -125,9 +125,9 @@ content block. Raises `ExtractionError`-style... no — a new, distinct `DailyRe
 if the response has no text block (keeps error types scoped to the module that raises them,
 not shared with `extraction.py`'s unrelated failure mode).
 
-- [ ] Write failing tests (returns the text block content; raises when no text block present),
+- [x] Write failing tests (returns the text block content; raises when no text block present),
       implement, verify pass
-- [ ] Commit: `feat: add LLM daily report narrative synthesis`
+- [x] Commit: `feat: add LLM daily report narrative synthesis`
 
 ### Task 6: Orchestrator + remaining CLI commands
 
