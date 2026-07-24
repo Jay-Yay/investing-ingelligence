@@ -104,3 +104,6 @@ uv run pytest          # 테스트 전체 실행
 uv run ruff check .    # 린트
 uv run mypy investor_intel  # 타입 체크
 ```
+
+`.github/workflows/ci.yml`이 모든 push/PR에서 위 세 가지(테스트/린트/타입체크)를 자동 실행한다
+— `daily-collect.yml`(운영용 스케줄 실행)과는 별개다.
