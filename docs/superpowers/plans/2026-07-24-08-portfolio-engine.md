@@ -49,9 +49,9 @@ PortfolioConstraints, positions: list[Position]`. `load_portfolio_yaml(path: Pat
 — unlike the other loaders (which return a bare list), this one is a single root object matching
 `portfolio.yaml`'s actual top-level shape (not a `{portfolio: [...]}` wrapper list).
 
-- [ ] Write failing tests (field validation; loader round-trips the exact `cli.py` scaffold
+- [x] Write failing tests (field validation; loader round-trips the exact `cli.py` scaffold
       shape), implement, verify pass
-- [ ] Commit: `feat: add Portfolio models and portfolio.yaml loader`
+- [x] Commit: `feat: add Portfolio models and portfolio.yaml loader`
 
 ### Task 2: Portfolio calculations
 

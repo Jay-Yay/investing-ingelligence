@@ -12,6 +12,7 @@ from investor_intel.models.config import (
     KoreanCompanyConfig,
     SourceConfig,
 )
+from investor_intel.models.portfolio import Portfolio
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
@@ -42,3 +43,7 @@ def load_investors_yaml(path: Path) -> list[InvestorConfig]:
 def load_dart_companies_yaml(path: Path) -> list[KoreanCompanyConfig]:
     data = _load_yaml(path)
     return [KoreanCompanyConfig.model_validate(item) for item in data.get("dart_companies", [])]
+
+
+def load_portfolio_yaml(path: Path) -> Portfolio:
+    return Portfolio.model_validate(_load_yaml(path))

@@ -4,6 +4,7 @@ from investor_intel.config.loaders import (
     load_companies_yaml,
     load_dart_companies_yaml,
     load_investors_yaml,
+    load_portfolio_yaml,
     load_settings_yaml,
     load_sources_yaml,
 )
@@ -99,6 +100,39 @@ def test_load_dart_companies_yaml_default_report_types(tmp_path: Path) -> None:
     )
     companies = load_dart_companies_yaml(path)
     assert companies[0].report_types == ["A", "B"]
+
+
+def test_load_portfolio_yaml(tmp_path: Path) -> None:
+    path = tmp_path / "portfolio.yaml"
+    path.write_text(
+        """as_of: 2026-07-24
+base_currency: KRW
+constraints:
+  horizon_max_months: 6
+  max_single_position_weight: 0.60
+  max_sector_weight: 0.60
+  leverage_allowed: false
+  short_selling_allowed: false
+  options_allowed: false
+positions:
+  - symbol: NBIS
+    name: Nebius Group
+    asset_type: us_equity
+    sector: AI Infrastructure
+    quantity: 0
+    average_cost: 0
+    cost_currency: USD
+    thesis: ""
+    target_price: null
+    stop_loss_price: null
+""",
+        encoding="utf-8",
+    )
+    portfolio = load_portfolio_yaml(path)
+    assert portfolio.base_currency == "KRW"
+    assert portfolio.constraints.max_single_position_weight == 0.60
+    assert len(portfolio.positions) == 1
+    assert portfolio.positions[0].symbol == "NBIS"
 
 
 def test_load_settings_yaml_defaults(tmp_path: Path) -> None:
