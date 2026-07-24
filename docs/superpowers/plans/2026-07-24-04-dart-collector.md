@@ -91,10 +91,10 @@ extend `tests/test_config_loaders.py`.
   `"013"`; raises `DartAPIError` on any status other than `"000"`/`"013"`; parses `rcept_dt`
   (`YYYYMMDD` string, no dashes) into a `date`.
 
-- [ ] Write failing tests (success parses all fields incl. `rcept_dt` format; `"013"` → `[]`, no
+- [x] Write failing tests (success parses all fields incl. `rcept_dt` format; `"013"` → `[]`, no
       raise; other error status raises `DartAPIError` with the message included), implement,
       verify pass
-- [ ] Commit: `feat: add OpenDART list.json response parser`
+- [x] Commit: `feat: add OpenDART list.json response parser`
 
 ### Task 4: DART Markdown renderer
 
