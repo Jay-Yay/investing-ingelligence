@@ -131,22 +131,47 @@ not shared with `extraction.py`'s unrelated failure mode).
 
 ### Task 6: Orchestrator + remaining CLI commands
 
-**Files:** create `investor_intel/pipeline/orchestrator.py`; modify `investor_intel/cli.py`;
-test `tests/test_orchestrator.py`.
+**Files:** create `investor_intel/pipeline/analyze.py`, `investor_intel/pipeline/orchestrator.py`;
+modify `investor_intel/cli.py`; test `tests/test_pipeline_analyze.py`, `tests/test_orchestrator.py`.
 
-**Interfaces:** `run_daily(config_dir: Path, vault_path: Path, sqlite_path: Path, settings:
-AppSettings) -> RunDailyResult` (`RunDailyResult(BaseModel)`: `collect_errors: list[str],
-analyze_errors: list[str], report_path: str | None, success: bool`) — runs collect (Task 2's
-logic, factored to be callable without going through Typer) for every configured source, then
-analyze (LLM extraction over `llm_processed=false` documents, cost-budget aware via
-`CostTracker.is_within_budget`, stopping analysis but not the run when the budget is hit — per
-§3.4), then portfolio calculations + guardrails (phase 08) using `MarketDataProvider` prices,
+**Scope decision (claims are extracted but not spliced into the document body):** `analyze.py`
+calls `extract_claims` for each `llm_processed=false` document, marks it processed (frontmatter
+`llm_processed: true` + `llm_model`) via a direct rewrite that bypasses
+`write_document`'s content-hash skip (metadata changed, body didn't — the hash guard exists for
+"did the collector re-fetch the same content", a different question), and returns the
+`ExtractionResult`s to the caller. It does **not** rewrite the "## 핵심 주장"/"## 근거"/etc.
+section placeholders already in the body with the actual claims — that needs a markdown
+section-replacement utility (parse existing headers, splice content between them) that doesn't
+exist yet and is a meaningfully separate subsystem from "call the LLM and track cost". A
+documented gap, not a silent one; the extracted claims are still available in-memory for the
+same run's daily report narrative input.
+
+**Scope decision (approximate cost accounting):** `extract_claims` (phase 07) returns a validated
+`ExtractionResult`, not the raw SDK response, so real `response.usage` token counts aren't
+threaded through its retry loop. Rather than break that already-tested interface for this
+integration phase, `analyze.py` records cost using a `len(text) // 4` character-based token
+estimate (a standard rough approximation) for both the wrapped input and the serialized output.
+`CostTracker`'s budget gate is still meaningful with estimated numbers; exact accounting via
+`response.usage` is a stated follow-up, not fabricated as exact today.
+
+**Interfaces:** `pipeline/analyze.py`: `AnalyzeResult` (dataclass: `processed: int, errors:
+list[str], extractions: dict[str, ExtractionResult]`); `find_unprocessed_document_paths(conn) ->
+list[str]`; `analyze_pending_documents(conn, vault_path, client: AnthropicClient, cost_tracker:
+CostTracker, system_prompt: str) -> AnalyzeResult` — stops (not errors) when
+`cost_tracker.is_within_budget()` goes false, leaving remaining documents for the next run.
+`pipeline/orchestrator.py`: `run_daily(config_dir: Path, vault_path: Path, sqlite_path: Path,
+settings: AppSettings) -> RunDailyResult` (`RunDailyResult(BaseModel)`: `collect_errors:
+list[str], analyze_errors: list[str], report_path: str | None, success: bool`) — runs collect
+(Task 2's logic, factored to be callable without going through Typer) for every configured
+source, then analyze, then portfolio calculations + guardrails (phase 08) using
+`MarketDataProvider` prices (`YahooFinanceAdapter` for non-crypto `asset_type`, `CoinGeckoAdapter`
+otherwise — `position.symbol` doubles as the CoinGecko coin id per phase 06's scope decision),
 then the daily report (Tasks 3-5), writing the result to
-`{vault_path}/50_Reports/Daily/{date}.md`. Never raises on a single source/document failure;
-`success` reflects whether the report was ultimately produced. CLI: `analyze`, `portfolio`,
-`report` (each runs one stage standalone, for manual/debugging use) and `run-daily` (the full
-pipeline) commands, all following the existing `--vault-path`/`--config-dir`/`--sqlite-path`
-option conventions from `init`/`doctor`/`reindex`.
+`{vault_path}/50_Reports/Daily/{date}.md`. Never raises on a single source/document/price-lookup
+failure; `success` reflects whether the report was ultimately produced. CLI: `analyze`,
+`portfolio`, `report` (each runs one stage standalone, for manual/debugging use) and `run-daily`
+(the full pipeline) commands, all following the existing
+`--vault-path`/`--config-dir`/`--sqlite-path` option conventions from `init`/`doctor`/`reindex`.
 
 - [ ] Write failing tests (a fully-mocked run — fake collectors, fake LLM client, fake market
       data — produces a report file and a `success=True` result; a collector failure is recorded
