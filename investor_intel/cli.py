@@ -1,13 +1,29 @@
 from __future__ import annotations
 
+from datetime import date
 from pathlib import Path
 from typing import Annotated
 
 import typer
 
 from investor_intel.collectors.base import CheckpointStore
+from investor_intel.collectors.http_client import SimpleHttpClient
 from investor_intel.config.settings import AppSettings
+from investor_intel.llm.client import AnthropicClient
+from investor_intel.llm.cost_tracker import CostTracker
+from investor_intel.llm.daily_report import synthesize_daily_narrative
+from investor_intel.market_data.coingecko_adapter import CoinGeckoAdapter
+from investor_intel.market_data.yfinance_adapter import YahooFinanceAdapter
+from investor_intel.pipeline.analyze import analyze_pending_documents
 from investor_intel.pipeline.collect import build_collect_entries, run_collectors
+from investor_intel.pipeline.orchestrator import (
+    ANALYZE_SYSTEM_PROMPT,
+    DAILY_REPORT_SYSTEM_PROMPT,
+    run_daily,
+    run_portfolio_stage,
+)
+from investor_intel.reports.daily_report_renderer import DailyReportContext, render_daily_report
+from investor_intel.storage.cost_ledger import init_cost_ledger
 from investor_intel.storage.sqlite_index import connect, init_db
 from investor_intel.storage.sqlite_index import reindex as reindex_vault
 
@@ -330,3 +346,117 @@ def collect(
         raise typer.Exit(code=1 if had_errors else 0)
     finally:
         conn.close()
+
+
+@app.command()
+def analyze(
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    sqlite_path: Annotated[Path, typer.Option(help="SQLite index path")] = Path(
+        "./data/index.sqlite3"
+    ),
+) -> None:
+    """미처리 문서에 대해 LLM 핵심 주장 추출을 실행한다."""
+    settings = AppSettings()
+    if not settings.anthropic_api_key:
+        typer.echo("ANTHROPIC_API_KEY 미설정 - 분석을 실행할 수 없다")
+        raise typer.Exit(code=1)
+
+    conn = connect(sqlite_path)
+    try:
+        init_db(conn)
+        init_cost_ledger(conn)
+        client = AnthropicClient(
+            api_key=settings.anthropic_api_key, model=settings.anthropic_model
+        )
+        cost_tracker = CostTracker(
+            conn, settings.daily_llm_budget_usd, settings.monthly_llm_budget_usd
+        )
+        result = analyze_pending_documents(
+            conn, vault_path, client, cost_tracker, ANALYZE_SYSTEM_PROMPT
+        )
+
+        typer.echo(f"{result.processed}건 분석 완료")
+        for error in result.errors:
+            typer.echo(f"오류: {error}")
+        raise typer.Exit(code=1 if result.errors else 0)
+    finally:
+        conn.close()
+
+
+@app.command()
+def portfolio(
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+) -> None:
+    """portfolio.yaml 기준 평가금액/손익/가드레일을 계산해 출력한다."""
+    yahoo = YahooFinanceAdapter(SimpleHttpClient())
+    coingecko = CoinGeckoAdapter(SimpleHttpClient())
+    position_rows, violations = run_portfolio_stage(vault_path, yahoo, coingecko)
+
+    if not position_rows:
+        typer.echo("portfolio.yaml 없음 또는 포지션 없음")
+        raise typer.Exit(code=0)
+
+    for row in position_rows:
+        typer.echo(
+            f"{row['symbol']}: 현재가={row['current_price']} 평가금액={row['market_value']} "
+            f"비중={row['portfolio_weight']}"
+        )
+    for violation in violations:
+        typer.echo(f"[가드레일 위반] {violation.symbol} ({violation.rule}): {violation.message}")
+
+    raise typer.Exit(code=1 if violations else 0)
+
+
+@app.command()
+def report(
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+) -> None:
+    """현재 포트폴리오 상태로 일일 리포트를 생성한다 (수집/분석 없이)."""
+    settings = AppSettings()
+    yahoo = YahooFinanceAdapter(SimpleHttpClient())
+    coingecko = CoinGeckoAdapter(SimpleHttpClient())
+    position_rows, violations = run_portfolio_stage(vault_path, yahoo, coingecko)
+
+    narrative = "포트폴리오 현황 기반 리포트."
+    if settings.anthropic_api_key:
+        client = AnthropicClient(
+            api_key=settings.anthropic_api_key, model=settings.anthropic_model
+        )
+        summary = f"포트폴리오 종목 {len(position_rows)}개, 가드레일 위반 {len(violations)}건"
+        narrative = synthesize_daily_narrative(client, summary, DAILY_REPORT_SYSTEM_PROMPT)
+
+    context = DailyReportContext(
+        report_date=date.today(),
+        narrative=narrative,
+        new_documents=[],
+        position_rows=position_rows,
+        guardrail_violations=violations,
+    )
+    body = render_daily_report(context)
+    report_dir = vault_path / "50_Reports" / "Daily"
+    report_dir.mkdir(parents=True, exist_ok=True)
+    report_file = report_dir / f"{date.today().isoformat()}.md"
+    report_file.write_text(body, encoding="utf-8")
+    typer.echo(f"리포트 생성 완료: {report_file}")
+
+
+@app.command(name="run-daily")
+def run_daily_cmd(
+    config_dir: Annotated[Path, typer.Option(help="Config directory")] = Path("./config"),
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    sqlite_path: Annotated[Path, typer.Option(help="SQLite index path")] = Path(
+        "./data/index.sqlite3"
+    ),
+) -> None:
+    """collect -> analyze -> portfolio -> report 전체 파이프라인을 실행한다."""
+    settings = AppSettings()
+    result = run_daily(config_dir, vault_path, sqlite_path, settings)
+
+    for error in result.collect_errors:
+        typer.echo(f"[collect 오류] {error}")
+    for error in result.analyze_errors:
+        typer.echo(f"[analyze 오류] {error}")
+    if result.report_path:
+        typer.echo(f"리포트 생성 완료: {result.report_path}")
+
+    raise typer.Exit(code=0 if result.success else 1)

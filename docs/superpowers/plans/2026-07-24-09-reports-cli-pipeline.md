@@ -173,12 +173,12 @@ failure; `success` reflects whether the report was ultimately produced. CLI: `an
 (the full pipeline) commands, all following the existing
 `--vault-path`/`--config-dir`/`--sqlite-path` option conventions from `init`/`doctor`/`reindex`.
 
-- [ ] Write failing tests (a fully-mocked run — fake collectors, fake LLM client, fake market
+- [x] Write failing tests (a fully-mocked run — fake collectors, fake LLM client, fake market
       data — produces a report file and a `success=True` result; a collector failure is recorded
       in `collect_errors` but the run still reaches the report stage; budget-exhausted skips
       remaining analysis but still produces a report from what was analyzed), implement, verify
       pass
-- [ ] Commit: `feat: add run-daily orchestrator and remaining CLI commands`
+- [x] Commit: `feat: add run-daily orchestrator and remaining CLI commands`
 
 ### Task 7: Cron / GitHub Actions scaffold
 
