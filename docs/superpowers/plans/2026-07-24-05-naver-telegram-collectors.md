@@ -134,9 +134,9 @@ CollectResult`, `.collect_incremental() -> CollectResult`. Channel name extracte
 `document_type` = `"telegram_message"`, `companies` = `[]`. Same checkpoint idempotency
 contract.
 
-- [ ] Write failing tests (backfill day-window; incremental idempotency; source_id == source.id),
+- [x] Write failing tests (backfill day-window; incremental idempotency; source_id == source.id),
       implement, verify pass
-- [ ] Commit: `feat: add TelegramCollector`
+- [x] Commit: `feat: add TelegramCollector`
 
 ### Task 8: Full verification pass
 
