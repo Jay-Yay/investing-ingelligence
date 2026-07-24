@@ -52,12 +52,12 @@ reimplemented) falling back to the freshly computed stable id when no match is f
 item's conversion/write failure — collects into the same style of error list the collectors
 themselves use.
 
-- [ ] Write failing tests (conversion produces a valid `SourceDocument` whose `content_capture`
+- [x] Write failing tests (conversion produces a valid `SourceDocument` whose `content_capture`
       satisfies the existing mode/reason validator for both `full` and `metadata_only` items;
       persisting the same item twice is idempotent — second call doesn't create a duplicate
       vault file; a duplicate detected by `find_duplicate` reuses the existing id), implement,
       verify pass
-- [ ] Commit: `feat: add collect-result persistence pipeline (CollectItem to vault+index)`
+- [x] Commit: `feat: add collect-result persistence pipeline (CollectItem to vault+index)`
 
 ### Task 2: CLI `collect` command
 
