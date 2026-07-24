@@ -72,12 +72,12 @@ vault alone.
 
 **Files:** none, or a short addition to the roadmap doc noting the check was done.
 
-- [ ] Walk the roadmap table (phases 01-09) and confirm each is genuinely merged and its own
+- [x] Walk the roadmap table (phases 01-09) and confirm each is genuinely merged and its own
       plan's checkboxes are complete
-- [ ] `uv run pytest -v` — full suite green
-- [ ] `uv run ruff check .` — clean
-- [ ] `uv run mypy investor_intel` — clean
-- [ ] Update roadmap status for phase 10 to "merged to main"; commit
+- [x] `uv run pytest -v` — full suite green
+- [x] `uv run ruff check .` — clean
+- [x] `uv run mypy investor_intel` — clean
+- [x] Update roadmap status for phase 10 to "merged to main"; commit
 
 ## Self-review notes
 
