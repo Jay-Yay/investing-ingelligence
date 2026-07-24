@@ -1,6 +1,11 @@
 from __future__ import annotations
 
 _ARCHIVES_BASE = "https://www.sec.gov/Archives/edgar/data/{cik_short}/{accession_nodashes}"
+_COMPANYFACTS_URL = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
+
+
+def companyfacts_url(cik: str) -> str:
+    return _COMPANYFACTS_URL.format(cik=cik)
 
 
 def cik_short(cik: str) -> str:

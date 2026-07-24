@@ -99,12 +99,12 @@ sharing one `accn` to exercise the `end`-date disambiguation).
   accession_number` and `end == period_of_report`; an item stays `None` if no alias/fact matches
   (including when `period_of_report` itself is `None` — some 8-Ks have no report date at all).
 
-- [ ] Write failing tests (`parse_companyfacts` on the fixture; `extract_financial_snapshot`
+- [x] Write failing tests (`parse_companyfacts` on the fixture; `extract_financial_snapshot`
       correctly picks the ASC-606-era alias over the legacy one when both exist for the same
       company, correctly disambiguates two same-`accn` facts via `end` date, and returns an
       all-`None` snapshot for an accession number with no matching facts at all — the expected
       8-K case), implement, verify pass
-- [ ] Commit: `feat: add SEC XBRL companyfacts parser and financial snapshot extraction`
+- [x] Commit: `feat: add SEC XBRL companyfacts parser and financial snapshot extraction`
 
 ### Task 2: Wire into `SECFilingsCollector` + render section
 

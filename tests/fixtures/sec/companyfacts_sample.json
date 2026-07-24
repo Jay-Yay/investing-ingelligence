@@ -1,0 +1,101 @@
+{
+  "cik": 320193,
+  "entityName": "Example Corp",
+  "facts": {
+    "us-gaap": {
+      "Revenues": {
+        "label": "Revenues",
+        "units": {
+          "USD": [
+            {
+              "start": "2017-10-01",
+              "end": "2018-09-29",
+              "val": 265595000000,
+              "accn": "0000320193-18-000145",
+              "fy": 2018,
+              "fp": "FY",
+              "form": "10-K",
+              "filed": "2018-11-05"
+            }
+          ]
+        }
+      },
+      "RevenueFromContractWithCustomerExcludingAssessedTax": {
+        "label": "Revenue from Contract with Customer, Excluding Assessed Tax",
+        "units": {
+          "USD": [
+            {
+              "start": "2023-09-30",
+              "end": "2023-12-30",
+              "val": 119575000000,
+              "accn": "0000320193-24-000006",
+              "fy": 2024,
+              "fp": "Q1",
+              "form": "10-Q",
+              "filed": "2024-02-01"
+            },
+            {
+              "start": "2023-04-01",
+              "end": "2023-12-30",
+              "val": 205468000000,
+              "accn": "0000320193-24-000006",
+              "fy": 2024,
+              "fp": "Q1",
+              "form": "10-Q",
+              "filed": "2024-02-01"
+            }
+          ]
+        }
+      },
+      "NetIncomeLoss": {
+        "label": "Net Income (Loss) Attributable to Parent",
+        "units": {
+          "USD": [
+            {
+              "start": "2023-09-30",
+              "end": "2023-12-30",
+              "val": 33916000000,
+              "accn": "0000320193-24-000006",
+              "fy": 2024,
+              "fp": "Q1",
+              "form": "10-Q",
+              "filed": "2024-02-01"
+            }
+          ]
+        }
+      },
+      "Assets": {
+        "label": "Assets",
+        "units": {
+          "USD": [
+            {
+              "end": "2023-12-30",
+              "val": 353514000000,
+              "accn": "0000320193-24-000006",
+              "fy": 2024,
+              "fp": "Q1",
+              "form": "10-Q",
+              "filed": "2024-02-01"
+            }
+          ]
+        }
+      },
+      "SomeNonUsdConcept": {
+        "label": "Shares Outstanding",
+        "units": {
+          "shares": [
+            {
+              "end": "2023-12-30",
+              "val": 15500000000,
+              "accn": "0000320193-24-000006",
+              "fy": 2024,
+              "fp": "Q1",
+              "form": "10-Q",
+              "filed": "2024-02-01"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
