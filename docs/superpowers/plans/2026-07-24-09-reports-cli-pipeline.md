@@ -44,13 +44,12 @@ source_name: str) -> tuple[SourceDocument, str]` — pure conversion; `id` via
 `content_hash.compute_stable_id`, `content_hash` via `compute_content_hash(item.body_text)`;
 returns `(doc, item.body_text)` for the caller to write. `persist_collect_result(result:
 CollectResult, source_type: SourceType, source_name: str, vault_path: Path, conn:
-sqlite3.Connection) -> int` — for each item: resolve the real `id` via
-`sqlite_index.find_duplicate` (§10 5-step dedup, already implemented — reused, not
-reimplemented) falling back to the freshly computed stable id when no match is found, then
-`obsidian_repo.write_document` (already idempotent on unchanged content_hash) +
-`sqlite_index.upsert_document`; returns count of items processed. Never raises on a single
-item's conversion/write failure — collects into the same style of error list the collectors
-themselves use.
+sqlite3.Connection) -> PersistResult` (`PersistResult(count: int, errors: list[str])`) — for
+each item: resolve the real `id` via `sqlite_index.find_duplicate` (§10 5-step dedup, already
+implemented — reused, not reimplemented) falling back to the freshly computed stable id when no
+match is found, then `obsidian_repo.write_document` (already idempotent on unchanged
+content_hash) + `sqlite_index.upsert_document`. Never raises on a single item's
+conversion/write failure — appends to `errors` and continues, same style as `CollectResult`.
 
 - [x] Write failing tests (conversion produces a valid `SourceDocument` whose `content_capture`
       satisfies the existing mode/reason validator for both `full` and `metadata_only` items;
