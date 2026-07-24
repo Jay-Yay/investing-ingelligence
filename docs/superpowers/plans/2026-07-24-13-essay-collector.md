@@ -77,10 +77,10 @@ only a `<title>` and bare `<p>` tags, to exercise the fallback path).
   `entry-content` paragraphs were found — falls back to every `<p>` on the page outside
   `<script>`/`<style>`.
 
-- [ ] Write failing tests (WordPress fixture: exact title, a known paragraph substring, byline
+- [x] Write failing tests (WordPress fixture: exact title, a known paragraph substring, byline
       paragraph present in body; generic fixture: title from `<title>`, paragraph fallback
       triggers), implement, verify pass
-- [ ] Commit: `feat: add essay page HTML parser`
+- [x] Commit: `feat: add essay page HTML parser`
 
 ### Task 2: `collectors/essay_document.py` + `collectors/essay.py`
 
