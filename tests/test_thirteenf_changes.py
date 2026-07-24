@@ -6,7 +6,9 @@ from investor_intel.collectors.thirteenf_changes import (
 from investor_intel.models.thirteenf import HoldingChangeType, ThirteenFHolding, VotingAuthority
 
 
-def _holding(cusip: str, issuer: str, value: int, shares: int, put_call: str | None = None) -> ThirteenFHolding:
+def _holding(
+    cusip: str, issuer: str, value: int, shares: int, put_call: str | None = None
+) -> ThirteenFHolding:
     return ThirteenFHolding(
         issuer=issuer,
         title_of_class="COM",

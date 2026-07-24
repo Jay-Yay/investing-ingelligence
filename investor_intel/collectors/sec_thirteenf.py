@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 
 from investor_intel.collectors.base import CheckpointStore, CollectItem, CollectResult
 from investor_intel.collectors.sec_client import SECClient
@@ -121,7 +121,7 @@ class ThirteenFCollector:
             filing.filing_date.year,
             filing.filing_date.month,
             filing.filing_date.day,
-            tzinfo=timezone.utc,
+            tzinfo=UTC,
         )
 
         return CollectItem(

@@ -25,7 +25,9 @@ def _render_holdings_table(changes: list[HoldingChange]) -> str:
             if change.portfolio_weight_pct is not None
             else "-"
         )
-        shares = change.current_shares if change.current_shares is not None else change.previous_shares
+        shares = (
+            change.current_shares if change.current_shares is not None else change.previous_shares
+        )
         value = (
             change.current_value_usd_thousands
             if change.current_value_usd_thousands is not None
