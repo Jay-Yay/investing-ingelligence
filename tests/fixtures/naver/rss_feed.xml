@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>engineerinvestor 블로그</title>
+    <link>https://blog.naver.com/engineerinvestor</link>
+    <description>engineerinvestor's blog</description>
+    <item>
+      <title>엔비디아 실적 발표 후기</title>
+      <link>https://blog.naver.com/engineerinvestor/223456789</link>
+      <description>&lt;p&gt;엔비디아 이번 분기 실적이 시장 예상을 상회했다.&lt;/p&gt;</description>
+      <author>engineerinvestor</author>
+      <pubDate>Wed, 01 May 2024 21:00:00 +0900</pubDate>
+      <guid>https://blog.naver.com/engineerinvestor/223456789</guid>
+    </item>
+    <item>
+      <title>테슬라 밸류에이션 점검</title>
+      <link>https://blog.naver.com/engineerinvestor/223456790</link>
+      <description>&lt;p&gt;테슬라 밸류에이션에 대한 생각을 정리했다.&lt;/p&gt;</description>
+      <author>engineerinvestor</author>
+      <pubDate>Thu, 02 May 2024 09:30:00 +0900</pubDate>
+      <guid>https://blog.naver.com/engineerinvestor/223456790</guid>
+    </item>
+  </channel>
+</rss>

@@ -58,9 +58,9 @@ published_at: datetime`. `parse_naver_rss(xml_text: str) -> list[NaverPost]` —
 RFC 822 dates robustly, including the `+0900` KST offset Naver uses).
 `extract_blog_id(source_url: str) -> str` — last path segment of the source's mobile blog URL.
 
-- [ ] Write failing tests (parses title/link/description/guid; `pubDate` → tz-aware `datetime`;
+- [x] Write failing tests (parses title/link/description/guid; `pubDate` → tz-aware `datetime`;
       blog id extraction from a mobile URL), implement, verify pass
-- [ ] Commit: `feat: add Naver blog RSS parser`
+- [x] Commit: `feat: add Naver blog RSS parser`
 
 ### Task 3: Naver document renderer
 
