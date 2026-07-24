@@ -71,12 +71,12 @@ URL shape).
   parse_submissions_filings`, plus reading the optional `items` array (comma-separated string
   per filing, split into a list; empty string → `[]`) and `primaryDocDescription` array.
 
-- [ ] Write failing tests: filters to configured forms only; parses 8-K `items` into a list;
+- [x] Write failing tests: filters to configured forms only; parses 8-K `items` into a list;
       tolerates missing/blank `reportDate`; tolerates missing `items`/`primaryDocDescription`
       arrays entirely (some real submissions payloads omit them for older filings)
-- [ ] Implement
-- [ ] Run tests, verify pass
-- [ ] Commit: `feat: add SEC company filings submissions parser`
+- [x] Implement
+- [x] Run tests, verify pass
+- [x] Commit: `feat: add SEC company filings submissions parser`
 
 ### Task 3: Company filing Markdown renderer
 

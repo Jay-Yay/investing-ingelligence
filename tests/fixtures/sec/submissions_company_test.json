@@ -1,0 +1,20 @@
+{
+  "cik": "1664703",
+  "name": "Test Company Inc",
+  "filings": {
+    "recent": {
+      "accessionNumber": [
+        "0001664703-24-000010",
+        "0001664703-24-000005",
+        "0001664703-23-000030",
+        "0001664703-23-000002"
+      ],
+      "filingDate": ["2024-05-01", "2024-02-15", "2023-11-01", "2023-01-15"],
+      "reportDate": ["2024-03-31", "", "2023-09-30", ""],
+      "form": ["10-Q", "8-K", "10-K", "SC 13G"],
+      "primaryDocument": ["form10q.htm", "form8k.htm", "form10k.htm", "form13g.htm"],
+      "primaryDocDescription": ["10-Q", "8-K", "10-K", "SC 13G"],
+      "items": ["", "2.02,9.01", "", ""]
+    }
+  }
+}
