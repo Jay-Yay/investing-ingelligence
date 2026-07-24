@@ -44,12 +44,16 @@ class _FakeAnthropicSDKClient:
 
     def _create(self, **kwargs):
         self.calls += 1
+        usage = SimpleNamespace(input_tokens=100, output_tokens=50)
         tools = kwargs.get("tools")
         if tools:
             return SimpleNamespace(
-                content=[SimpleNamespace(type="tool_use", input=_VALID_CLAIMS_INPUT)]
+                content=[SimpleNamespace(type="tool_use", input=_VALID_CLAIMS_INPUT)],
+                usage=usage,
             )
-        return SimpleNamespace(content=[SimpleNamespace(type="text", text="오늘의 종합 요약.")])
+        return SimpleNamespace(
+            content=[SimpleNamespace(type="text", text="오늘의 종합 요약.")], usage=usage
+        )
 
 
 def _write_sources_yaml(config_dir) -> None:

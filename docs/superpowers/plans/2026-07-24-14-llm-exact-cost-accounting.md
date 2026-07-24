@@ -70,11 +70,11 @@ an assertion that `cost_tracker`'s recorded usage matches the fake's `usage` val
 just ">  0" as today) — this is the test that actually proves the estimate was replaced, not just
 that something non-zero got recorded.
 
-- [ ] Write a failing test (fake response carries a specific known `usage`; assert
+- [x] Write a failing test (fake response carries a specific known `usage`; assert
       `cost_tracker.daily_total_usd()` reflects exactly that token count via
       `compute_cost_usd(model, known_input, known_output)`, not an estimate-derived value),
       implement, verify pass
-- [ ] Commit: `feat: use real Anthropic token usage for cost tracking instead of a character estimate`
+- [x] Commit: `feat: use real Anthropic token usage for cost tracking instead of a character estimate`
 
 ## Self-review notes
 

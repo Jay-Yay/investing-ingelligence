@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import sqlite3
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -13,8 +12,6 @@ from investor_intel.pipeline.claims_splice import splice_claims_into_body
 from investor_intel.storage.content_hash import compute_content_hash
 from investor_intel.storage.obsidian_repo import path_for_document, read_document, render_document
 from investor_intel.storage.sqlite_index import upsert_document
-
-_CHARS_PER_TOKEN_ESTIMATE = 4
 
 
 @dataclass
@@ -46,11 +43,12 @@ def analyze_pending_documents(
 
         try:
             doc, body = read_document(Path(file_path))
-            extraction = extract_claims(client, document_body=body, system_prompt=system_prompt)
+            outcome = extract_claims(client, document_body=body, system_prompt=system_prompt)
+            extraction = outcome.result
 
-            input_tokens = (len(body) + len(system_prompt)) // _CHARS_PER_TOKEN_ESTIMATE
-            output_tokens = len(json.dumps(extraction.model_dump())) // _CHARS_PER_TOKEN_ESTIMATE
-            cost_tracker.record_usage(client.model, input_tokens, output_tokens)
+            cost_tracker.record_usage(
+                client.model, outcome.usage.input_tokens, outcome.usage.output_tokens
+            )
 
             spliced_body = splice_claims_into_body(body, extraction)
             updated_doc = doc.model_copy(

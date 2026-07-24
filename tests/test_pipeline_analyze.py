@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from types import SimpleNamespace
 
-from investor_intel.llm.cost_tracker import CostTracker
+from investor_intel.llm.cost_tracker import CostTracker, compute_cost_usd
 from investor_intel.models.common import ContentCaptureMode, SourceType
 from investor_intel.models.source_document import ContentCapture, SourceDocument
 from investor_intel.pipeline.analyze import (
@@ -67,8 +67,17 @@ class _FakeAnthropicClient:
         return self._response
 
 
+_KNOWN_INPUT_TOKENS = 123
+_KNOWN_OUTPUT_TOKENS = 45
+
+
 def _tool_use_response() -> SimpleNamespace:
-    return SimpleNamespace(content=[SimpleNamespace(type="tool_use", input=_VALID_CLAIMS_INPUT)])
+    return SimpleNamespace(
+        content=[SimpleNamespace(type="tool_use", input=_VALID_CLAIMS_INPUT)],
+        usage=SimpleNamespace(
+            input_tokens=_KNOWN_INPUT_TOKENS, output_tokens=_KNOWN_OUTPUT_TOKENS
+        ),
+    )
 
 
 def _setup(tmp_path):
@@ -110,7 +119,10 @@ def test_analyze_marks_document_processed_and_records_cost(tmp_path) -> None:
     assert updated_doc.llm_processed is True
     assert updated_doc.llm_model == "claude-sonnet-5"
     assert find_unprocessed_document_paths(conn) == []
-    assert cost_tracker.daily_total_usd() > 0
+    expected_cost = compute_cost_usd(
+        client.model, _KNOWN_INPUT_TOKENS, _KNOWN_OUTPUT_TOKENS
+    )
+    assert cost_tracker.daily_total_usd() == expected_cost
 
     # the extracted claim must actually be spliced into the document body, and the
     # stored content_hash must match what's really on disk
