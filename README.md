@@ -53,7 +53,8 @@ config/
   sources.yaml         # 네이버 블로그, 텔레그램 채널
   investors.yaml       # 13F 추적 대상 (Stanley Druckenmiller 등)
   companies.yaml       # SEC 공시 추적 대상 (NBIS, BE, RDDT)
-  dart_companies.yaml  # DART 공시 추적 대상 (한국 기업, 사용자가 채움)
+  dart_companies.yaml  # DART 공시 추적 대상 (한국 기업; corp_code는 생략 가능 — 최초 실행 시
+                       #   ticker/name으로 자동 조회 후 캐시됨)
   settings.yaml
   prompts/             # LLM 프롬프트 템플릿
 
@@ -70,11 +71,23 @@ data/index.sqlite3       # vault로부터 재생성 가능한 검색 인덱스 (
 `vault/`와 `data/`는 `.gitignore`에 포함되어 있다 — 이 저장소는 도구(tool)이고, 실제 수집된
 데이터는 사용자의 것이므로 이 코드 저장소 히스토리에 들어가지 않는다.
 
+## 기능
+
+- **수집:** SEC 13F, SEC 기업 공시(+ XBRL `companyfacts` 기반 매출/순이익/자산/부채 요약),
+  OpenDART 한국 기업 공시(corp_code 자동 해석), 네이버 블로그(RSS 우선, 실패 시 HTML 폴백),
+  텔레그램 공개 채널 미리보기, 13F 추적 대상이 직접 발행한 인사이트/에세이.
+- **분석:** Claude 기반 핵심 주장/근거/반대 근거/언급 자산 구조화 추출 — 추출 결과는 각 문서의
+  "## 핵심 주장" 등 섹션에 자동 반영(splice)됨. LLM 비용은 실제 Anthropic 토큰 사용량 기준으로
+  정확히 집계.
+- **포트폴리오:** YAML 기반 포트폴리오에 대한 평가금액/비중 계산과 가드레일 검사.
+- **리포트:** 한국어 일일 리포트 자동 생성.
+
 ## 아키텍처와 로드맵
 
 전체 설계는 [`docs/superpowers/specs/2026-07-24-investor-intelligence-design.md`](docs/superpowers/specs/2026-07-24-investor-intelligence-design.md),
 단계별 구현 계획은 [`docs/superpowers/plans/2026-07-24-00-roadmap.md`](docs/superpowers/plans/2026-07-24-00-roadmap.md)에
-있다. 로드맵의 10개 단계(Core Foundation부터 문서 정리까지)가 모두 구현되어 있다.
+있다. 로드맵의 모든 단계(Core Foundation부터 최근 follow-up까지)가 구현되어 있으며, 각 단계의
+정확한 범위와 남은 제약사항은 로드맵 문서의 "Known limitations"를 참고한다.
 
 ## 자동 실행
 
