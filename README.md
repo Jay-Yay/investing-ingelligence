@@ -51,7 +51,7 @@ uv run python -m investor_intel run-daily
 
 ```
 config/
-  sources.yaml         # 네이버 블로그, 텔레그램 채널
+  sources.yaml         # 네이버 블로그, 텔레그램 채널(공개 미리보기 또는 telegram_private)
   investors.yaml       # 13F 추적 대상 (Stanley Druckenmiller 등)
   companies.yaml       # SEC 공시 추적 대상 (NBIS, BE, RDDT)
   dart_companies.yaml  # DART 공시 추적 대상 (한국 기업; corp_code는 생략 가능 — 최초 실행 시
@@ -76,7 +76,8 @@ data/index.sqlite3       # vault로부터 재생성 가능한 검색 인덱스 (
 
 - **수집:** SEC 13F, SEC 기업 공시(+ XBRL `companyfacts` 기반 매출/순이익/자산/부채 요약),
   OpenDART 한국 기업 공시(corp_code 자동 해석), 네이버 블로그(RSS 우선, 실패 시 HTML 폴백),
-  텔레그램 공개 채널 미리보기, 13F 추적 대상이 직접 발행한 인사이트/에세이.
+  텔레그램 공개 채널 미리보기(최대 10페이지 페이지네이션), 텔레그램 비공개 채널(선택,
+  Telethon 기반), 13F 추적 대상이 직접 발행한 인사이트/에세이.
 - **분석:** Claude 기반 핵심 주장/근거/반대 근거/언급 자산 구조화 추출 — 추출 결과는 각 문서의
   "## 핵심 주장" 등 섹션에 자동 반영(splice)됨. LLM 비용은 실제 Anthropic 토큰 사용량 기준으로
   정확히 집계.
