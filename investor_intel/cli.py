@@ -113,6 +113,14 @@ COMPANIES_YAML = """companies:
     is_foreign_private_issuer: false
 """
 
+DART_COMPANIES_YAML = """dart_companies:
+  # corp_code는 생략 가능하다 - 최초 수집 시 ticker/name으로 OpenDART corpCode.xml에서
+  # 자동 조회 후 캐시된다. 직접 알고 있다면 채워도 된다.
+  - ticker: "005930"
+    name: 삼성전자
+    report_types: [A, B]
+"""
+
 SETTINGS_YAML = """vault_path: ./vault
 timezone: Asia/Seoul
 daily_report_time: "09:00"
@@ -189,8 +197,8 @@ RUNBOOK_MD = """# Runbook
 `DAILY_LLM_BUDGET_USD`/`MONTHLY_LLM_BUDGET_USD`(기본 1.5 / 45.0 USD)를 넘으면 `analyze` 단계가
 남은 문서 분석을 멈추고 종료한다(오류가 아니라 정상적인 중단). 처리되지 못한 문서는
 `llm_processed: false`로 남아 다음 실행에서 이어서 분석된다. 비용은 SQLite의 `llm_usage`
-테이블에 기록되며, 실제 토큰 사용량이 아니라 문자 수 기반 추정치임에 유의한다(정확한 사용량
-연동은 향후 개선 항목).
+테이블에 기록되며, Anthropic API 응답의 실제 토큰 사용량(`response.usage`, 재시도 포함 누적)을
+기준으로 정확히 계산된다.
 
 ## 인덱스 복구
 
@@ -210,8 +218,8 @@ vault의 Markdown+frontmatter가 유일한 원본(source of truth)이므로 이 
   그대로 따른다)
 - 미국 기업 SEC 공시 -> `config/companies.yaml`
 - 13F 추적 투자자 -> `config/investors.yaml`
-- 한국 기업 DART 공시 -> `config/dart_companies.yaml` (이 파일은 `init`이 자동 생성하지 않는다
-  — 사용자가 직접 추가해야 하며, `corp_code`는 DART에서 8자리 고유번호를 조회해 직접 입력한다)
+- 한국 기업 DART 공시 -> `config/dart_companies.yaml` (`corp_code`는 생략 가능 - 최초 수집 시
+  ticker/name으로 자동 조회 후 캐시된다)
 
 추가 후 `uv run python -m investor_intel collect --backfill 365` 로 신규 소스를 과거 데이터까지
 백필할 수 있다(생략 시 증분 수집만 수행).
@@ -291,6 +299,7 @@ def init(
     _write_if_missing(config_dir / "sources.yaml", SOURCES_YAML)
     _write_if_missing(config_dir / "investors.yaml", INVESTORS_YAML)
     _write_if_missing(config_dir / "companies.yaml", COMPANIES_YAML)
+    _write_if_missing(config_dir / "dart_companies.yaml", DART_COMPANIES_YAML)
     _write_if_missing(config_dir / "settings.yaml", SETTINGS_YAML)
     for filename, content in PROMPTS.items():
         _write_if_missing(config_dir / "prompts" / filename, content)
@@ -339,7 +348,13 @@ def doctor(
         probe.unlink(missing_ok=True)
     checks.append(("VAULT_WRITE", vault_ok, f"{settings.vault_path} 쓰기 권한"))
 
-    for name in ["sources.yaml", "investors.yaml", "companies.yaml", "settings.yaml"]:
+    for name in [
+        "sources.yaml",
+        "investors.yaml",
+        "companies.yaml",
+        "dart_companies.yaml",
+        "settings.yaml",
+    ]:
         path = config_dir / name
         checks.append((f"config/{name}", path.exists(), "설정 파일 존재 여부"))
 

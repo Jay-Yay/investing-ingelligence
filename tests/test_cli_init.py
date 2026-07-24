@@ -6,6 +6,7 @@ from typer.testing import CliRunner
 from investor_intel.cli import app
 from investor_intel.config.loaders import (
     load_companies_yaml,
+    load_dart_companies_yaml,
     load_investors_yaml,
     load_sources_yaml,
 )
@@ -42,6 +43,11 @@ def test_init_creates_vault_and_config(tmp_path: Path, monkeypatch: pytest.Monke
     assert nbis.is_foreign_private_issuer is True
     assert nbis.filing_types == ["20-F", "6-K"]
     assert nbis.cik == "0001513845"
+
+    dart_companies = load_dart_companies_yaml(config_dir / "dart_companies.yaml")
+    samsung = next(c for c in dart_companies if c.ticker == "005930")
+    assert samsung.corp_code is None
+    assert samsung.name == "삼성전자"
 
 
 def test_init_is_idempotent_and_does_not_overwrite_edits(

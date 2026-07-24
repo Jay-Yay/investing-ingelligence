@@ -37,3 +37,4 @@ def test_doctor_reports_missing_config_files(tmp_path: Path, monkeypatch) -> Non
 
     result = runner.invoke(app, ["doctor", "--config-dir", str(config_dir)])
     assert "MISSING] config/sources.yaml" in result.output
+    assert "MISSING] config/dart_companies.yaml" in result.output
