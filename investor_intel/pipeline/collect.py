@@ -8,6 +8,7 @@ from pathlib import Path
 from investor_intel.collectors.base import CheckpointStore, CollectItem, Collector, CollectResult
 from investor_intel.collectors.dart import DartCollector
 from investor_intel.collectors.dart_client import DartClient
+from investor_intel.collectors.essay import EssayCollector
 from investor_intel.collectors.http_client import SimpleHttpClient
 from investor_intel.collectors.naver_blog import NaverBlogCollector
 from investor_intel.collectors.sec_client import SECClient
@@ -157,13 +158,22 @@ def build_collect_entries(
 
     investors_path = config_dir / "investors.yaml"
     if investors_path.exists():
+        investors = load_investors_yaml(investors_path)
+
         if settings.sec_user_agent:
             sec_client = SECClient(user_agent=settings.sec_user_agent)
-            for investor in load_investors_yaml(investors_path):
+            for investor in investors:
                 thirteenf_collector = ThirteenFCollector(investor, sec_client, checkpoint_store)
                 entries.append((thirteenf_collector, SourceType.SEC_13F, investor.id))
         else:
             setup_errors.append("investors.yaml 존재하지만 SEC_USER_AGENT 미설정 - 13F 수집 건너뜀")
+
+        essayists = [investor for investor in investors if investor.related_essay_url]
+        if essayists:
+            essay_http_client = SimpleHttpClient()
+            for investor in essayists:
+                essay_collector = EssayCollector(investor, essay_http_client, checkpoint_store)
+                entries.append((essay_collector, SourceType.ESSAY, investor.id))
 
     companies_path = config_dir / "companies.yaml"
     if companies_path.exists():

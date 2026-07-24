@@ -126,10 +126,10 @@ constructing the `ThirteenFCollector` for each investor, additionally check
 one scoped to this branch — no SEC user-agent needed since this hits a public blog, not
 `sec.gov`) and append `(essay_collector, SourceType.ESSAY, investor.id)` to `entries`.
 
-- [ ] Write a failing test (an `investors.yaml` fixture with one investor carrying
+- [x] Write a failing test (an `investors.yaml` fixture with one investor carrying
       `related_essay_url` and one without; assert exactly one `EssayCollector` entry appears,
       keyed to the investor *with* the URL), implement, verify pass
-- [ ] Commit: `feat: wire essay collector into collect pipeline`
+- [x] Commit: `feat: wire essay collector into collect pipeline`
 
 ## Self-review notes
 
