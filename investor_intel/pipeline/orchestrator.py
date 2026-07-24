@@ -54,7 +54,7 @@ def _fetch_position_price(
         return None
 
 
-def _run_portfolio_stage(
+def run_portfolio_stage(
     vault_path: Path, yahoo: MarketDataProvider, coingecko: MarketDataProvider
 ) -> tuple[list[dict], list[GuardrailViolation]]:
     portfolio_path = vault_path / "30_Portfolio" / "portfolio.yaml"
@@ -114,7 +114,7 @@ def run_daily(
 
         yahoo = yahoo_adapter or YahooFinanceAdapter(SimpleHttpClient())
         coingecko = coingecko_adapter or CoinGeckoAdapter(SimpleHttpClient())
-        position_rows, violations = _run_portfolio_stage(vault_path, yahoo, coingecko)
+        position_rows, violations = run_portfolio_stage(vault_path, yahoo, coingecko)
 
         report_path: str | None = None
         try:
