@@ -122,11 +122,11 @@ implementation, no real Telethon/asyncio-over-MTProto involved).
   documented recommendation for one-shot script usage), then apply the same date-cutoff/
   last-seen-id filtering pattern as every other collector.
 
-- [ ] Write failing tests (fake client yields canned messages; `backfill`/`collect_incremental`
+- [x] Write failing tests (fake client yields canned messages; `backfill`/`collect_incremental`
       produce correct `CollectResult`s; a fake client raising `ChannelPrivateError` produces a
       failed `CollectResult` with an error message, not an unhandled exception; renderer includes
       all 8 sections plus the Telethon-specific limitations note), implement, verify pass
-- [ ] Commit: `feat: add Telethon-based private channel Telegram collector`
+- [x] Commit: `feat: add Telethon-based private channel Telegram collector`
 
 ### Task 3: Wire into config + `build_collect_entries` + `telethon-login` CLI command
 
