@@ -70,10 +70,10 @@ list[PositionMetrics]` — `prices` missing a symbol means "no quote", not a `Ke
 dict[str, float]` — fraction of total market value per `sector`, skipping positions with no
 market value.
 
-- [ ] Write failing tests (P&L arithmetic; zero-cost-basis division guarded; missing price →
+- [x] Write failing tests (P&L arithmetic; zero-cost-basis division guarded; missing price →
       all price-derived fields `None`; portfolio weight sums to 1.0 across full-priced
       positions; sector weights aggregate correctly), implement, verify pass
-- [ ] Commit: `feat: add portfolio derived-value calculations`
+- [x] Commit: `feat: add portfolio derived-value calculations`
 
 ### Task 3: Portfolio guardrails
 
