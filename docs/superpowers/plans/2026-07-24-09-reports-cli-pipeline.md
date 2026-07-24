@@ -182,17 +182,24 @@ failure; `success` reflects whether the report was ultimately produced. CLI: `an
 
 ### Task 7: Cron / GitHub Actions scaffold
 
-**Files:** create `.github/workflows/daily-collect.yml`; modify
-`vault/00_System/Runbook.md`'s scaffold text in `cli.py` (or add a `CRON.md` note) — cron/GH
-Actions is configuration, not code with its own test suite; verify by `yaml.safe_load`-ing the
-workflow file in a one-off check rather than a permanent pytest (no runtime behavior to unit
-test in a static schedule file).
+**Files:** create `.github/workflows/daily-collect.yml` — cron/GH Actions is configuration, not
+code with its own test suite; verify by `yaml.safe_load`-ing the workflow file in a one-off check
+rather than a permanent pytest (no runtime behavior to unit test in a static schedule file).
 
-- [ ] Write the workflow file (scheduled `cron`, `workflow_dispatch` for manual runs, checks out
-      the repo, sets up `uv`, runs `uv run investor-intel run-daily`, referencing repo secrets
-      for the `.env` values already named in `cli.py`'s `ENV_EXAMPLE`)
-- [ ] Sanity-check: `python3 -c "import yaml, sys; yaml.safe_load(open('.github/workflows/daily-collect.yml'))"`
-- [ ] Commit: `feat: add scheduled GitHub Actions workflow for run-daily`
+**Scope decision (no auto-commit of results):** `vault/` and `data/` are both gitignored in
+*this* repo (`.gitignore` lines 6-7 — confirmed via `git check-ignore`) — the Obsidian vault and
+its SQLite index are the user's data, not the tool's source, and were never meant to live in this
+code repository's history. The workflow therefore only *runs* `run-daily`; it does not commit or
+push vault/index changes anywhere. On GitHub-hosted runners the job's filesystem is ephemeral
+(nothing persists between runs) — the workflow file says so explicitly and leaves persistent
+storage (self-hosted runner with a mounted disk, sync to separate private storage, etc.) as the
+user's operational choice, not something this phase invents a mechanism for.
+
+- [x] Write the workflow file (scheduled `cron`, `workflow_dispatch` for manual runs, checks out
+      the repo, sets up `uv`, runs `uv run python -m investor_intel run-daily`, referencing repo
+      secrets/vars for the `.env` values already named in `cli.py`'s `ENV_EXAMPLE`)
+- [x] Sanity-check: `python3 -c "import yaml, sys; yaml.safe_load(open('.github/workflows/daily-collect.yml'))"`
+- [x] Commit: `feat: add scheduled GitHub Actions workflow for run-daily`
 
 ### Task 8: Full verification pass
 
