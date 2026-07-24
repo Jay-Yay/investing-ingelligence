@@ -110,9 +110,9 @@ via an inline Jinja2 template (small enough not to need a separate `.j2` file): 
 `narrative`, a new-documents table, a portfolio positions table, a guardrail-violations section
 (omitted when empty).
 
-- [ ] Write failing tests (renders all sections; omits the violations section when the list is
+- [x] Write failing tests (renders all sections; omits the violations section when the list is
       empty; new-documents/position rows appear in the output), implement, verify pass
-- [ ] Commit: `feat: add daily report Jinja2 renderer`
+- [x] Commit: `feat: add daily report Jinja2 renderer`
 
 ### Task 5: LLM daily report synthesis
 
