@@ -87,9 +87,9 @@ guid, `canonical_url` = post link, `language` = `"ko"`, `content_capture_mode` =
 for the LLM phase), `filing_type`/`reporting_period`/`accession_number` = `None` (not filing
 documents). Same checkpoint idempotency contract as prior collectors.
 
-- [ ] Write failing tests (backfill day-window; incremental idempotency; source_id ==
+- [x] Write failing tests (backfill day-window; incremental idempotency; source_id ==
       source.id), implement, verify pass
-- [ ] Commit: `feat: add NaverBlogCollector`
+- [x] Commit: `feat: add NaverBlogCollector`
 
 ### Task 5: Telegram HTML parser
 
