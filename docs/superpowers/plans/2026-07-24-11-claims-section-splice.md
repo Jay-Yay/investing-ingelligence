@@ -28,11 +28,11 @@ content from `extraction.claims` (bulleted claim list with direction/confidence;
 evidence; flattened counter_evidence; deduplicated asset list — each with a `(없음)` placeholder
 when empty), and reassembles the untouched sections byte-for-byte around them.
 
-- [ ] Write failing tests (round-trips a real renderer's output — e.g.
+- [x] Write failing tests (round-trips a real renderer's output — e.g.
       `render_thirteenf_body`'s output — replacing only the 4 sections; empty-claims list
       produces a "없음" placeholder, not a KeyError; untouched sections' exact whitespace is
       preserved), implement, verify pass
-- [ ] Commit: `feat: add claims-to-markdown-section splice utility`
+- [x] Commit: `feat: add claims-to-markdown-section splice utility`
 
 ### Task 2: Wire into `analyze_pending_documents`
 
