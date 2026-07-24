@@ -203,10 +203,10 @@ user's operational choice, not something this phase invents a mechanism for.
 
 ### Task 8: Full verification pass
 
-- [ ] `uv run pytest -v` — all tests green
-- [ ] `uv run ruff check .` — clean
-- [ ] `uv run mypy investor_intel` — clean
-- [ ] Commit any fixes; update roadmap status for phase 09 to "merged to main"
+- [x] `uv run pytest -v` — all tests green
+- [x] `uv run ruff check .` — clean
+- [x] `uv run mypy investor_intel` — clean
+- [x] Commit any fixes; update roadmap status for phase 09 to "merged to main"
 
 ## Self-review notes
 
