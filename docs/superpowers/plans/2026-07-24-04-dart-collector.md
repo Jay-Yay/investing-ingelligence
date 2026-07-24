@@ -134,10 +134,10 @@ extend `tests/test_config_loaders.py`.
 - Same checkpoint/idempotency contract as `ThirteenFCollector`/`SECFilingsCollector`: incremental
   re-run with nothing new → `new_count == 0`.
 
-- [ ] Write failing tests (backfill day-window; incremental idempotency; multi-report-type merge
+- [x] Write failing tests (backfill day-window; incremental idempotency; multi-report-type merge
       dedupes overlapping `rcept_no` across two `pblntf_ty` calls; `"013"` no-data response
       yields zero items without error), implement, verify pass
-- [ ] Commit: `feat: add DartCollector for OpenDART Korean filings metadata`
+- [x] Commit: `feat: add DartCollector for OpenDART Korean filings metadata`
 
 ### Task 6: Full verification pass
 
