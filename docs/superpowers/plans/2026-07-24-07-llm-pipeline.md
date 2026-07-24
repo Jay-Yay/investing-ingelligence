@@ -55,10 +55,10 @@ list[dict], tools: list[dict] | None = None, tool_choice: dict | None = None, ma
 object (no reinvented types). `.model` property exposes the configured model string (so callers/
 cost tracker never need a second source of truth for which model was used).
 
-- [ ] Write failing tests (empty api_key raises; `create_message` forwards args to the injected
+- [x] Write failing tests (empty api_key raises; `create_message` forwards args to the injected
       fake client and returns its result; `.model` reflects the constructor arg), implement,
       verify pass
-- [ ] Commit: `feat: add Anthropic client wrapper`
+- [x] Commit: `feat: add Anthropic client wrapper`
 
 ### Task 2: Cost ledger + cost tracker
 
