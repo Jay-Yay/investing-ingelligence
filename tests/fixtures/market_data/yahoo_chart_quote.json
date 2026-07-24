@@ -1,0 +1,27 @@
+{
+  "chart": {
+    "result": [
+      {
+        "meta": {
+          "currency": "USD",
+          "symbol": "NBIS",
+          "regularMarketPrice": 42.5,
+          "regularMarketTime": 1714608000
+        },
+        "timestamp": [1714608000],
+        "indicators": {
+          "quote": [
+            {
+              "open": [41.0],
+              "high": [43.0],
+              "low": [40.5],
+              "close": [42.5],
+              "volume": [1200000]
+            }
+          ]
+        }
+      }
+    ],
+    "error": null
+  }
+}

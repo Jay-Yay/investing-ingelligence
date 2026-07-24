@@ -53,5 +53,8 @@ class SimpleHttpClient:
     def get_text(self, url: str) -> str:
         return self._request(url).text
 
+    def get_json(self, url: str) -> dict:
+        return self._request(url).json()
+
     def close(self) -> None:
         self._client.close()
