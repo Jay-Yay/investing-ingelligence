@@ -27,8 +27,8 @@ each unlocks), vault/config directory layout, a link to the design doc and roadm
 wanting the full architecture, and current implementation status (which roadmap phases are
 merged — all of 01-09 plus this one).
 
-- [ ] Write README.md
-- [ ] Commit: `docs: write real README`
+- [x] Write README.md
+- [x] Commit: `docs: write real README`
 
 ### Task 2: Real Runbook.md
 
