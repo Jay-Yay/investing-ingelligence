@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from typing import Protocol
+from typing import Any, Protocol
 
 import httpx
 
@@ -53,7 +53,7 @@ class SimpleHttpClient:
     def get_text(self, url: str) -> str:
         return self._request(url).text
 
-    def get_json(self, url: str) -> dict:
+    def get_json(self, url: str) -> Any:
         return self._request(url).json()
 
     def close(self) -> None:
