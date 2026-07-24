@@ -110,9 +110,9 @@ extend `tests/test_config_loaders.py`.
   Markdown shape as phases 02/03's renderers (원문 / 유의사항 / 핵심 주장 / 근거 / 반대 근거 /
   언급 자산 / 포트폴리오 관련성 / 출처) for cross-source consistency.
 
-- [ ] Write failing tests (all 8 sections present; limitations note verbatim; report name/receipt
+- [x] Write failing tests (all 8 sections present; limitations note verbatim; report name/receipt
       number/date/filer name present), implement, verify pass
-- [ ] Commit: `feat: add OpenDART filing Markdown renderer`
+- [x] Commit: `feat: add OpenDART filing Markdown renderer`
 
 ### Task 5: `DartCollector`
 
