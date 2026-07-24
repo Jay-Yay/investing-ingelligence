@@ -1,6 +1,6 @@
 # SEC 13F Collector Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Build a SEC EDGAR 13F-HR collector that fetches, parses, and quarter-over-quarter
 compares institutional holdings for the two tracked investors (Duquesne Family Office LLC /
@@ -74,7 +74,7 @@ New constraints specific to this phase:
   value_change_usd_thousands, portfolio_weight_pct, put_call)`. These exact names/fields are
   relied on by every later task in this plan.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `tests/test_models_thirteenf.py`:
 ```python
@@ -149,7 +149,7 @@ def test_holding_change_construction() -> None:
     assert change.put_call is None
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 export PATH="/opt/homebrew/bin:$PATH"
@@ -157,7 +157,7 @@ uv run pytest tests/test_models_thirteenf.py -v
 ```
 Expected: FAIL — module does not exist.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `investor_intel/models/thirteenf.py`:
 ```python
@@ -225,14 +225,14 @@ class HoldingChange(BaseModel):
     put_call: str | None = None
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 uv run pytest tests/test_models_thirteenf.py -v
 ```
 Expected: `4 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add investor_intel/models/thirteenf.py tests/test_models_thirteenf.py
@@ -254,7 +254,7 @@ git commit -m "feat: add 13F holding/filing/change Pydantic models"
   http_client=None)` with `.get_json(url) -> dict`, `.get_text(url) -> str`, `.close() -> None`.
   These exact names are relied on by Task 6's `ThirteenFCollector`.
 
-- [ ] **Step 1: Add dependencies**
+- [x] **Step 1: Add dependencies**
 
 ```bash
 export PATH="/opt/homebrew/bin:$PATH"
@@ -264,7 +264,7 @@ uv add --dev respx
 Expected: `pyproject.toml` and `uv.lock` updated; `uv run python -c "import httpx, respx"`
 succeeds.
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 `tests/test_sec_client.py`:
 ```python
@@ -338,14 +338,14 @@ def test_rate_limiter_acquire_called_per_request() -> None:
     assert len(calls) == 1
 ```
 
-- [ ] **Step 2b: Run test to verify it fails**
+- [x] **Step 2b: Run test to verify it fails**
 
 ```bash
 uv run pytest tests/test_sec_client.py -v
 ```
 Expected: FAIL — module does not exist.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `investor_intel/collectors/sec_client.py`:
 ```python
@@ -412,14 +412,14 @@ class SECClient:
         self._client.close()
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 uv run pytest tests/test_sec_client.py -v
 ```
 Expected: `5 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add pyproject.toml uv.lock investor_intel/collectors/sec_client.py tests/test_sec_client.py
@@ -447,7 +447,7 @@ git commit -m "feat: add rate-limited retrying SEC EDGAR HTTP client"
   `list_xml_document_candidates(index_json: dict, exclude: str) -> list[str]`. These exact
   names/signatures are relied on by Task 6's `ThirteenFCollector`.
 
-- [ ] **Step 1: Write the fixtures**
+- [x] **Step 1: Write the fixtures**
 
 `tests/fixtures/sec/submissions_1536411.json`:
 ```json
@@ -596,7 +596,7 @@ git commit -m "feat: add rate-limited retrying SEC EDGAR HTTP client"
 </informationTable>
 ```
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 `tests/test_thirteenf_parser.py`:
 ```python
@@ -662,14 +662,14 @@ def test_list_xml_document_candidates_excludes_primary() -> None:
     assert candidates == ["form13fInfoTable.xml"]
 ```
 
-- [ ] **Step 2b: Run test to verify it fails**
+- [x] **Step 2b: Run test to verify it fails**
 
 ```bash
 uv run pytest tests/test_thirteenf_parser.py -v
 ```
 Expected: FAIL — module does not exist.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `investor_intel/collectors/thirteenf_parser.py`:
 ```python
@@ -779,14 +779,14 @@ def list_xml_document_candidates(index_json: dict[str, Any], exclude: str) -> li
     ]
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 uv run pytest tests/test_thirteenf_parser.py -v
 ```
 Expected: `5 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add investor_intel/collectors/thirteenf_parser.py tests/test_thirteenf_parser.py tests/fixtures/sec
@@ -809,7 +809,7 @@ git commit -m "feat: add SEC submissions and 13F informationTable XML parsing"
   `concentration_ratio(holdings: list[ThirteenFHolding], top_n: int = 5) -> float`. Relied on
   by Task 5 (rendering) and Task 6 (collector).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `tests/test_thirteenf_changes.py`:
 ```python
@@ -910,14 +910,14 @@ def test_concentration_ratio_empty_holdings_is_zero() -> None:
     assert concentration_ratio([], top_n=5) == 0.0
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 uv run pytest tests/test_thirteenf_changes.py -v
 ```
 Expected: FAIL — module does not exist.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `investor_intel/collectors/thirteenf_changes.py`:
 ```python
@@ -1017,14 +1017,14 @@ def concentration_ratio(holdings: list[ThirteenFHolding], top_n: int = 5) -> flo
     return round(top_total / total * 100, 2)
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 uv run pytest tests/test_thirteenf_changes.py -v
 ```
 Expected: `9 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add investor_intel/collectors/thirteenf_changes.py tests/test_thirteenf_changes.py
@@ -1046,7 +1046,7 @@ git commit -m "feat: add 13F holding-change comparator and concentration metrics
   investor: InvestorConfig, changes: list[HoldingChange], canonical_url: str) -> str`. Relied
   on by Task 6's `ThirteenFCollector` to build `CollectItem.body_text`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `tests/test_thirteenf_document.py`:
 ```python
@@ -1147,14 +1147,14 @@ def test_render_flags_put_call_positions_distinctly() -> None:
     assert "Call" in body
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 uv run pytest tests/test_thirteenf_document.py -v
 ```
 Expected: FAIL — module does not exist.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `investor_intel/collectors/thirteenf_document.py`:
 ```python
@@ -1247,14 +1247,14 @@ def render_thirteenf_body(
     return "\n".join(sections)
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 uv run pytest tests/test_thirteenf_document.py -v
 ```
 Expected: `3 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add investor_intel/collectors/thirteenf_document.py tests/test_thirteenf_document.py
@@ -1282,7 +1282,7 @@ git commit -m "feat: add 13F Markdown body renderer with limitations disclosure"
   CollectResult`, `.collect_incremental() -> CollectResult` — conforms to the `Collector`
   protocol from the Core Foundation phase.
 
-- [ ] **Step 1: Write the fixture**
+- [x] **Step 1: Write the fixture**
 
 `tests/fixtures/sec/index_0001536411-23-000004.json`:
 ```json
@@ -1298,7 +1298,7 @@ git commit -m "feat: add 13F Markdown body renderer with limitations disclosure"
 }
 ```
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 `tests/test_sec_thirteenf.py`:
 ```python
@@ -1438,14 +1438,14 @@ def test_source_id_includes_investor_id(tmp_path) -> None:
     assert collector.source_id == "sec_13f_duquesne_family_office"
 ```
 
-- [ ] **Step 2b: Run test to verify it fails**
+- [x] **Step 2b: Run test to verify it fails**
 
 ```bash
 uv run pytest tests/test_sec_thirteenf.py -v
 ```
 Expected: FAIL — module does not exist.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `investor_intel/collectors/sec_thirteenf.py`:
 ```python
@@ -1659,14 +1659,14 @@ class ThirteenFCollector:
         return self._collect(to_process, all_filings)
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 uv run pytest tests/test_sec_thirteenf.py -v
 ```
 Expected: `4 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add investor_intel/collectors/sec_thirteenf.py tests/test_sec_thirteenf.py tests/fixtures/sec/index_0001536411-23-000004.json
@@ -1679,7 +1679,7 @@ git commit -m "feat: add ThirteenFCollector implementing the Collector protocol"
 
 **Files:** none created; runs checks across everything built in Tasks 1–6.
 
-- [ ] **Step 1: Run the full test suite**
+- [x] **Step 1: Run the full test suite**
 
 ```bash
 export PATH="/opt/homebrew/bin:$PATH"
@@ -1687,21 +1687,21 @@ uv run pytest -v
 ```
 Expected: all tests pass (57 from Core Foundation + ~26 new from this phase).
 
-- [ ] **Step 2: Run ruff**
+- [x] **Step 2: Run ruff**
 
 ```bash
 uv run ruff check .
 ```
 Expected: `All checks passed!`. Fix any reported issues and re-run until clean.
 
-- [ ] **Step 3: Run mypy**
+- [x] **Step 3: Run mypy**
 
 ```bash
 uv run mypy investor_intel
 ```
 Expected: `Success: no issues found`. Fix any reported issues and re-run until clean.
 
-- [ ] **Step 4: Manual sanity check of URL construction**
+- [x] **Step 4: Manual sanity check of URL construction**
 
 ```bash
 uv run python -c "
@@ -1718,7 +1718,7 @@ https://www.sec.gov/Archives/edgar/data/1536411/000153641124000007/0001536411-24
 This confirms CIK zero-stripping and accession-dash-stripping produce real, well-formed SEC
 EDGAR URLs (not just internally-consistent test fixtures).
 
-- [ ] **Step 5: Commit any fixes from steps 2–3**
+- [x] **Step 5: Commit any fixes from steps 2–3**
 
 ```bash
 git add -A
