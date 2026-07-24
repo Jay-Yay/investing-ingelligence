@@ -14,23 +14,27 @@ THIRTEENF_LIMITATIONS_NOTE = (
 )
 
 
-def _render_holdings_table(
-    rows: list[tuple[object, HoldingChange]],
-) -> str:
+def _render_holdings_table(changes: list[HoldingChange]) -> str:
     lines = [
         "| 종목 | CUSIP | 수량 | 보고가치($천) | 비중 | 변화 | Put/Call |",
         "| --- | --- | ---: | ---: | ---: | --- | --- |",
     ]
-    for holding, change in rows:
+    for change in changes:
         weight = (
             f"{change.portfolio_weight_pct:.2f}%"
             if change.portfolio_weight_pct is not None
             else "-"
         )
+        shares = change.current_shares if change.current_shares is not None else change.previous_shares
+        value = (
+            change.current_value_usd_thousands
+            if change.current_value_usd_thousands is not None
+            else change.previous_value_usd_thousands
+        )
         lines.append(
-            f"| {holding.issuer} | {holding.cusip} | {holding.shares_or_principal_amount:,} "
-            f"| {holding.value_usd_thousands:,} | {weight} | {change.change_type.value} "
-            f"| {holding.put_call or '-'} |"
+            f"| {change.issuer} | {change.cusip} | {shares:,} "
+            f"| {value:,} | {weight} | {change.change_type.value} "
+            f"| {change.put_call or '-'} |"
         )
     return "\n".join(lines)
 
@@ -41,8 +45,6 @@ def render_thirteenf_body(
     changes: list[HoldingChange],
     canonical_url: str,
 ) -> str:
-    holdings_by_cusip = {h.cusip: h for h in filing.holdings}
-    rows = [(holdings_by_cusip[c.cusip], c) for c in changes if c.cusip in holdings_by_cusip]
     top = top_holdings(filing.holdings, n=10)
     concentration = concentration_ratio(filing.holdings, top_n=5)
 
@@ -61,7 +63,7 @@ def render_thirteenf_body(
         f"보유 종목 수: {len(filing.holdings)} / "
         f"상위 5종목 집중도: {concentration:.2f}%",
         "",
-        _render_holdings_table(rows),
+        _render_holdings_table(changes),
         "",
         "## 13F 해석 시 유의사항",
         "",
