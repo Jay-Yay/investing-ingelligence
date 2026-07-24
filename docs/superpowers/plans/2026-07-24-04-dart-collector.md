@@ -73,9 +73,9 @@ extend `tests/test_config_loaders.py`.
   default `User-Agent`/timeout.
 - Empty/missing `api_key` raises `ValueError` at construction.
 
-- [ ] Write failing tests (empty key raises; retries transient 5xx/429; persistent failure raises
+- [x] Write failing tests (empty key raises; retries transient 5xx/429; persistent failure raises
       `DartClientError`; rate limiter `.acquire()` called per request), implement, verify pass
-- [ ] Commit: `feat: add rate-limited retrying OpenDART HTTP client`
+- [x] Commit: `feat: add rate-limited retrying OpenDART HTTP client`
 
 ### Task 3: DART filings list parser
 
