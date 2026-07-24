@@ -90,10 +90,10 @@ RecommendationRating, cap: RecommendationRating | None) -> RecommendationRating`
 whichever of `suggested`/`cap` is less bullish per `RATING_ORDER`, or `suggested` unchanged when
 `cap` is `None`.
 
-- [ ] Write failing tests (heuristic picks majority direction; ties/no claims → `HOLD`; cap
+- [x] Write failing tests (heuristic picks majority direction; ties/no claims → `HOLD`; cap
       pulls a `STRONG_BUY` suggestion down to `HOLD`; `None` cap is a no-op), implement, verify
       pass
-- [ ] Commit: `feat: add portfolio-impact recommendation heuristic and guardrail cap`
+- [x] Commit: `feat: add portfolio-impact recommendation heuristic and guardrail cap`
 
 ### Task 4: Daily report renderer
 
