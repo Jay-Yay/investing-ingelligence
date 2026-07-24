@@ -95,9 +95,9 @@ confidence: ConfidenceLevel` — field set and enum types match `investor_intel/
 Foundation phase — reused here, not redefined). `ExtractionResult(BaseModel)`: `claims:
 list[Claim]`.
 
-- [ ] Write failing tests (valid construction; enum fields reject invalid values), implement,
+- [x] Write failing tests (valid construction; enum fields reject invalid values), implement,
       verify pass
-- [ ] Commit: `feat: add Claim and ExtractionResult models`
+- [x] Commit: `feat: add Claim and ExtractionResult models`
 
 ### Task 4: Structured extraction pipeline
 
