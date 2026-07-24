@@ -105,10 +105,10 @@ and its nested `tgme_widget_message_text` div (message body, `<br>` → `\n`), p
 Messages with empty/whitespace-only text (media-only posts) are skipped — no text to analyze
 downstream.
 
-- [ ] Write failing tests against a realistic 2-message fixture (nested `<b>`/`<br>` inside
+- [x] Write failing tests against a realistic 2-message fixture (nested `<b>`/`<br>` inside
       message text extracts correctly; link/timestamp attached to the right message; an
       empty-text message is skipped), implement, verify pass
-- [ ] Commit: `feat: add Telegram channel web-preview HTML parser`
+- [x] Commit: `feat: add Telegram channel web-preview HTML parser`
 
 ### Task 6: Telegram document renderer
 
