@@ -125,13 +125,13 @@ first — it may be covered inline in `test_sec_filings.py`).
   (기간: 2024-09-28)"` per resolved field) right after `## 원문`, only when `snapshot` is not
   `None` and at least one field is set.
 
-- [ ] Write a failing test (a filing whose accession number + period_of_report matches fixture
+- [x] Write a failing test (a filing whose accession number + period_of_report matches fixture
       facts renders the new section with the correct figures; an 8-K-shaped filing with no
       matching facts renders **without** the section at all — assert the header string is absent,
       not present-but-empty; a companyfacts fetch failure doesn't fail `backfill`/
       `collect_incremental`, just omits the section for every filing that run), implement, verify
       pass
-- [ ] Commit: `feat: append structured financial-statement snapshot to SEC filing documents`
+- [x] Commit: `feat: append structured financial-statement snapshot to SEC filing documents`
 
 ## Self-review notes
 

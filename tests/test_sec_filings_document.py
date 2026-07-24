@@ -1,5 +1,6 @@
 from datetime import date
 
+from investor_intel.collectors.sec_companyfacts import FinancialFact, FinancialStatementSnapshot
 from investor_intel.collectors.sec_filings_document import (
     SEC_FILING_LIMITATIONS_NOTE,
     render_sec_filing_body,
@@ -70,3 +71,47 @@ def test_render_handles_missing_period_of_report() -> None:
     filing = _filing(form="8-K", period_of_report=None)
     body = render_sec_filing_body(filing, _company(), "https://example.com")
     assert "해당 없음" in body
+
+
+def _fact(val: float) -> FinancialFact:
+    return FinancialFact(
+        concept="Revenues",
+        val=val,
+        unit="USD",
+        start=date(2024, 1, 1),
+        end=date(2024, 3, 31),
+        accn="0001664703-24-000010",
+        form="10-Q",
+        fy=2024,
+        fp="Q1",
+    )
+
+
+def test_render_includes_financial_snapshot_section_when_data_present() -> None:
+    snapshot = FinancialStatementSnapshot(
+        revenue=_fact(100_000_000),
+        net_income=_fact(5_000_000),
+        total_assets=None,
+        total_liabilities=None,
+    )
+    body = render_sec_filing_body(
+        _filing(), _company(), "https://example.com", snapshot=snapshot
+    )
+    assert "## 재무 데이터 (XBRL)" in body
+    assert "100,000,000" in body
+    assert "5,000,000" in body
+
+
+def test_render_omits_financial_snapshot_section_when_all_fields_none() -> None:
+    snapshot = FinancialStatementSnapshot(
+        revenue=None, net_income=None, total_assets=None, total_liabilities=None
+    )
+    body = render_sec_filing_body(
+        _filing(), _company(), "https://example.com", snapshot=snapshot
+    )
+    assert "## 재무 데이터 (XBRL)" not in body
+
+
+def test_render_omits_financial_snapshot_section_when_snapshot_is_none() -> None:
+    body = render_sec_filing_body(_filing(), _company(), "https://example.com", snapshot=None)
+    assert "## 재무 데이터 (XBRL)" not in body

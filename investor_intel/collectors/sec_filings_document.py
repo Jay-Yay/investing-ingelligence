@@ -1,7 +1,18 @@
 from __future__ import annotations
 
+from investor_intel.collectors.sec_companyfacts import (
+    FinancialFact,
+    FinancialStatementSnapshot,
+)
 from investor_intel.collectors.sec_filings_parser import CompanyFilingRef
 from investor_intel.models.config import CompanyConfig
+
+_SNAPSHOT_LABELS: dict[str, str] = {
+    "revenue": "매출",
+    "net_income": "순이익",
+    "total_assets": "총자산",
+    "total_liabilities": "총부채",
+}
 
 SEC_FILING_LIMITATIONS_NOTE = (
     "- 이 공시는 특정 시점의 규제 공시이며 투자 자문이 아니다.\n"
@@ -12,10 +23,35 @@ SEC_FILING_LIMITATIONS_NOTE = (
 )
 
 
+def _format_fact(fact: FinancialFact) -> str:
+    return f"${fact.val:,.0f} (기간: {fact.end.isoformat()})"
+
+
+def _render_financial_snapshot_section(snapshot: FinancialStatementSnapshot | None) -> list[str]:
+    if snapshot is None:
+        return []
+
+    lines = [
+        f"- {_SNAPSHOT_LABELS[field]}: {_format_fact(fact)}"
+        for field, fact in (
+            ("revenue", snapshot.revenue),
+            ("net_income", snapshot.net_income),
+            ("total_assets", snapshot.total_assets),
+            ("total_liabilities", snapshot.total_liabilities),
+        )
+        if fact is not None
+    ]
+    if not lines:
+        return []
+
+    return ["## 재무 데이터 (XBRL)", "", *lines, ""]
+
+
 def render_sec_filing_body(
     filing: CompanyFilingRef,
     company: CompanyConfig,
     canonical_url: str,
+    snapshot: FinancialStatementSnapshot | None = None,
 ) -> str:
     period = filing.period_of_report.isoformat() if filing.period_of_report else "해당 없음"
     items_line = (
@@ -34,6 +70,7 @@ def render_sec_filing_body(
         "",
         items_line,
         "",
+        *_render_financial_snapshot_section(snapshot),
         "## 공시 해석 시 유의사항",
         "",
         SEC_FILING_LIMITATIONS_NOTE,

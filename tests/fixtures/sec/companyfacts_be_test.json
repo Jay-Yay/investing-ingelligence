@@ -1,0 +1,42 @@
+{
+  "cik": 1664703,
+  "entityName": "Test Company Inc",
+  "facts": {
+    "us-gaap": {
+      "Revenues": {
+        "label": "Revenues",
+        "units": {
+          "USD": [
+            {
+              "start": "2024-01-01",
+              "end": "2024-03-31",
+              "val": 330000000,
+              "accn": "0001664703-24-000010",
+              "fy": 2024,
+              "fp": "Q1",
+              "form": "10-Q",
+              "filed": "2024-05-01"
+            }
+          ]
+        }
+      },
+      "NetIncomeLoss": {
+        "label": "Net Income (Loss) Attributable to Parent",
+        "units": {
+          "USD": [
+            {
+              "start": "2024-01-01",
+              "end": "2024-03-31",
+              "val": -20000000,
+              "accn": "0001664703-24-000010",
+              "fy": 2024,
+              "fp": "Q1",
+              "form": "10-Q",
+              "filed": "2024-05-01"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -4,9 +4,15 @@ from datetime import UTC, date, datetime, timedelta
 
 from investor_intel.collectors.base import CheckpointStore, CollectItem, CollectResult
 from investor_intel.collectors.sec_client import SECClient
+from investor_intel.collectors.sec_companyfacts import (
+    FinancialFact,
+    FinancialStatementSnapshot,
+    extract_financial_snapshot,
+    parse_companyfacts,
+)
 from investor_intel.collectors.sec_filings_document import render_sec_filing_body
 from investor_intel.collectors.sec_filings_parser import CompanyFilingRef, parse_company_filings
-from investor_intel.collectors.sec_urls import filing_index_page_url
+from investor_intel.collectors.sec_urls import companyfacts_url, filing_index_page_url
 from investor_intel.models.config import CompanyConfig
 
 _SUBMISSIONS_URL = "https://data.sec.gov/submissions/CIK{cik}.json"
@@ -29,14 +35,37 @@ class SECFilingsCollector:
         self._client = client
         self._checkpoint_store = checkpoint_store
         self._forms = frozenset(company.filing_types)
+        self._companyfacts: dict[str, list[FinancialFact]] | None = None
+        self._companyfacts_fetched = False
 
     def _fetch_all_filings(self) -> list[CompanyFilingRef]:
         submissions = self._client.get_json(_SUBMISSIONS_URL.format(cik=self._company.cik))
         return parse_company_filings(submissions, forms=self._forms)
 
+    def _fetch_companyfacts(self) -> dict[str, list[FinancialFact]] | None:
+        if not self._companyfacts_fetched:
+            self._companyfacts_fetched = True
+            try:
+                data = self._client.get_json(companyfacts_url(self._company.cik))
+                self._companyfacts = parse_companyfacts(data)
+            except Exception:  # noqa: BLE001
+                self._companyfacts = None
+        return self._companyfacts
+
+    def _snapshot_for(self, filing: CompanyFilingRef) -> FinancialStatementSnapshot | None:
+        companyfacts = self._fetch_companyfacts()
+        if companyfacts is None:
+            return None
+        return extract_financial_snapshot(
+            companyfacts,
+            accession_number=filing.accession_number,
+            period_of_report=filing.period_of_report,
+        )
+
     def _build_item(self, filing: CompanyFilingRef) -> CollectItem:
         canonical_url = filing_index_page_url(self._company.cik, filing.accession_number)
-        body = render_sec_filing_body(filing, self._company, canonical_url)
+        snapshot = self._snapshot_for(filing)
+        body = render_sec_filing_body(filing, self._company, canonical_url, snapshot=snapshot)
 
         published_at = datetime(
             filing.filing_date.year,
