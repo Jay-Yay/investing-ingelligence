@@ -96,11 +96,11 @@ URL shape).
   same section headers across all document types). "## 원문" body includes form type, filing
   date, period of report (or "해당 없음" if absent), accession number, and item codes for 8-K.
 
-- [ ] Write failing tests: all 8 sections present; limitations note verbatim present; 8-K item
+- [x] Write failing tests: all 8 sections present; limitations note verbatim present; 8-K item
       codes rendered when present; period-of-report absence renders without crashing
-- [ ] Implement
-- [ ] Run tests, verify pass
-- [ ] Commit: `feat: add SEC company filing Markdown renderer`
+- [x] Implement
+- [x] Run tests, verify pass
+- [x] Commit: `feat: add SEC company filing Markdown renderer`
 
 ### Task 4: `SECFilingsCollector`
 
