@@ -31,6 +31,38 @@ def _mock_rss() -> None:
     )
 
 
+def _mock_rss_unavailable() -> None:
+    respx.get("https://rss.blog.naver.com/engineerinvestor.xml").mock(
+        return_value=httpx.Response(404)
+    )
+
+
+def _mock_html_fallback() -> None:
+    respx.get(
+        "https://blog.naver.com/PostTitleListAsync.naver"
+        "?blogId=engineerinvestor&currentPage=1&categoryNo=&parentCategoryNo=&countPerPage=30"
+    ).mock(
+        return_value=httpx.Response(
+            200, text=(FIXTURES / "post_title_list_page1.json").read_text(encoding="utf-8")
+        )
+    )
+    respx.get(
+        "https://blog.naver.com/PostTitleListAsync.naver"
+        "?blogId=engineerinvestor&currentPage=2&categoryNo=&parentCategoryNo=&countPerPage=30"
+    ).mock(
+        return_value=httpx.Response(
+            200, text=(FIXTURES / "post_title_list_empty.json").read_text(encoding="utf-8")
+        )
+    )
+    post_view_html = (FIXTURES / "post_view.html").read_text(encoding="utf-8")
+    respx.get(
+        "https://blog.naver.com/PostView.naver?blogId=engineerinvestor&logNo=224355263150"
+    ).mock(return_value=httpx.Response(200, text=post_view_html))
+    respx.get(
+        "https://blog.naver.com/PostView.naver?blogId=engineerinvestor&logNo=224356037349"
+    ).mock(return_value=httpx.Response(200, text=post_view_html))
+
+
 @respx.mock
 @freeze_time("2024-05-03")
 def test_backfill_returns_only_in_window_posts(tmp_path) -> None:
@@ -71,6 +103,27 @@ def test_collect_incremental_is_idempotent(tmp_path) -> None:
 
     assert second_result.new_count == 0
     assert second_result.items == []
+
+
+@respx.mock
+@freeze_time("2026-07-24")
+def test_backfill_falls_back_to_html_when_rss_unavailable(tmp_path) -> None:
+    _mock_rss_unavailable()
+    _mock_html_fallback()
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    client = SimpleHttpClient()
+    collector = NaverBlogCollector(_source(), client, CheckpointStore(conn))
+
+    result = collector.backfill(days=1)
+    client.close()
+
+    assert result.success
+    assert result.new_count == 2
+    assert {item.canonical_url for item in result.items} == {
+        "https://blog.naver.com/engineerinvestor/224355263150",
+        "https://blog.naver.com/engineerinvestor/224356037349",
+    }
 
 
 @respx.mock

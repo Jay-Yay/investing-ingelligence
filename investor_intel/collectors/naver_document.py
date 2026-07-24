@@ -4,7 +4,8 @@ from investor_intel.collectors.naver_parser import NaverPost
 from investor_intel.models.config import SourceConfig
 
 NAVER_LIMITATIONS_NOTE = (
-    "- 이 컬렉터는 RSS 피드만 사용하며, 모바일 HTML 폴백은 이 단계에서 구현하지 않는다.\n"
+    "- RSS가 없거나 비어 있으면 PostView.naver HTML을 직접 파싱하는 폴백을 사용한다.\n"
+    "- HTML 폴백은 최근 게시글 최대 90개(3페이지)까지만 탐색한다.\n"
     "- 이미지, 첨부파일, 동영상은 캡처하지 않는다.\n"
     "- RSS에 요약만 제공되는 경우 전체 본문이 아닐 수 있다.\n"
 )

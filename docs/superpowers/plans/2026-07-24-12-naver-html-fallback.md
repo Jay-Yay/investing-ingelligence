@@ -84,10 +84,10 @@ element structure, not a hand-simplified stand-in).
 `fetch_posts_via_html`. Update `NAVER_LIMITATIONS_NOTE` to remove the stale "not implemented" line
 and add a note about the 90-post HTML-fallback discovery cap.
 
-- [ ] Write a failing test (RSS endpoint mocked to return a 404/empty feed; HTML fallback endpoints
+- [x] Write a failing test (RSS endpoint mocked to return a 404/empty feed; HTML fallback endpoints
       mocked with real-shaped fixtures; `backfill`/`collect_incremental` still produce the correct
       `CollectResult` via the fallback path), implement, verify pass
-- [ ] Commit: `feat: fall back to HTML scraping when Naver RSS is unavailable`
+- [x] Commit: `feat: fall back to HTML scraping when Naver RSS is unavailable`
 
 ## Self-review notes
 

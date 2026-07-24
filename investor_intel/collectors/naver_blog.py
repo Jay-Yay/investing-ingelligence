@@ -5,6 +5,7 @@ from datetime import date, timedelta
 from investor_intel.collectors.base import CheckpointStore, CollectItem, CollectResult
 from investor_intel.collectors.http_client import SimpleHttpClient
 from investor_intel.collectors.naver_document import render_naver_post_body
+from investor_intel.collectors.naver_html_parser import fetch_posts_via_html
 from investor_intel.collectors.naver_parser import NaverPost, extract_blog_id, parse_naver_rss
 from investor_intel.models.config import SourceConfig
 
@@ -25,8 +26,14 @@ class NaverBlogCollector:
 
     def _fetch_all_posts(self) -> list[NaverPost]:
         blog_id = extract_blog_id(self._source.url)
-        xml_text = self._client.get_text(_RSS_URL.format(blog_id=blog_id))
-        return parse_naver_rss(xml_text)
+        try:
+            xml_text = self._client.get_text(_RSS_URL.format(blog_id=blog_id))
+            posts = parse_naver_rss(xml_text)
+            if posts:
+                return posts
+        except Exception:  # noqa: BLE001
+            pass
+        return fetch_posts_via_html(self._client, blog_id)
 
     def _build_item(self, post: NaverPost) -> CollectItem:
         body = render_naver_post_body(post, self._source, post.link)
