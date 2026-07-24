@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from investor_intel.collectors.naver_document import (
     NAVER_LIMITATIONS_NOTE,
@@ -24,7 +24,7 @@ def _post() -> NaverPost:
         title="엔비디아 실적 발표 후기",
         link="https://blog.naver.com/engineerinvestor/223456789",
         description="<p>엔비디아 이번 분기 실적이 시장 예상을 상회했다.</p>",
-        published_at=datetime(2024, 5, 1, 21, 0, tzinfo=timezone.utc),
+        published_at=datetime(2024, 5, 1, 21, 0, tzinfo=UTC),
     )
 
 
