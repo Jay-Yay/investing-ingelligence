@@ -78,10 +78,10 @@ possible).
 - `DartClient.get_bytes(url: str) -> bytes` — reuses the existing `_request()` retry/rate-limit
   path, returns `.content` instead of `.json()`.
 
-- [ ] Write failing tests (`parse_corp_code_xml` on a multi-entry fixture, including one blank
+- [x] Write failing tests (`parse_corp_code_xml` on a multi-entry fixture, including one blank
       `stock_code`; `unzip_corp_code_xml` round-trips a ZIP built in the test itself;
       `DartClient.get_bytes` via `respx` returning binary content), implement, verify pass
-- [ ] Commit: `feat: add OpenDART corpCode.xml parser and DartClient byte fetch`
+- [x] Commit: `feat: add OpenDART corpCode.xml parser and DartClient byte fetch`
 
 ### Task 2: Cache table + resolver
 

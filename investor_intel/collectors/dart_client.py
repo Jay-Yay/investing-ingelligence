@@ -51,5 +51,8 @@ class DartClient:
     def get_json(self, url: str) -> dict:
         return self._request(url).json()
 
+    def get_bytes(self, url: str) -> bytes:
+        return self._request(url).content
+
     def close(self) -> None:
         self._client.close()
