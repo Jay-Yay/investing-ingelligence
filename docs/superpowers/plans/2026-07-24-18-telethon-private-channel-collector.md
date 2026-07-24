@@ -98,11 +98,11 @@ here. This is flagged explicitly rather than silently claimed as equivalently ve
   `collect` run for an arbitrarily long flood-wait; if still flood-waited after one retry, let it
   raise and be handled as a collection failure like any other error).
 
-- [ ] Write failing tests for the parts that don't require a live Telethon session (dataclass
+- [x] Write failing tests for the parts that don't require a live Telethon session (dataclass
       construction, protocol conformance of a fake implementation), implement, verify pass. Note
       in the test file's docstring/comment that `RealTelethonClient` itself is not exercised here
       — it's a thin pass-through over Telethon's own (separately-tested-upstream) API.
-- [ ] Commit: `feat: add Telethon client protocol and wrapper for private-channel collection`
+- [x] Commit: `feat: add Telethon client protocol and wrapper for private-channel collection`
 
 ### Task 2: `collectors/telegram_private.py` + `telegram_private_document.py`
 
