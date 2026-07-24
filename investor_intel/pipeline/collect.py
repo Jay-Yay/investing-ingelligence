@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 
-from investor_intel.collectors.base import CollectItem, CollectResult
+from investor_intel.collectors.base import CollectItem, Collector, CollectResult
 from investor_intel.models.common import ContentCaptureMode, SourceType
 from investor_intel.models.source_document import AssetMention, ContentCapture, SourceDocument
 from investor_intel.storage.content_hash import compute_content_hash, compute_stable_id
@@ -16,6 +16,13 @@ from investor_intel.storage.sqlite_index import find_duplicate, upsert_document
 @dataclass
 class PersistResult:
     count: int
+    errors: list[str] = field(default_factory=list)
+
+
+@dataclass
+class SourceRunResult:
+    source_id: str
+    persisted: int
     errors: list[str] = field(default_factory=list)
 
 
@@ -92,3 +99,36 @@ def persist_collect_result(
             errors.append(f"{identifier}: {exc}")
 
     return PersistResult(count=count, errors=errors)
+
+
+def run_collectors(
+    entries: list[tuple[Collector, SourceType, str]],
+    vault_path: Path,
+    conn: sqlite3.Connection,
+    backfill_days: int | None = None,
+) -> list[SourceRunResult]:
+    results: list[SourceRunResult] = []
+
+    for collector, source_type, source_name in entries:
+        errors: list[str] = []
+        persisted = 0
+        try:
+            collect_result = (
+                collector.backfill(backfill_days)
+                if backfill_days is not None
+                else collector.collect_incremental()
+            )
+            errors.extend(collect_result.errors)
+            persist_result = persist_collect_result(
+                collect_result, source_type, source_name, vault_path, conn
+            )
+            persisted = persist_result.count
+            errors.extend(persist_result.errors)
+        except Exception as exc:  # noqa: BLE001
+            errors.append(str(exc))
+
+        results.append(
+            SourceRunResult(source_id=collector.source_id, persisted=persisted, errors=errors)
+        )
+
+    return results

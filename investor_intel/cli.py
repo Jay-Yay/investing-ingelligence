@@ -5,7 +5,24 @@ from typing import Annotated
 
 import typer
 
+from investor_intel.collectors.base import CheckpointStore, Collector
+from investor_intel.collectors.dart import DartCollector
+from investor_intel.collectors.dart_client import DartClient
+from investor_intel.collectors.http_client import SimpleHttpClient
+from investor_intel.collectors.naver_blog import NaverBlogCollector
+from investor_intel.collectors.sec_client import SECClient
+from investor_intel.collectors.sec_filings import SECFilingsCollector
+from investor_intel.collectors.sec_thirteenf import ThirteenFCollector
+from investor_intel.collectors.telegram import TelegramCollector
+from investor_intel.config.loaders import (
+    load_companies_yaml,
+    load_dart_companies_yaml,
+    load_investors_yaml,
+    load_sources_yaml,
+)
 from investor_intel.config.settings import AppSettings
+from investor_intel.models.common import SourceType
+from investor_intel.pipeline.collect import run_collectors
 from investor_intel.storage.sqlite_index import connect, init_db
 from investor_intel.storage.sqlite_index import reindex as reindex_vault
 
@@ -287,5 +304,102 @@ def reindex(
         init_db(conn)
         count = reindex_vault(conn, vault_path)
         typer.echo(f"재인덱싱 완료: {count}개 문서")
+    finally:
+        conn.close()
+
+
+def _build_collect_entries(
+    config_dir: Path, settings: AppSettings, checkpoint_store: CheckpointStore
+) -> tuple[list[tuple[Collector, SourceType, str]], list[str]]:
+    entries: list[tuple[Collector, SourceType, str]] = []
+    setup_errors: list[str] = []
+
+    investors_path = config_dir / "investors.yaml"
+    if investors_path.exists():
+        if settings.sec_user_agent:
+            sec_client = SECClient(user_agent=settings.sec_user_agent)
+            for investor in load_investors_yaml(investors_path):
+                thirteenf_collector = ThirteenFCollector(investor, sec_client, checkpoint_store)
+                entries.append((thirteenf_collector, SourceType.SEC_13F, investor.id))
+        else:
+            setup_errors.append("investors.yaml 존재하지만 SEC_USER_AGENT 미설정 - 13F 수집 건너뜀")
+
+    companies_path = config_dir / "companies.yaml"
+    if companies_path.exists():
+        if settings.sec_user_agent:
+            sec_client = SECClient(user_agent=settings.sec_user_agent)
+            for company in load_companies_yaml(companies_path):
+                filings_collector = SECFilingsCollector(company, sec_client, checkpoint_store)
+                entries.append((filings_collector, SourceType.SEC_FILING, company.ticker))
+        else:
+            setup_errors.append(
+                "companies.yaml 존재하지만 SEC_USER_AGENT 미설정 - 공시 수집 건너뜀"
+            )
+
+    dart_companies_path = config_dir / "dart_companies.yaml"
+    if dart_companies_path.exists():
+        if settings.dart_api_key:
+            dart_client = DartClient(api_key=settings.dart_api_key)
+            for dart_company in load_dart_companies_yaml(dart_companies_path):
+                dart_collector = DartCollector(
+                    dart_company, dart_client, checkpoint_store, api_key=settings.dart_api_key
+                )
+                entries.append((dart_collector, SourceType.DART, dart_company.ticker))
+        else:
+            setup_errors.append(
+                "dart_companies.yaml 존재하지만 DART_API_KEY 미설정 - DART 수집 건너뜀"
+            )
+
+    sources_path = config_dir / "sources.yaml"
+    if sources_path.exists():
+        http_client = SimpleHttpClient()
+        for source in load_sources_yaml(sources_path):
+            if not source.enabled:
+                continue
+            if source.type == "naver":
+                naver_collector = NaverBlogCollector(source, http_client, checkpoint_store)
+                entries.append((naver_collector, SourceType.NAVER, source.name))
+            elif source.type == "telegram":
+                telegram_collector = TelegramCollector(source, http_client, checkpoint_store)
+                entries.append((telegram_collector, SourceType.TELEGRAM, source.name))
+
+    return entries, setup_errors
+
+
+@app.command()
+def collect(
+    config_dir: Annotated[Path, typer.Option(help="Config directory")] = Path("./config"),
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    sqlite_path: Annotated[Path, typer.Option(help="SQLite index path")] = Path(
+        "./data/index.sqlite3"
+    ),
+    backfill: Annotated[
+        int | None, typer.Option(help="지정 시 최근 N일 백필, 미지정 시 증분 수집")
+    ] = None,
+) -> None:
+    """설정된 모든 소스에서 수집하여 vault와 인덱스에 반영한다."""
+    settings = AppSettings()
+    conn = connect(sqlite_path)
+    try:
+        init_db(conn)
+        checkpoint_store = CheckpointStore(conn)
+        entries, setup_errors = _build_collect_entries(config_dir, settings, checkpoint_store)
+
+        for message in setup_errors:
+            typer.echo(f"[설정] {message}")
+
+        results = run_collectors(entries, vault_path, conn, backfill_days=backfill)
+
+        total_persisted = 0
+        had_errors = bool(setup_errors)
+        for result in results:
+            typer.echo(f"[{result.source_id}] {result.persisted}건 저장")
+            for error in result.errors:
+                typer.echo(f"[{result.source_id}] 오류: {error}")
+                had_errors = True
+            total_persisted += result.persisted
+
+        typer.echo(f"총 {total_persisted}건 저장")
+        raise typer.Exit(code=1 if had_errors else 0)
     finally:
         conn.close()

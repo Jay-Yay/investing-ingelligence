@@ -71,10 +71,10 @@ matching collector (`ThirteenFCollector`/`SECFilingsCollector`/`DartCollector`/
 summary line and a nonzero exit code if any source errored (still runs every other source first
 — partial-failure tolerance applies here too, not just in the orchestrator).
 
-- [ ] Write failing tests (a fake in-memory `Collector` wired through the real persistence path
+- [x] Write failing tests (a fake in-memory `Collector` wired through the real persistence path
       confirms end-to-end vault+index writes; a failing collector doesn't stop the others from
       running), implement, verify pass
-- [ ] Commit: `feat: add CLI collect command wiring all five collectors`
+- [x] Commit: `feat: add CLI collect command wiring all five collectors`
 
 ### Task 3: Portfolio impact recommendation cap
 
