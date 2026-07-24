@@ -127,19 +127,19 @@ URL shape).
   later orchestrator (phase 09) instantiates one per configured company, same as it will for
   13F/investors.
 
-- [ ] Write failing tests: backfill respects day-window; collect_incremental first-run count and
+- [x] Write failing tests: backfill respects day-window; collect_incremental first-run count and
       idempotent re-run; source_id includes lowercased ticker; a filing with a form not in
       `company.filing_types` is excluded even if present in the submissions feed
-- [ ] Implement
-- [ ] Run tests, verify pass
-- [ ] Commit: `feat: add SECFilingsCollector for 10-K/10-Q/8-K/20-F/6-K metadata`
+- [x] Implement
+- [x] Run tests, verify pass
+- [x] Commit: `feat: add SECFilingsCollector for 10-K/10-Q/8-K/20-F/6-K metadata`
 
 ### Task 5: Full verification pass
 
-- [ ] `uv run pytest -v` — all tests green (Core Foundation + phase 02 + phase 03)
-- [ ] `uv run ruff check .` — clean
-- [ ] `uv run mypy investor_intel` — clean
-- [ ] Commit any fixes; update roadmap status for phase 03 to "merged to main"
+- [x] `uv run pytest -v` — all tests green (Core Foundation + phase 02 + phase 03)
+- [x] `uv run ruff check .` — clean
+- [x] `uv run mypy investor_intel` — clean
+- [x] Commit any fixes; update roadmap status for phase 03 to "merged to main"
 
 ## Self-review notes
 
