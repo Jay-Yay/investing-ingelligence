@@ -1,6 +1,6 @@
 # Core Foundation Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Stand up the `investor_intel` Python package foundation — config loading, Pydantic
 data models, the Obsidian-markdown repository (source of truth), the SQLite search index
@@ -48,7 +48,7 @@ structlog, pytest, freezegun, ruff, mypy.
 **Interfaces:**
 - Produces: importable `investor_intel` package with `__version__ = "0.1.0"`.
 
-- [ ] **Step 1: Write `pyproject.toml`**
+- [x] **Step 1: Write `pyproject.toml`**
 
 ```toml
 [build-system]
@@ -99,7 +99,7 @@ ignore_missing_imports = true
 testpaths = ["tests"]
 ```
 
-- [ ] **Step 2: Write `.gitignore`**
+- [x] **Step 2: Write `.gitignore`**
 
 ```
 __pycache__/
@@ -120,7 +120,7 @@ build/
 htmlcov/
 ```
 
-- [ ] **Step 3: Write `README.md` stub**
+- [x] **Step 3: Write `README.md` stub**
 
 ```markdown
 # Investor Intelligence
@@ -128,7 +128,7 @@ htmlcov/
 개인용 투자 정보 수집·분석·포트폴리오 의사결정 지원 시스템. (전체 문서는 구현 완료 후 작성됨 — plan 10)
 ```
 
-- [ ] **Step 4: Write package skeleton**
+- [x] **Step 4: Write package skeleton**
 
 `investor_intel/__init__.py`:
 ```python
@@ -146,7 +146,7 @@ if __name__ == "__main__":
 Note: `investor_intel/cli.py` does not exist yet — this file will fail to import until Task 12.
 That is expected; it is not exercised until then.
 
-- [ ] **Step 5: Write the smoke test**
+- [x] **Step 5: Write the smoke test**
 
 `tests/test_package.py`:
 ```python
@@ -157,7 +157,7 @@ def test_package_version() -> None:
     assert investor_intel.__version__ == "0.1.0"
 ```
 
-- [ ] **Step 6: Create the venv and install, run the test**
+- [x] **Step 6: Create the venv and install, run the test**
 
 ```bash
 export PATH="/opt/homebrew/bin:$PATH"
@@ -167,7 +167,7 @@ uv run pytest tests/test_package.py -v
 ```
 Expected: `1 passed`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add pyproject.toml .gitignore README.md investor_intel tests
@@ -185,7 +185,7 @@ git commit -m "chore: scaffold investor_intel package"
 **Interfaces:**
 - Produces: `configure_logging(level: int = logging.INFO) -> structlog.stdlib.BoundLogger`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `tests/test_logging_config.py`:
 ```python
@@ -201,14 +201,14 @@ def test_configure_logging_returns_working_logger(caplog) -> None:
     assert any("test_event" in record.message for record in caplog.records)
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 uv run pytest tests/test_logging_config.py -v
 ```
 Expected: FAIL with `ModuleNotFoundError: No module named 'investor_intel.logging_config'`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `investor_intel/logging_config.py`:
 ```python
@@ -235,14 +235,14 @@ def configure_logging(level: int = logging.INFO) -> structlog.stdlib.BoundLogger
     return structlog.get_logger("investor_intel")
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 uv run pytest tests/test_logging_config.py -v
 ```
 Expected: `1 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add investor_intel/logging_config.py tests/test_logging_config.py
@@ -263,7 +263,7 @@ git commit -m "feat: add structured logging configuration"
   `FactOrOpinion`, `VerificationStatus`, `DecisionStatus`, `RecommendationRating` — all
   `str, Enum` subclasses.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `tests/test_models_common.py`:
 ```python
@@ -294,14 +294,14 @@ def test_content_capture_mode_values() -> None:
     assert ContentCaptureMode("metadata_only") is ContentCaptureMode.METADATA_ONLY
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 uv run pytest tests/test_models_common.py -v
 ```
 Expected: FAIL — module does not exist.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `investor_intel/models/__init__.py`: (empty file)
 
@@ -364,14 +364,14 @@ class RecommendationRating(str, Enum):
     SELL = "sell"
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 uv run pytest tests/test_models_common.py -v
 ```
 Expected: `3 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add investor_intel/models/__init__.py investor_intel/models/common.py tests/test_models_common.py
@@ -395,7 +395,7 @@ git commit -m "feat: add common enums for document/claim taxonomy"
   llm_model, llm_prompt_version)` — this exact field set and order is relied on by
   `storage/obsidian_repo.py` (Task 8).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `tests/test_models_source_document.py`:
 ```python
@@ -457,14 +457,14 @@ def test_source_document_valid_construction() -> None:
     assert doc.llm_processed is False
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 uv run pytest tests/test_models_source_document.py -v
 ```
 Expected: FAIL — module does not exist.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `investor_intel/models/source_document.py`:
 ```python
@@ -527,14 +527,14 @@ class SourceDocument(BaseModel):
         return value
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 uv run pytest tests/test_models_source_document.py -v
 ```
 Expected: `4 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add investor_intel/models/source_document.py tests/test_models_source_document.py
@@ -557,7 +557,7 @@ git commit -m "feat: add SourceDocument and ContentCapture models"
   list[SourceConfig]`, `load_companies_yaml(path) -> list[CompanyConfig]`,
   `load_investors_yaml(path) -> list[InvestorConfig]`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `tests/test_config_loaders.py`:
 ```python
@@ -641,14 +641,14 @@ def test_load_settings_yaml_defaults(tmp_path: Path) -> None:
     assert settings.vault_path == "./vault"
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 uv run pytest tests/test_config_loaders.py -v
 ```
 Expected: FAIL — modules do not exist.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `investor_intel/models/config.py`:
 ```python
@@ -736,14 +736,14 @@ def load_investors_yaml(path: Path) -> list[InvestorConfig]:
     return [InvestorConfig.model_validate(item) for item in data.get("investors", [])]
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 uv run pytest tests/test_config_loaders.py -v
 ```
 Expected: `4 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add investor_intel/models/config.py investor_intel/config tests/test_config_loaders.py
@@ -767,7 +767,7 @@ git commit -m "feat: add config models and YAML loaders"
   `vault_path: Path = Path("./vault")`, `sqlite_path: Path = Path("./data/index.sqlite3")`,
   `config_dir: Path = Path("./config")`, `timezone: str = "Asia/Seoul"`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `tests/test_config_settings.py`:
 ```python
@@ -794,14 +794,14 @@ def test_env_overrides(monkeypatch) -> None:
     assert settings.sec_user_agent == "Test Agent test@example.com"
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 uv run pytest tests/test_config_settings.py -v
 ```
 Expected: FAIL — module does not exist.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `investor_intel/config/settings.py`:
 ```python
@@ -830,14 +830,14 @@ class AppSettings(BaseSettings):
     timezone: str = "Asia/Seoul"
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 uv run pytest tests/test_config_settings.py -v
 ```
 Expected: `2 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add investor_intel/config/settings.py tests/test_config_settings.py
@@ -858,7 +858,7 @@ git commit -m "feat: add AppSettings environment configuration"
   (sha256 hex digest), `compute_stable_id(source_type: str, source_name: str,
   source_specific_id: str | None, canonical_url: str) -> str` (16-char hex).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `tests/test_content_hash.py`:
 ```python
@@ -900,14 +900,14 @@ def test_stable_id_falls_back_to_canonical_url() -> None:
     assert id_a != id_b
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 uv run pytest tests/test_content_hash.py -v
 ```
 Expected: FAIL — module does not exist.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `investor_intel/storage/__init__.py`: (empty file)
 
@@ -942,14 +942,14 @@ def compute_stable_id(
     return hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 uv run pytest tests/test_content_hash.py -v
 ```
 Expected: `6 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add investor_intel/storage/__init__.py investor_intel/storage/content_hash.py tests/test_content_hash.py
@@ -976,7 +976,7 @@ git commit -m "feat: add content hashing and stable id generation"
   `list_documents(vault_path: Path) -> list[Path]`. These exact names/signatures are relied
   on by `storage/sqlite_index.py` (Task 9) and `cli.py` (Task 12–14).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `tests/test_obsidian_repo.py`:
 ```python
@@ -1062,14 +1062,14 @@ def test_list_documents_finds_all_written_files(tmp_path: Path) -> None:
     assert len(list_documents(tmp_path)) == 2
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 uv run pytest tests/test_obsidian_repo.py -v
 ```
 Expected: FAIL — module does not exist.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `investor_intel/storage/obsidian_repo.py`:
 ```python
@@ -1179,14 +1179,14 @@ def list_documents(vault_path: Path) -> list[Path]:
     return sorted(sources_dir.rglob("*.md"))
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 uv run pytest tests/test_obsidian_repo.py -v
 ```
 Expected: `6 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add investor_intel/storage/obsidian_repo.py tests/test_obsidian_repo.py
@@ -1214,7 +1214,7 @@ git commit -m "feat: add Obsidian markdown+frontmatter repository"
   `save_collector_state(conn, source_id, last_success_at, last_seen_id, last_accession_number, failure_count, next_retry_at, backfill_completed) -> None`.
   These names are relied on by `collectors/base.py` (Task 10) and `cli.py` (Task 14).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `tests/test_sqlite_index.py`:
 ```python
@@ -1363,14 +1363,14 @@ def test_collector_state_round_trip(tmp_path: Path) -> None:
     assert bool(row["backfill_completed"]) is True
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 uv run pytest tests/test_sqlite_index.py -v
 ```
 Expected: FAIL — module does not exist.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `investor_intel/storage/sqlite_index.py`:
 ```python
@@ -1594,14 +1594,14 @@ def save_collector_state(
     conn.commit()
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 uv run pytest tests/test_sqlite_index.py -v
 ```
 Expected: `9 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add investor_intel/storage/sqlite_index.py tests/test_sqlite_index.py
@@ -1628,7 +1628,7 @@ git commit -m "feat: add SQLite index with dedup lookup and reindex"
   `record_success(source_id, last_seen_id=None) -> CollectorState`. Plans 02–05 build concrete
   collectors against this `Collector` Protocol and `CollectItem`/`CollectResult` shapes.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `tests/test_collectors_base.py`:
 ```python
@@ -1699,14 +1699,14 @@ def test_record_success_resets_failure_count(tmp_path: Path) -> None:
     assert state.last_success_at is not None
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 uv run pytest tests/test_collectors_base.py -v
 ```
 Expected: FAIL — module does not exist.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `investor_intel/collectors/__init__.py`: (empty file)
 
@@ -1855,14 +1855,14 @@ class CheckpointStore:
         return state
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 uv run pytest tests/test_collectors_base.py -v
 ```
 Expected: `4 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add investor_intel/collectors tests/test_collectors_base.py
@@ -1883,7 +1883,7 @@ git commit -m "feat: add collector base — rate limiter and checkpoint store"
   `wrap_untrusted(text: str) -> str`. Used by the LLM client in plan 07 to delimit all
   collected document bodies before sending to Anthropic.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `tests/test_security_untrusted_content.py`:
 ```python
@@ -1923,14 +1923,14 @@ def test_sanitize_for_prompt_is_pure() -> None:
     assert sanitize_for_prompt(original) == original
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 uv run pytest tests/test_security_untrusted_content.py -v
 ```
 Expected: FAIL — module does not exist.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `investor_intel/security/__init__.py`: (empty file)
 
@@ -1960,14 +1960,14 @@ def wrap_untrusted(text: str) -> str:
     return f"{_START_MARKER}\n{safe_text}\n{_END_MARKER}"
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 uv run pytest tests/test_security_untrusted_content.py -v
 ```
 Expected: `4 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add investor_intel/security tests/test_security_untrusted_content.py
@@ -1988,7 +1988,7 @@ git commit -m "feat: add untrusted-content wrapping to defend against prompt inj
   config_dir: Path = Path("./config")) -> None`. `investor_intel/__main__.py` (Task 1) imports
   this `app`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `tests/test_cli_init.py`:
 ```python
@@ -2051,14 +2051,14 @@ def test_init_is_idempotent_and_does_not_overwrite_edits(tmp_path: Path) -> None
     assert portfolio_path.read_text(encoding="utf-8") == "as_of: 2099-01-01\n"
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 uv run pytest tests/test_cli_init.py -v
 ```
 Expected: FAIL — `investor_intel.cli` does not exist.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `investor_intel/cli.py`:
 ```python
@@ -2276,14 +2276,14 @@ def init(
     typer.echo(f"초기화 완료: vault={vault_path}, config={config_dir}")
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 uv run pytest tests/test_cli_init.py -v
 ```
 Expected: `2 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add investor_intel/cli.py tests/test_cli_init.py
@@ -2303,7 +2303,7 @@ git commit -m "feat: add CLI init command with vault and config scaffolding"
 - Produces: `app` command `doctor(config_dir: Path = Path("./config")) -> None`, exit code 1
   if `SEC_USER_AGENT` is missing or the vault path is not writable, else 0.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `tests/test_cli_doctor.py`:
 ```python
@@ -2348,14 +2348,14 @@ def test_doctor_reports_missing_config_files(tmp_path: Path, monkeypatch) -> Non
     assert "MISSING] config/sources.yaml" in result.output
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 uv run pytest tests/test_cli_doctor.py -v
 ```
 Expected: FAIL — `doctor` command does not exist.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Append to `investor_intel/cli.py` (add import at top and the command at the bottom):
 
@@ -2413,14 +2413,14 @@ def doctor(
     raise typer.Exit(code=1 if missing_required else 0)
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 uv run pytest tests/test_cli_doctor.py -v
 ```
 Expected: `3 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add investor_intel/cli.py tests/test_cli_doctor.py
@@ -2443,7 +2443,7 @@ git commit -m "feat: add CLI doctor command for environment diagnostics"
 - Produces: `app` command `reindex(vault_path: Path = Path("./vault"), sqlite_path: Path =
   Path("./data/index.sqlite3")) -> None`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `tests/test_cli_reindex.py`:
 ```python
@@ -2514,14 +2514,14 @@ def test_reindex_command_is_idempotent(tmp_path: Path) -> None:
         conn.close()
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 uv run pytest tests/test_cli_reindex.py -v
 ```
 Expected: FAIL — `reindex` command does not exist.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Add import to `investor_intel/cli.py`:
 ```python
@@ -2548,7 +2548,7 @@ def reindex(
         conn.close()
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 uv run pytest tests/test_cli_reindex.py -v
@@ -2556,7 +2556,7 @@ uv run python -m investor_intel --help
 ```
 Expected: `2 passed`; `--help` prints `init`, `doctor`, `reindex` commands without import errors.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add investor_intel/cli.py investor_intel/__main__.py tests/test_cli_reindex.py
@@ -2569,28 +2569,28 @@ git commit -m "feat: add CLI reindex command"
 
 **Files:** none created; runs checks across everything built in Tasks 1–14.
 
-- [ ] **Step 1: Run the full test suite**
+- [x] **Step 1: Run the full test suite**
 
 ```bash
 uv run pytest -v
 ```
 Expected: all tests pass (51 tests across the 14 test files above).
 
-- [ ] **Step 2: Run ruff**
+- [x] **Step 2: Run ruff**
 
 ```bash
 uv run ruff check .
 ```
 Expected: `All checks passed!`. Fix any reported issues and re-run until clean.
 
-- [ ] **Step 3: Run mypy on the package**
+- [x] **Step 3: Run mypy on the package**
 
 ```bash
 uv run mypy investor_intel
 ```
 Expected: `Success: no issues found`. Fix any reported issues and re-run until clean.
 
-- [ ] **Step 4: Exercise the CLI end-to-end in a scratch directory**
+- [x] **Step 4: Exercise the CLI end-to-end in a scratch directory**
 
 ```bash
 mkdir -p /tmp/investor-intel-smoke && cd /tmp/investor-intel-smoke
@@ -2601,7 +2601,7 @@ cd /Users/jerryhong/Documents/investing-intelligence
 Expected: `init` prints `초기화 완료: ...`, `reindex` prints `재인덱싱 완료: 0개 문서` (no
 documents collected yet — collectors land in plans 02–05).
 
-- [ ] **Step 5: Commit any fixes from steps 2–3**
+- [x] **Step 5: Commit any fixes from steps 2–3**
 
 ```bash
 git add -A
