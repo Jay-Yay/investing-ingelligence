@@ -51,10 +51,10 @@ Update all 5 existing tests' fake response objects to carry a `usage=SimpleNames
 input_tokens=N, output_tokens=N)` attribute, and update assertions from `result.claims` to
 `outcome.result.claims`.
 
-- [ ] Write a failing test (retry-then-succeed case: assert the returned `usage` sums tokens from
+- [x] Write a failing test (retry-then-succeed case: assert the returned `usage` sums tokens from
       **both** the failed and the succeeding attempt, not just the last one), implement, verify
       all `test_llm_extraction.py` tests pass
-- [ ] Commit: `feat: return real token usage from extract_claims`
+- [x] Commit: `feat: return real token usage from extract_claims`
 
 ### Task 2: Wire real usage into `analyze_pending_documents`
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
 
 from pydantic import ValidationError
@@ -7,6 +8,18 @@ from pydantic import ValidationError
 from investor_intel.llm.client import AnthropicClient
 from investor_intel.models.analysis import ExtractionResult
 from investor_intel.security.untrusted_content import PROMPT_INJECTION_GUARD, wrap_untrusted
+
+
+@dataclass
+class TokenUsage:
+    input_tokens: int
+    output_tokens: int
+
+
+@dataclass
+class ExtractionOutcome:
+    result: ExtractionResult
+    usage: TokenUsage
 
 EXTRACTION_TOOL_SCHEMA: dict[str, Any] = {
     "name": "record_claims",
@@ -54,11 +67,13 @@ def extract_claims(
     document_body: str,
     system_prompt: str,
     max_retries: int = 2,
-) -> ExtractionResult:
+) -> ExtractionOutcome:
     wrapped_content = f"{PROMPT_INJECTION_GUARD}\n\n{wrap_untrusted(document_body)}"
     messages = [{"role": "user", "content": wrapped_content}]
 
     last_error: str | None = None
+    total_input_tokens = 0
+    total_output_tokens = 0
     for _ in range(max_retries + 1):
         response = client.create_message(
             system=system_prompt,
@@ -66,6 +81,9 @@ def extract_claims(
             tools=[EXTRACTION_TOOL_SCHEMA],
             tool_choice={"type": "tool", "name": "record_claims"},
         )
+        total_input_tokens += response.usage.input_tokens
+        total_output_tokens += response.usage.output_tokens
+
         tool_use_block = next(
             (block for block in response.content if block.type == "tool_use"), None
         )
@@ -73,10 +91,12 @@ def extract_claims(
             last_error = "no tool_use block in response"
             continue
         try:
-            return ExtractionResult.model_validate(tool_use_block.input)
+            result = ExtractionResult.model_validate(tool_use_block.input)
         except ValidationError as exc:
             last_error = str(exc)
             continue
+        usage = TokenUsage(input_tokens=total_input_tokens, output_tokens=total_output_tokens)
+        return ExtractionOutcome(result=result, usage=usage)
 
     raise ExtractionError(
         f"failed to extract valid claims after {max_retries + 1} attempts: {last_error}"

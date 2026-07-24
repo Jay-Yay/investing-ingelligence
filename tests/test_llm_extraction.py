@@ -31,14 +31,20 @@ _INVALID_INPUT = {
 }
 
 
-def _tool_use_response(input_payload: dict) -> SimpleNamespace:
+def _tool_use_response(
+    input_payload: dict, input_tokens: int = 100, output_tokens: int = 50
+) -> SimpleNamespace:
     return SimpleNamespace(
-        content=[SimpleNamespace(type="tool_use", input=input_payload)]
+        content=[SimpleNamespace(type="tool_use", input=input_payload)],
+        usage=SimpleNamespace(input_tokens=input_tokens, output_tokens=output_tokens),
     )
 
 
-def _text_only_response() -> SimpleNamespace:
-    return SimpleNamespace(content=[SimpleNamespace(type="text", text="no tool call")])
+def _text_only_response(input_tokens: int = 100, output_tokens: int = 10) -> SimpleNamespace:
+    return SimpleNamespace(
+        content=[SimpleNamespace(type="text", text="no tool call")],
+        usage=SimpleNamespace(input_tokens=input_tokens, output_tokens=output_tokens),
+    )
 
 
 class _FakeClient:
@@ -53,28 +59,36 @@ class _FakeClient:
 
 def test_happy_path_returns_validated_result() -> None:
     client = _FakeClient([_tool_use_response(_VALID_INPUT)])
-    result = extract_claims(client, document_body="원문 데이터", system_prompt="시스템 프롬프트")
+    outcome = extract_claims(client, document_body="원문 데이터", system_prompt="시스템 프롬프트")
 
-    assert len(result.claims) == 1
-    assert result.claims[0].claim == "엔비디아 실적이 예상을 상회했다"
+    assert len(outcome.result.claims) == 1
+    assert outcome.result.claims[0].claim == "엔비디아 실적이 예상을 상회했다"
     assert len(client.calls) == 1
+    assert outcome.usage.input_tokens == 100
+    assert outcome.usage.output_tokens == 50
 
 
 def test_retries_on_validation_failure_then_succeeds() -> None:
     client = _FakeClient(
-        [_tool_use_response(_INVALID_INPUT), _tool_use_response(_VALID_INPUT)]
+        [
+            _tool_use_response(_INVALID_INPUT, input_tokens=100, output_tokens=20),
+            _tool_use_response(_VALID_INPUT, input_tokens=100, output_tokens=50),
+        ]
     )
-    result = extract_claims(client, document_body="원문 데이터", system_prompt="시스템 프롬프트")
+    outcome = extract_claims(client, document_body="원문 데이터", system_prompt="시스템 프롬프트")
 
-    assert len(result.claims) == 1
+    assert len(outcome.result.claims) == 1
     assert len(client.calls) == 2
+    # usage must accumulate across BOTH the failed and the succeeding attempt, not just the last
+    assert outcome.usage.input_tokens == 200
+    assert outcome.usage.output_tokens == 70
 
 
 def test_retries_on_missing_tool_use_block() -> None:
     client = _FakeClient([_text_only_response(), _tool_use_response(_VALID_INPUT)])
-    result = extract_claims(client, document_body="원문 데이터", system_prompt="시스템 프롬프트")
+    outcome = extract_claims(client, document_body="원문 데이터", system_prompt="시스템 프롬프트")
 
-    assert len(result.claims) == 1
+    assert len(outcome.result.claims) == 1
     assert len(client.calls) == 2
 
 
