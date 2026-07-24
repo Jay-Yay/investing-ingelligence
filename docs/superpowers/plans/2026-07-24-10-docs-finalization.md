@@ -63,9 +63,9 @@ credentials are configured, matching already-tested behavior. Confirm: a report 
 to `50_Reports/Daily/`, the SQLite index has rows, `reindex` rebuilds the same index from the
 vault alone.
 
-- [ ] Run the dry run, capture what actually happened (including any real network failures —
+- [x] Run the dry run, capture what actually happened (including any real network failures —
       report them, don't paper over them)
-- [ ] Fix anything the dry run surfaces that the unit test suite didn't catch (integration gaps
+- [x] Fix anything the dry run surfaces that the unit test suite didn't catch (integration gaps
       unit tests with mocks can't see)
 
 ### Task 4: Completion criteria check + final verification
