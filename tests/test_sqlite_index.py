@@ -7,11 +7,14 @@ from investor_intel.storage.content_hash import compute_content_hash, compute_st
 from investor_intel.storage.obsidian_repo import write_document
 from investor_intel.storage.sqlite_index import (
     connect,
+    find_dart_corp_code,
     find_duplicate,
     get_collector_state,
     get_document_by_id,
     init_db,
+    is_dart_corp_code_cache_populated,
     reindex,
+    replace_dart_corp_codes,
     save_collector_state,
     upsert_document,
 )
@@ -210,3 +213,38 @@ def test_collector_state_round_trip(tmp_path: Path) -> None:
     assert row is not None
     assert row["last_seen_id"] == "123"
     assert bool(row["backfill_completed"]) is True
+
+
+def _entries() -> list[tuple[str, str, str | None, str]]:
+    return [
+        ("00126380", "삼성전자", "005930", "20260101"),
+        ("00999999", "비상장회사", None, "20260102"),
+    ]
+
+
+def test_dart_corp_code_cache_starts_empty(tmp_path: Path) -> None:
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    assert is_dart_corp_code_cache_populated(conn) is False
+    assert find_dart_corp_code(conn, stock_code="005930", name=None) is None
+
+
+def test_replace_dart_corp_codes_enables_lookup_by_stock_code_or_name(tmp_path: Path) -> None:
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    replace_dart_corp_codes(conn, _entries())
+
+    assert is_dart_corp_code_cache_populated(conn) is True
+    assert find_dart_corp_code(conn, stock_code="005930", name=None) == "00126380"
+    assert find_dart_corp_code(conn, stock_code=None, name="비상장회사") == "00999999"
+    assert find_dart_corp_code(conn, stock_code="000000", name=None) is None
+
+
+def test_replace_dart_corp_codes_clears_previous_entries(tmp_path: Path) -> None:
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    replace_dart_corp_codes(conn, _entries())
+    replace_dart_corp_codes(conn, [("00111111", "새회사", "123456", "20260103")])
+
+    assert find_dart_corp_code(conn, stock_code="005930", name=None) is None
+    assert find_dart_corp_code(conn, stock_code="123456", name=None) == "00111111"

@@ -104,10 +104,10 @@ possible).
   parses+`replace_dart_corp_codes`, then retries the cache lookup once. Returns `None` if still
   unresolved after a fresh fetch (genuinely absent from OpenDART's master list).
 
-- [ ] Write failing tests (cold cache triggers exactly one fetch+populate+lookup cycle; warm
+- [x] Write failing tests (cold cache triggers exactly one fetch+populate+lookup cycle; warm
       cache resolves with zero network calls — assert via `respx` call count; a ticker absent
       even after a fresh fetch returns `None` without raising), implement, verify pass
-- [ ] Commit: `feat: cache and resolve DART corp_code by ticker or name`
+- [x] Commit: `feat: cache and resolve DART corp_code by ticker or name`
 
 ### Task 3: Wire into config + `build_collect_entries`
 

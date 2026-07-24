@@ -46,6 +46,15 @@ CREATE TABLE IF NOT EXISTS collector_state (
     next_retry_at TEXT,
     backfill_completed INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS dart_corp_codes (
+    corp_code TEXT PRIMARY KEY,
+    corp_name TEXT NOT NULL,
+    stock_code TEXT,
+    modify_date TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_dart_corp_codes_stock_code ON dart_corp_codes(stock_code);
 """
 
 
@@ -221,3 +230,41 @@ def save_collector_state(
         ),
     )
     conn.commit()
+
+
+def is_dart_corp_code_cache_populated(conn: sqlite3.Connection) -> bool:
+    row = conn.execute("SELECT COUNT(*) AS c FROM dart_corp_codes").fetchone()
+    return bool(row["c"])
+
+
+def replace_dart_corp_codes(
+    conn: sqlite3.Connection, entries: list[tuple[str, str, str | None, str]]
+) -> None:
+    """Each entry is (corp_code, corp_name, stock_code, modify_date)."""
+    conn.execute("DELETE FROM dart_corp_codes")
+    conn.executemany(
+        "INSERT INTO dart_corp_codes (corp_code, corp_name, stock_code, modify_date) "
+        "VALUES (?, ?, ?, ?)",
+        entries,
+    )
+    conn.commit()
+
+
+def find_dart_corp_code(
+    conn: sqlite3.Connection, stock_code: str | None, name: str | None
+) -> str | None:
+    if stock_code:
+        row = conn.execute(
+            "SELECT corp_code FROM dart_corp_codes WHERE stock_code = ?", (stock_code,)
+        ).fetchone()
+        if row:
+            return str(row["corp_code"])
+
+    if name:
+        row = conn.execute(
+            "SELECT corp_code FROM dart_corp_codes WHERE corp_name = ?", (name,)
+        ).fetchone()
+        if row:
+            return str(row["corp_code"])
+
+    return None
