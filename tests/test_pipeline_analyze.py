@@ -8,9 +8,21 @@ from investor_intel.pipeline.analyze import (
     analyze_pending_documents,
     find_unprocessed_document_paths,
 )
+from investor_intel.storage.content_hash import compute_content_hash
 from investor_intel.storage.cost_ledger import init_cost_ledger
 from investor_intel.storage.obsidian_repo import read_document, write_document
 from investor_intel.storage.sqlite_index import connect, init_db, upsert_document
+
+_BODY_WITH_SECTIONS = (
+    "## 원문\n\n본문 내용\n\n"
+    "## 블로그 수집 시 유의사항\n\n- 유의사항\n\n"
+    "## 핵심 주장\n\n"
+    "## 근거\n\n"
+    "## 반대 근거\n\n"
+    "## 언급 자산\n\n"
+    "## 포트폴리오 관련성\n\n"
+    "## 출처\n\n- [원문](https://example.com)\n"
+)
 
 _VALID_CLAIMS_INPUT = {
     "claims": [
@@ -80,7 +92,7 @@ def test_find_unprocessed_document_paths_lists_pending_docs(tmp_path) -> None:
 def test_analyze_marks_document_processed_and_records_cost(tmp_path) -> None:
     vault_path, conn = _setup(tmp_path)
     doc = _doc("doc-1")
-    path = write_document(vault_path, doc, "본문 내용")
+    path = write_document(vault_path, doc, _BODY_WITH_SECTIONS)
     upsert_document(conn, doc, file_path=str(path), source_specific_id=doc.source_specific_id)
 
     client = _FakeAnthropicClient(_tool_use_response())
@@ -94,11 +106,17 @@ def test_analyze_marks_document_processed_and_records_cost(tmp_path) -> None:
     assert result.errors == []
     assert doc.id in result.extractions
 
-    updated_doc, _ = read_document(path)
+    updated_doc, updated_body = read_document(path)
     assert updated_doc.llm_processed is True
     assert updated_doc.llm_model == "claude-sonnet-5"
     assert find_unprocessed_document_paths(conn) == []
     assert cost_tracker.daily_total_usd() > 0
+
+    # the extracted claim must actually be spliced into the document body, and the
+    # stored content_hash must match what's really on disk
+    assert "엔비디아 실적이 예상을 상회했다" in updated_body
+    assert "매출 YoY 30% 증가" in updated_body
+    assert updated_doc.content_hash == compute_content_hash(updated_body)
 
 
 def test_analyze_stops_when_budget_exhausted(tmp_path) -> None:

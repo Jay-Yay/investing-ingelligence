@@ -43,10 +43,10 @@ After a successful `extract_claims` call, splice the result into `body` before w
 recompute `content_hash` from the **spliced** body (not the original) — the stored hash must
 always reflect what's actually on disk, or future dedup/idempotency checks silently drift.
 
-- [ ] Write a failing test (after `analyze_pending_documents` runs, the rewritten file's "## 핵심
+- [x] Write a failing test (after `analyze_pending_documents` runs, the rewritten file's "## 핵심
       주장" section contains the fake client's claim text, and `content_hash` in the frontmatter
       matches the spliced body's actual hash), implement, verify pass
-- [ ] Commit: `feat: splice extracted claims into document sections during analyze`
+- [x] Commit: `feat: splice extracted claims into document sections during analyze`
 
 ## Self-review notes
 

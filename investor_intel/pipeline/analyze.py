@@ -9,6 +9,8 @@ from investor_intel.llm.client import AnthropicClient
 from investor_intel.llm.cost_tracker import CostTracker
 from investor_intel.llm.extraction import extract_claims
 from investor_intel.models.analysis import ExtractionResult
+from investor_intel.pipeline.claims_splice import splice_claims_into_body
+from investor_intel.storage.content_hash import compute_content_hash
 from investor_intel.storage.obsidian_repo import path_for_document, read_document, render_document
 from investor_intel.storage.sqlite_index import upsert_document
 
@@ -50,11 +52,16 @@ def analyze_pending_documents(
             output_tokens = len(json.dumps(extraction.model_dump())) // _CHARS_PER_TOKEN_ESTIMATE
             cost_tracker.record_usage(client.model, input_tokens, output_tokens)
 
+            spliced_body = splice_claims_into_body(body, extraction)
             updated_doc = doc.model_copy(
-                update={"llm_processed": True, "llm_model": client.model}
+                update={
+                    "llm_processed": True,
+                    "llm_model": client.model,
+                    "content_hash": compute_content_hash(spliced_body),
+                }
             )
             path = path_for_document(vault_path, updated_doc)
-            path.write_text(render_document(updated_doc, body), encoding="utf-8")
+            path.write_text(render_document(updated_doc, spliced_body), encoding="utf-8")
             upsert_document(
                 conn,
                 updated_doc,
