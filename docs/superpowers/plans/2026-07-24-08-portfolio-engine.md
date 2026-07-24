@@ -83,20 +83,23 @@ market value.
 **Interfaces:** `GuardrailViolation(BaseModel)`: `symbol: str, rule: str, message: str`.
 `check_guardrails(portfolio: Portfolio, metrics: list[PositionMetrics]) ->
 list[GuardrailViolation]` — checks `max_single_position_weight` and `max_sector_weight` per
-`constraints`; `leverage_allowed`/`short_selling_allowed`/`options_allowed` checked against each
-position's `asset_type`/`quantity` (a negative `quantity` implies a short position; `asset_type`
-containing `"option"` implies an options position) — violated only when the corresponding
-constraint is `false` (matches the `cli.py` scaffold's all-`false` defaults).
+`constraints`; `short_selling_allowed`/`options_allowed` checked against each position's
+`asset_type`/`quantity` (a negative `quantity` implies a short position; `asset_type` containing
+`"option"` implies an options position) — violated only when the corresponding constraint is
+`false` (matches the `cli.py` scaffold's all-`false` defaults). **`leverage_allowed` is not
+enforced here** — `Position` has no margin/borrowing field, so there is no signal in the current
+schema to detect leverage from; a fabricated check with no real input would just be theater.
+Documented gap, revisit if/when the portfolio schema grows a leverage-relevant field.
 `decision_status_for(metrics: PositionMetrics) -> DecisionStatus` (from `models/common.py`,
 reused) — `PENDING` when `current_price is None`, else `COMPLETE`.
 `max_allowed_recommendation(violations: list[GuardrailViolation], symbol: str) ->
 RecommendationRating | None` (from `models/common.py`, reused) — `HOLD` if any violation exists
 for `symbol`, else `None` (no cap; phase 09's LLM-driven recommendation applies unmodified).
 
-- [ ] Write failing tests (over-weight position flagged; over-weight sector flagged; short
+- [x] Write failing tests (over-weight position flagged; over-weight sector flagged; short
       position flagged only when `short_selling_allowed` is false; stale price → `PENDING`;
       a clean position has no cap; a violating position caps at `HOLD`), implement, verify pass
-- [ ] Commit: `feat: add portfolio guardrails and decision-status/recommendation-cap logic`
+- [x] Commit: `feat: add portfolio guardrails and decision-status/recommendation-cap logic`
 
 ### Task 4: Full verification pass
 
