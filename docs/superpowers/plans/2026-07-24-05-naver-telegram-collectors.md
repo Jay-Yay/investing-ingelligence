@@ -119,8 +119,8 @@ downstream.
 messages only, no Telethon full-history). `render_telegram_message_body(message:
 TelegramMessage, source: SourceConfig, canonical_url: str) -> str` — same 8-section shape.
 
-- [ ] Write failing tests, implement, verify pass
-- [ ] Commit: `feat: add Telegram message Markdown renderer`
+- [x] Write failing tests, implement, verify pass
+- [x] Commit: `feat: add Telegram message Markdown renderer`
 
 ### Task 7: `TelegramCollector`
 
