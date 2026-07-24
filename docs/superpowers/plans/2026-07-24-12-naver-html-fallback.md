@@ -67,13 +67,13 @@ element structure, not a hand-simplified stand-in).
   page), fetches `PostView.naver` for every discovered `logNo`, and returns fully assembled
   `NaverPost`s (`guid=logNo`, `link=f"https://blog.naver.com/{blog_id}/{logNo}"`).
 
-- [ ] Write failing tests (`parse_post_log_nos` on a real-shaped multi-post JSON fixture and on an
+- [x] Write failing tests (`parse_post_log_nos` on a real-shaped multi-post JSON fixture and on an
       empty-`postList` fixture; `parse_post_detail_html`-equivalent parsing on the trimmed real
       `post_view.html` fixture asserts exact title, a known paragraph substring, and the exact
       parsed KST datetime; `fetch_posts_via_html` against a mocked `SimpleHttpClient`/`respx`
       covering: single page then empty page (stops pagination), and hitting the
       `_HTML_FALLBACK_MAX_PAGES` cap without an empty page in between), implement, verify pass
-- [ ] Commit: `feat: add Naver blog HTML fallback parser`
+- [x] Commit: `feat: add Naver blog HTML fallback parser`
 
 ### Task 2: Wire fallback into `NaverBlogCollector`
 
