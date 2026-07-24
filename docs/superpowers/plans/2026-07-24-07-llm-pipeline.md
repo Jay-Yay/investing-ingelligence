@@ -112,12 +112,12 @@ before sending; forces the tool call via `tool_choice`; validates the returned `
 retries (same wrapped content, fresh call) up to `max_retries` more times; raises
 `ExtractionError` after exhausting retries.
 
-- [ ] Write failing tests (happy path returns a validated `ExtractionResult`; a fake client
+- [x] Write failing tests (happy path returns a validated `ExtractionResult`; a fake client
       returning invalid `tool_use.input` on attempt 1 and valid on attempt 2 succeeds via retry;
       exhausting all retries raises `ExtractionError`; the untrusted-content wrapper's markers
       are present in the `messages` payload sent to the client — proves the injection defense is
       actually wired in, not just imported), implement, verify pass
-- [ ] Commit: `feat: add structured claim extraction with tool-use and retry`
+- [x] Commit: `feat: add structured claim extraction with tool-use and retry`
 
 ### Task 5: Full verification pass
 
