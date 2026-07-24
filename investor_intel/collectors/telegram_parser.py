@@ -67,6 +67,14 @@ class _ChannelPreviewParser(HTMLParser):
             self._current.text_parts.append(data)
 
 
+def parse_all_message_ids(html_text: str) -> list[str]:
+    """All message IDs on the page, including text-less (photo/video-only) messages -
+    used for pagination cursors, where a filtered-out message's ID must still count."""
+    parser = _ChannelPreviewParser()
+    parser.feed(html_text)
+    return [pending.data_post.rsplit("/", 1)[-1] for pending in parser.pending]
+
+
 def parse_telegram_channel_html(html_text: str, channel: str) -> list[TelegramMessage]:
     parser = _ChannelPreviewParser()
     parser.feed(html_text)

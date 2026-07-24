@@ -52,7 +52,7 @@ pages (`min_id` = the lowest numeric `message_id` parsed from the *previous* pag
 a page yields zero not-yet-seen messages. Returns the deduplicated, concatenated list — no other
 method's signature changes (`backfill`/`collect_incremental`/`_build_item`/`_collect` untouched).
 
-- [ ] Write a failing test (the existing fixture's page returns 3 messages with IDs 101-103; mock
+- [x] Write a failing test (the existing fixture's page returns 3 messages with IDs 101-103; mock
       `?before=101` to return the new empty fixture; assert pagination stops there and all 3
       original messages are still collected — i.e. update the existing `_mock_preview()` helper
       used by `test_backfill_returns_only_in_window_messages` and
@@ -62,7 +62,7 @@ method's signature changes (`backfill`/`collect_incremental`/`_build_item`/`_col
       asserting all messages across both non-empty pages are collected; add a test asserting the
       `_MAX_PAGES` cap is respected when no page ever returns empty (mirrors phase 12's
       `test_fetch_posts_via_html_stops_at_page_cap_without_empty_page`), implement, verify pass
-- [ ] Commit: `feat: paginate Telegram public preview collection past the first page`
+- [x] Commit: `feat: paginate Telegram public preview collection past the first page`
 
 ## Self-review notes
 

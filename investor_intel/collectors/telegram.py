@@ -5,8 +5,14 @@ from datetime import date, timedelta
 from investor_intel.collectors.base import CheckpointStore, CollectItem, CollectResult
 from investor_intel.collectors.http_client import SimpleHttpClient
 from investor_intel.collectors.telegram_document import render_telegram_message_body
-from investor_intel.collectors.telegram_parser import TelegramMessage, parse_telegram_channel_html
+from investor_intel.collectors.telegram_parser import (
+    TelegramMessage,
+    parse_all_message_ids,
+    parse_telegram_channel_html,
+)
 from investor_intel.models.config import SourceConfig
+
+_MAX_PAGES = 10
 
 
 def _extract_channel(source_url: str) -> str:
@@ -27,8 +33,33 @@ class TelegramCollector:
 
     def _fetch_all_messages(self) -> list[TelegramMessage]:
         channel = _extract_channel(self._source.url)
-        html_text = self._client.get_text(self._source.url)
-        return parse_telegram_channel_html(html_text, channel=channel)
+        all_messages: list[TelegramMessage] = []
+        seen_ids: set[str] = set()
+        next_url = self._source.url
+        previous_min_id: int | None = None
+
+        for _ in range(_MAX_PAGES):
+            html_text = self._client.get_text(next_url)
+            all_ids_on_page = parse_all_message_ids(html_text)
+            if not all_ids_on_page:
+                break
+
+            # the pagination cursor must use the lowest ID on the page regardless of
+            # text-filtering - a text-less (photo/video-only) message can be the lowest ID,
+            # and skipping past it here would silently truncate history before it
+            min_id = min(int(message_id) for message_id in all_ids_on_page)
+            if previous_min_id is not None and min_id >= previous_min_id:
+                break  # cursor didn't advance - stop rather than loop forever
+            previous_min_id = min_id
+
+            page_messages = parse_telegram_channel_html(html_text, channel=channel)
+            new_messages = [m for m in page_messages if m.message_id not in seen_ids]
+            all_messages.extend(new_messages)
+            seen_ids.update(m.message_id for m in new_messages)
+
+            next_url = f"{self._source.url}?before={min_id}"
+
+        return all_messages
 
     def _build_item(self, message: TelegramMessage) -> CollectItem:
         body = render_telegram_message_body(message, self._source, message.link)
