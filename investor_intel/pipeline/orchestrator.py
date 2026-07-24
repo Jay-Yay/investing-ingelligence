@@ -90,7 +90,7 @@ def run_daily(
 
         collect_errors: list[str] = []
         checkpoint_store = CheckpointStore(conn)
-        entries, setup_errors = build_collect_entries(config_dir, settings, checkpoint_store)
+        entries, setup_errors = build_collect_entries(config_dir, settings, checkpoint_store, conn)
         collect_errors.extend(setup_errors)
         for result in run_collectors(entries, vault_path, conn):
             collect_errors.extend(result.errors)

@@ -8,6 +8,7 @@ from pathlib import Path
 from investor_intel.collectors.base import CheckpointStore, CollectItem, Collector, CollectResult
 from investor_intel.collectors.dart import DartCollector
 from investor_intel.collectors.dart_client import DartClient
+from investor_intel.collectors.dart_corp_code import resolve_corp_code
 from investor_intel.collectors.essay import EssayCollector
 from investor_intel.collectors.http_client import SimpleHttpClient
 from investor_intel.collectors.naver_blog import NaverBlogCollector
@@ -151,7 +152,10 @@ def run_collectors(
 
 
 def build_collect_entries(
-    config_dir: Path, settings: AppSettings, checkpoint_store: CheckpointStore
+    config_dir: Path,
+    settings: AppSettings,
+    checkpoint_store: CheckpointStore,
+    conn: sqlite3.Connection,
 ) -> tuple[list[tuple[Collector, SourceType, str]], list[str]]:
     entries: list[tuple[Collector, SourceType, str]] = []
     setup_errors: list[str] = []
@@ -192,6 +196,22 @@ def build_collect_entries(
         if settings.dart_api_key:
             dart_client = DartClient(api_key=settings.dart_api_key)
             for dart_company in load_dart_companies_yaml(dart_companies_path):
+                if dart_company.corp_code is None:
+                    resolved = resolve_corp_code(
+                        conn,
+                        dart_client,
+                        settings.dart_api_key,
+                        ticker=dart_company.ticker,
+                        name=dart_company.name,
+                    )
+                    if resolved is None:
+                        setup_errors.append(
+                            f"{dart_company.ticker}({dart_company.name})의 DART corp_code를 "
+                            "찾을 수 없음 - DART 수집 건너뜀"
+                        )
+                        continue
+                    dart_company = dart_company.model_copy(update={"corp_code": resolved})
+
                 dart_collector = DartCollector(
                     dart_company, dart_client, checkpoint_store, api_key=settings.dart_api_key
                 )

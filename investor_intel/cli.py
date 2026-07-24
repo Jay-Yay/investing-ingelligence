@@ -387,7 +387,7 @@ def collect(
     try:
         init_db(conn)
         checkpoint_store = CheckpointStore(conn)
-        entries, setup_errors = build_collect_entries(config_dir, settings, checkpoint_store)
+        entries, setup_errors = build_collect_entries(config_dir, settings, checkpoint_store, conn)
 
         for message in setup_errors:
             typer.echo(f"[설정] {message}")

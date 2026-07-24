@@ -117,11 +117,11 @@ branch resolves missing `corp_code`s before constructing `DartCollector`), `inve
 and `investor_intel/pipeline/orchestrator.py` (pass `conn` through, both already have it in
 scope); extend `tests/test_build_collect_entries.py`.
 
-- [ ] Write a failing test (a `dart_companies.yaml` fixture with one entry that has `corp_code`
+- [x] Write a failing test (a `dart_companies.yaml` fixture with one entry that has `corp_code`
       set — zero network calls — and one that omits it and resolves via a mocked `corpCode.xml`
       response; a third entry with an unresolvable ticker produces a `setup_errors` message and
       is excluded from `entries`, not a crash), implement, verify pass
-- [ ] Commit: `feat: auto-resolve missing DART corp_code via cached corpCode.xml lookup`
+- [x] Commit: `feat: auto-resolve missing DART corp_code via cached corpCode.xml lookup`
 
 ## Self-review notes
 

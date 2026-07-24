@@ -26,7 +26,7 @@ class CompanyConfig(BaseModel):
 
 class KoreanCompanyConfig(BaseModel):
     ticker: str
-    corp_code: str
+    corp_code: str | None = None
     name: str
     report_types: list[str] = ["A", "B"]
 
