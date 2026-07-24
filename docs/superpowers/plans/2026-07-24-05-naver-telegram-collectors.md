@@ -71,8 +71,8 @@ RFC 822 dates robustly, including the `+0900` KST offset Naver uses).
 fallback not implemented). `render_naver_post_body(post: NaverPost, source: SourceConfig,
 canonical_url: str) -> str` — same 8-section Markdown shape as prior renderers.
 
-- [ ] Write failing tests, implement, verify pass
-- [ ] Commit: `feat: add Naver blog post Markdown renderer`
+- [x] Write failing tests, implement, verify pass
+- [x] Commit: `feat: add Naver blog post Markdown renderer`
 
 ### Task 4: `NaverBlogCollector`
 
