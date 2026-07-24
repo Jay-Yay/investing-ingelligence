@@ -43,11 +43,11 @@ the SQLite index from the vault (the vault is the source of truth, per the desig
 to add new sources/companies/investors (which YAML file, which field shape — pointing at the
 `init`-scaffolded examples rather than duplicating the schema here).
 
-- [ ] Write the Runbook content into `cli.py`'s scaffold string
-- [ ] Regenerate check: `uv run pytest tests/test_cli_init.py -v` still passes (scaffold content
+- [x] Write the Runbook content into `cli.py`'s scaffold string
+- [x] Regenerate check: `uv run pytest tests/test_cli_init.py -v` still passes (scaffold content
       change shouldn't break existing init tests — if it does, the test asserts on placeholder
       text and needs updating alongside)
-- [ ] Commit: `docs: write real Runbook operational guide`
+- [x] Commit: `docs: write real Runbook operational guide`
 
 ### Task 3: End-to-end dry run
 

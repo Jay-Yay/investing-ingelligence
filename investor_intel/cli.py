@@ -160,6 +160,70 @@ positions:
     stop_loss_price: null
 """
 
+RUNBOOK_MD = """# Runbook
+
+## 일일 실행
+
+- 자동: `.github/workflows/daily-collect.yml`이 매일 00:00 UTC(09:00 KST)에 `run-daily`를
+  실행한다.
+- 수동: `uv run python -m investor_intel run-daily`
+
+`run-daily`는 collect -> analyze -> portfolio -> report 순서로 실행되며, 한 단계 안에서 한
+소스/문서가 실패해도 나머지는 계속 진행한다(부분 실패 허용). 종료 코드가 0이 아니면
+`collect_errors`/`analyze_errors`가 출력에 포함되어 있으니 확인한다.
+
+## `doctor`가 문제를 보고할 때
+
+`uv run python -m investor_intel doctor` 로 환경변수/설정 파일/vault 쓰기 권한을 점검한다.
+`MISSING` 항목이 있으면:
+
+- `SEC_USER_AGENT`, `VAULT_WRITE` — 필수. 이 둘이 없으면 `doctor`가 종료 코드 1을 반환한다.
+- `ANTHROPIC_API_KEY` — 없으면 `analyze`/`report`의 LLM 단계가 자동으로 건너뛰어지고
+  (`run-daily`도 마찬가지) 대신 안내 메시지가 `analyze_errors`에 남는다. 수집 자체는 계속된다.
+- `DART_API_KEY` — 없으면 `dart_companies.yaml`이 존재해도 DART 수집만 건너뛴다.
+- `TELEGRAM_API_ID`/`TELEGRAM_API_HASH` — 공개 채널 웹 미리보기 수집에는 불필요. Telethon 기반
+  비공개 채널 수집은 이 프로젝트 범위 밖이다(향후 확장 항목).
+
+## LLM 비용 예산
+
+`DAILY_LLM_BUDGET_USD`/`MONTHLY_LLM_BUDGET_USD`(기본 1.5 / 45.0 USD)를 넘으면 `analyze` 단계가
+남은 문서 분석을 멈추고 종료한다(오류가 아니라 정상적인 중단). 처리되지 못한 문서는
+`llm_processed: false`로 남아 다음 실행에서 이어서 분석된다. 비용은 SQLite의 `llm_usage`
+테이블에 기록되며, 실제 토큰 사용량이 아니라 문자 수 기반 추정치임에 유의한다(정확한 사용량
+연동은 향후 개선 항목).
+
+## 인덱스 복구
+
+SQLite 인덱스(`data/index.sqlite3`)는 vault의 재생성 가능한 캐시일 뿐이다. 손상되거나
+삭제되었다면:
+
+```bash
+uv run python -m investor_intel reindex
+```
+
+vault의 Markdown+frontmatter가 유일한 원본(source of truth)이므로 이 명령만으로 완전히
+복구된다.
+
+## 새 소스/기업/투자자 추가
+
+- 네이버 블로그, 텔레그램 채널 -> `config/sources.yaml` (`init`이 생성한 예제 항목 형식을
+  그대로 따른다)
+- 미국 기업 SEC 공시 -> `config/companies.yaml`
+- 13F 추적 투자자 -> `config/investors.yaml`
+- 한국 기업 DART 공시 -> `config/dart_companies.yaml` (이 파일은 `init`이 자동 생성하지 않는다
+  — 사용자가 직접 추가해야 하며, `corp_code`는 DART에서 8자리 고유번호를 조회해 직접 입력한다)
+
+추가 후 `uv run python -m investor_intel collect --backfill 365` 로 신규 소스를 과거 데이터까지
+백필할 수 있다(생략 시 증분 수집만 수행).
+
+## 포트폴리오 갱신
+
+`vault/30_Portfolio/portfolio.yaml`을 직접 편집한다. `quantity`/`average_cost`를 실제 보유
+현황으로 갱신하고, 종목별 `thesis`(투자논리)를 채워두면 이후 리포트 서술의 맥락이 된다.
+`constraints`(레버리지/공매도/옵션 허용 여부, 최대 종목/섹터 비중)를 벗어나는 포지션은 `portfolio`
+명령 실행 시 가드레일 위반으로 표시된다.
+"""
+
 ENV_EXAMPLE = """ANTHROPIC_API_KEY=
 ANTHROPIC_MODEL=claude-sonnet-5
 SEC_USER_AGENT="Investor Intel contact@example.com"
@@ -233,10 +297,7 @@ def init(
 
     _write_if_missing(vault_path / "30_Portfolio" / "portfolio.yaml", PORTFOLIO_YAML)
     _write_if_missing(config_dir.parent / ".env.example", ENV_EXAMPLE)
-    _write_if_missing(
-        vault_path / "00_System" / "Runbook.md",
-        "# Runbook\n\n초기화만 완료된 상태. 운영 절차는 이후 단계에서 채워진다.\n",
-    )
+    _write_if_missing(vault_path / "00_System" / "Runbook.md", RUNBOOK_MD)
 
     typer.echo(f"초기화 완료: vault={vault_path}, config={config_dir}")
 
