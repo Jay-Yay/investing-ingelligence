@@ -51,9 +51,9 @@ collector) into a shared, public module. Pure refactor — `tests/test_sec_thirt
 still pass unmodified (its manual sanity check in phase 02's plan Task 7 already pins the exact
 URL shape).
 
-- [ ] Extract functions into `sec_urls.py`, re-export/import from `sec_thirteenf.py`
-- [ ] Run full suite — all previously-passing tests (87) still green
-- [ ] Commit: `refactor: extract shared SEC EDGAR URL helpers into sec_urls.py`
+- [x] Extract functions into `sec_urls.py`, re-export/import from `sec_thirteenf.py`
+- [x] Run full suite — all previously-passing tests (87) still green
+- [x] Commit: `refactor: extract shared SEC EDGAR URL helpers into sec_urls.py`
 
 ### Task 2: Company filings parser
 

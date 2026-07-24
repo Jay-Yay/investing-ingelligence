@@ -4,6 +4,18 @@ from datetime import UTC, date, datetime, timedelta
 
 from investor_intel.collectors.base import CheckpointStore, CollectItem, CollectResult
 from investor_intel.collectors.sec_client import SECClient
+from investor_intel.collectors.sec_urls import (
+    archive_dir as _archive_dir,  # noqa: F401  (re-exported; pinned by phase 02's URL sanity check)
+)
+from investor_intel.collectors.sec_urls import (
+    document_url as _document_url,
+)
+from investor_intel.collectors.sec_urls import (
+    filing_index_page_url as _filing_index_page_url,
+)
+from investor_intel.collectors.sec_urls import (
+    filing_index_url as _filing_index_url,
+)
 from investor_intel.collectors.thirteenf_changes import compute_holding_changes
 from investor_intel.collectors.thirteenf_document import render_thirteenf_body
 from investor_intel.collectors.thirteenf_parser import (
@@ -16,33 +28,6 @@ from investor_intel.models.config import InvestorConfig
 from investor_intel.models.thirteenf import ThirteenFFiling, ThirteenFHolding
 
 _SUBMISSIONS_URL = "https://data.sec.gov/submissions/CIK{cik}.json"
-_ARCHIVES_BASE = "https://www.sec.gov/Archives/edgar/data/{cik_short}/{accession_nodashes}"
-
-
-def _cik_short(cik: str) -> str:
-    return cik.lstrip("0") or "0"
-
-
-def _accession_nodashes(accession_number: str) -> str:
-    return accession_number.replace("-", "")
-
-
-def _archive_dir(cik: str, accession_number: str) -> str:
-    return _ARCHIVES_BASE.format(
-        cik_short=_cik_short(cik), accession_nodashes=_accession_nodashes(accession_number)
-    )
-
-
-def _filing_index_url(cik: str, accession_number: str) -> str:
-    return f"{_archive_dir(cik, accession_number)}/index.json"
-
-
-def _filing_index_page_url(cik: str, accession_number: str) -> str:
-    return f"{_archive_dir(cik, accession_number)}/{accession_number}-index.htm"
-
-
-def _document_url(cik: str, accession_number: str, filename: str) -> str:
-    return f"{_archive_dir(cik, accession_number)}/{filename}"
 
 
 class ThirteenFCollector:
