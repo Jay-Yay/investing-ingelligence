@@ -1,0 +1,10 @@
+{
+  "directory": {
+    "item": [
+      {"name": "primary_doc.xml", "type": "text.xml", "size": "12345"},
+      {"name": "form13fInfoTable.xml", "type": "text.xml", "size": "45678"},
+      {"name": "0001536411-24-000007-index.htm", "type": "text.htm", "size": "3456"}
+    ],
+    "name": "/Archives/edgar/data/1536411/000153641124000007"
+  }
+}

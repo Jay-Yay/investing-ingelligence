@@ -1,0 +1,17 @@
+{
+  "cik": "1536411",
+  "name": "Duquesne Family Office LLC",
+  "filings": {
+    "recent": {
+      "accessionNumber": [
+        "0001536411-24-000007",
+        "0001536411-23-000004",
+        "0001536411-22-000002"
+      ],
+      "filingDate": ["2024-05-15", "2023-11-14", "2022-11-14"],
+      "reportDate": ["2024-03-31", "2023-09-30", "2022-09-30"],
+      "form": ["13F-HR", "13F-HR", "13F-HR"],
+      "primaryDocument": ["primary_doc.xml", "primary_doc.xml", "primary_doc.xml"]
+    }
+  }
+}
