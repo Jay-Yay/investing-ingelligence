@@ -106,13 +106,13 @@ implementing the `Collector` protocol); tests `tests/test_essay_document.py`,
   call every time — a no-op rewrite once pinned), return a one-item `CollectResult`. On any
   exception: `record_failure`, return an empty/failed `CollectResult`.
 
-- [ ] Write failing tests: `essay_document` renders all 8 sections with the same header
+- [x] Write failing tests: `essay_document` renders all 8 sections with the same header
       convention as every other source; `EssayCollector` — first `collect_incremental()` call
       sets `published_at` to "now" (`freeze_time`) and persists it via checkpoint; a second call
       one frozen-day later returns the **same** `published_at` (the pinning behavior — this is the
       test that would have caught the path-drift bug above); constructor raises `ValueError` when
       `related_essay_url` is `None`. Implement, verify pass.
-- [ ] Commit: `feat: add investor essay collector`
+- [x] Commit: `feat: add investor essay collector`
 
 ### Task 3: Wire into `build_collect_entries`
 
