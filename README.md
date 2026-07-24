@@ -42,8 +42,9 @@ uv run python -m investor_intel run-daily
 | `ANTHROPIC_MODEL` | 사용할 Claude 모델 ID (기본값 `claude-sonnet-5`) |
 | `SEC_USER_AGENT` | SEC EDGAR 수집(13F, 미국 기업 공시) — 식별 가능한 문자열 필수 |
 | `DART_API_KEY` | OpenDART 수집(한국 기업 공시) |
-| `TELEGRAM_API_ID` / `TELEGRAM_API_HASH` | (선택) Telethon 기반 비공개 채널 수집 — 공개 웹
-미리보기 수집에는 불필요 |
+| `TELEGRAM_API_ID` / `TELEGRAM_API_HASH` / `TELEGRAM_SESSION` | (선택) Telethon 기반 비공개
+채널 수집(`sources.yaml`의 `type: telegram_private`) — 공개 웹 미리보기 수집에는 불필요.
+`uv sync --extra telethon` 후 `telethon-login` 명령으로 세션 생성 |
 | `DAILY_LLM_BUDGET_USD` / `MONTHLY_LLM_BUDGET_USD` | LLM 비용 상한 (기본값 1.5 / 45.0 USD) |
 
 ## 디렉터리 구조

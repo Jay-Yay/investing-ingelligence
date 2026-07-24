@@ -129,3 +129,70 @@ def test_build_collect_entries_skips_resolution_when_corp_code_already_set(tmp_p
     assert setup_errors == []
     dart_entries = [e for e in entries if isinstance(e[0], DartCollector)]
     assert len(dart_entries) == 1
+
+
+def _write_sources_yaml(config_dir, sources: list[dict]) -> None:
+    config_dir.mkdir(parents=True, exist_ok=True)
+    (config_dir / "sources.yaml").write_text(
+        yaml.safe_dump({"sources": sources}), encoding="utf-8"
+    )
+
+
+_PRIVATE_SOURCE = {
+    "id": "telegram_private_allbareun",
+    "type": "telegram_private",
+    "name": "allbareun (비공개)",
+    "enabled": True,
+    "url": "https://t.me/allbareun_private",
+    "author": None,
+}
+
+
+def test_build_collect_entries_skips_telegram_private_without_credentials(tmp_path) -> None:
+    _write_sources_yaml(tmp_path, [_PRIVATE_SOURCE])
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    checkpoint_store = CheckpointStore(conn)
+    settings = AppSettings()
+
+    entries, setup_errors = build_collect_entries(tmp_path, settings, checkpoint_store, conn)
+
+    assert entries == []
+    assert any("telegram_private_allbareun" in error for error in setup_errors)
+
+
+def test_build_collect_entries_adds_telegram_private_when_credentials_present(
+    tmp_path, monkeypatch
+) -> None:
+    from investor_intel.collectors.telegram_private import TelethonPrivateChannelCollector
+
+    class _FakeRealTelethonClient:
+        def __init__(self, session: str, api_id: int, api_hash: str) -> None:
+            self.session = session
+            self.api_id = api_id
+            self.api_hash = api_hash
+
+    monkeypatch.setattr(
+        "investor_intel.collectors.telethon_client.RealTelethonClient",
+        _FakeRealTelethonClient,
+    )
+
+    _write_sources_yaml(tmp_path, [_PRIVATE_SOURCE])
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    checkpoint_store = CheckpointStore(conn)
+    settings = AppSettings(
+        telegram_api_id="12345",
+        telegram_api_hash="test-hash",
+        telegram_session="test-session-string",
+    )
+
+    entries, setup_errors = build_collect_entries(tmp_path, settings, checkpoint_store, conn)
+
+    assert setup_errors == []
+    telethon_entries = [e for e in entries if isinstance(e[0], TelethonPrivateChannelCollector)]
+    assert len(telethon_entries) == 1
+    collector, source_type, source_name = telethon_entries[0]
+    assert source_type == SourceType.TELEGRAM
+    assert source_name == "allbareun (비공개)"
+    assert collector.source_id == "telegram_private_allbareun"

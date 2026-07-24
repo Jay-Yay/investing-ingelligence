@@ -233,5 +233,30 @@ def build_collect_entries(
             elif source.type == "telegram":
                 telegram_collector = TelegramCollector(source, http_client, checkpoint_store)
                 entries.append((telegram_collector, SourceType.TELEGRAM, source.name))
+            elif source.type == "telegram_private":
+                if settings.telegram_api_id and settings.telegram_api_hash and (
+                    settings.telegram_session
+                ):
+                    # lazy import: `telethon` is an optional extra, not a hard dependency of
+                    # this module - only pay for it when a telegram_private source is configured
+                    from investor_intel.collectors.telegram_private import (
+                        TelethonPrivateChannelCollector,
+                    )
+                    from investor_intel.collectors.telethon_client import RealTelethonClient
+
+                    telethon_client = RealTelethonClient(
+                        session=settings.telegram_session,
+                        api_id=int(settings.telegram_api_id),
+                        api_hash=settings.telegram_api_hash,
+                    )
+                    telethon_collector = TelethonPrivateChannelCollector(
+                        source, telethon_client, checkpoint_store
+                    )
+                    entries.append((telethon_collector, SourceType.TELEGRAM, source.name))
+                else:
+                    setup_errors.append(
+                        f"{source.id}: TELEGRAM_API_ID/HASH/SESSION 미설정 - "
+                        "비공개 채널 수집 건너뜀"
+                    )
 
     return entries, setup_errors

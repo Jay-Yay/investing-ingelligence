@@ -137,12 +137,12 @@ set), `investor_intel/cli.py` (new `telethon-login` command, lazy-imports `telet
 `doctor` explanation (both currently say Telethon is "out of scope"/"향후 확장 항목" — no longer
 true).
 
-- [ ] Write a failing test (a `sources.yaml` fixture with one `telegram_private` entry; asserts no
+- [x] Write a failing test (a `sources.yaml` fixture with one `telegram_private` entry; asserts no
       `TelethonPrivateChannelCollector` entry is created when credentials are missing (with a
       `setup_errors` message), and one *is* created when all three env vars are set — using a
       monkeypatched/injected fake client so this test never imports real `telethon`), implement,
       verify pass
-- [ ] Commit: `feat: wire Telethon private channel collector into config and collect pipeline`
+- [x] Commit: `feat: wire Telethon private channel collector into config and collect pipeline`
 
 ## Self-review notes
 

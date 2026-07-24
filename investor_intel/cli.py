@@ -189,8 +189,11 @@ RUNBOOK_MD = """# Runbook
 - `ANTHROPIC_API_KEY` — 없으면 `analyze`/`report`의 LLM 단계가 자동으로 건너뛰어지고
   (`run-daily`도 마찬가지) 대신 안내 메시지가 `analyze_errors`에 남는다. 수집 자체는 계속된다.
 - `DART_API_KEY` — 없으면 `dart_companies.yaml`이 존재해도 DART 수집만 건너뛴다.
-- `TELEGRAM_API_ID`/`TELEGRAM_API_HASH` — 공개 채널 웹 미리보기 수집에는 불필요. Telethon 기반
-  비공개 채널 수집은 이 프로젝트 범위 밖이다(향후 확장 항목).
+- `TELEGRAM_API_ID`/`TELEGRAM_API_HASH`/`TELEGRAM_SESSION` — 공개 채널 웹 미리보기 수집에는
+  불필요. `sources.yaml`에 `type: telegram_private` 항목이 있고 이 셋이 모두 설정된 경우에만
+  Telethon 기반 비공개 채널 수집이 활성화된다. 세션 문자열은
+  `uv run python -m investor_intel telethon-login --api-id ... --api-hash ...`로 1회성
+  대화형 로그인 후 생성한다(`uv sync --extra telethon` 먼저 필요).
 
 ## LLM 비용 예산
 
@@ -330,9 +333,13 @@ def doctor(
         ),
         ("DART_API_KEY", settings.dart_api_key is not None, "DART 수집에 필요"),
         (
-            "TELEGRAM_API_ID/HASH",
-            bool(settings.telegram_api_id and settings.telegram_api_hash),
-            "Telethon 기반 수집에만 필요 (공개 웹 미리보기는 불필요)",
+            "TELEGRAM_API_ID/HASH/SESSION",
+            bool(
+                settings.telegram_api_id
+                and settings.telegram_api_hash
+                and settings.telegram_session
+            ),
+            "Telethon 기반 비공개 채널 수집(telegram_private)에만 필요 (공개 웹 미리보기는 불필요)",
         ),
     ]
 
@@ -366,6 +373,41 @@ def doctor(
             missing_required = True
 
     raise typer.Exit(code=1 if missing_required else 0)
+
+
+@app.command()
+def telethon_login(
+    api_id: Annotated[int, typer.Option(help="my.telegram.org에서 발급받은 API ID")],
+    api_hash: Annotated[str, typer.Option(help="my.telegram.org에서 발급받은 API Hash")],
+) -> None:
+    """비공개 채널 수집용 Telethon 세션 문자열을 생성한다 (1회성 대화형 로그인).
+
+    실행하면 전화번호와 텔레그램으로 전송된 인증 코드를 터미널에서 직접 입력해야 한다.
+    생성된 세션 문자열을 TELEGRAM_SESSION 환경변수에 저장하면, 이후 실행에서는
+    다시 로그인할 필요가 없다. `telethon` 패키지가 설치되어 있어야 한다
+    (`uv sync --extra telethon`).
+    """
+    try:
+        import asyncio
+
+        from telethon import TelegramClient
+        from telethon.sessions import StringSession
+    except ImportError:
+        typer.echo(
+            "telethon 패키지가 설치되어 있지 않다. 먼저 `uv sync --extra telethon`을 실행하라."
+        )
+        raise typer.Exit(code=1) from None
+
+    async def _login() -> str:
+        client = TelegramClient(StringSession(), api_id, api_hash)
+        await client.start()
+        session_string = client.session.save()
+        await client.disconnect()
+        return str(session_string)
+
+    session_string = asyncio.run(_login())
+    typer.echo("\n생성된 TELEGRAM_SESSION 값 (.env에 저장하라):\n")
+    typer.echo(session_string)
 
 
 @app.command()
