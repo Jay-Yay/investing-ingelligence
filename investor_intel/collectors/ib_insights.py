@@ -16,7 +16,6 @@ from investor_intel.collectors.ib_insights_parser import (
     parse_citi_insights_index,
     parse_gs_insights_index,
     parse_jpm_insights_index,
-    parse_naver_research_index,
     parse_vanguard_insights_index,
 )
 from investor_intel.collectors.pdf_extract import PdfExtractError, extract_pdf_text
@@ -70,12 +69,6 @@ IB_INSIGHTS_SOURCES: dict[str, IBInsightsSource] = {
         index_url="https://investor.vanguard.com/investor-resources-education",
         parse_index=parse_vanguard_insights_index,
         base_url="https://investor.vanguard.com",
-    ),
-    "naver_research": IBInsightsSource(
-        index_url="https://finance.naver.com/research/company_list.naver",
-        parse_index=parse_naver_research_index,
-        base_url="https://finance.naver.com",
-        language="ko",
     ),
 }
 

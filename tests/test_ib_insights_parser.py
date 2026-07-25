@@ -6,7 +6,6 @@ from investor_intel.collectors.ib_insights_parser import (
     parse_citi_insights_index,
     parse_gs_insights_index,
     parse_jpm_insights_index,
-    parse_naver_research_index,
     parse_vanguard_insights_index,
 )
 
@@ -266,52 +265,3 @@ def test_find_citi_pdf_link_extracts_ir_redirect_url() -> None:
 
 def test_find_citi_pdf_link_returns_none_when_absent() -> None:
     assert find_citi_pdf_link("no download button here", "https://www.citigroup.com") is None
-
-
-_NAVER_RESEARCH_HTML = """
-<html><body><table>
-<tr>
-  <td style="padding-left:10">
-    <a href="/item/main.naver?code=017670" title="SK텔레콤" class="stock_item">SK텔레콤</a>
-  </td>
-  <td>
-    <a href="company_read.naver?nid=94484&page=1">AIDC 사업개발 전문회사 SK하이퍼 설립 관련</a>
-  </td>
-  <td>신한투자증권</td>
-  <td class="file"></td>
-  <td class="date" style="padding-left:5px">26.07.24</td>
-  <td class="date">6138</td>
-</tr>
-<tr>
-  <td style="padding-left:10">
-    <a href="/item/main.naver?code=251970" title="펌텍코리아" class="stock_item">펌텍코리아</a>
-  </td>
-  <td><a href="company_read.naver?nid=94483&page=1">정상화, 개선 그리고 추가 증설</a></td>
-  <td>한화투자증권</td>
-  <td class="file">
-    <a href="https://stock.pstatic.net/stock-research/company/16/report.pdf" target="_blank">
-      <img src="https://ssl.pstatic.net/imgstock/images5/down.gif" alt="pdf">
-    </a>
-  </td>
-  <td class="date" style="padding-left:5px">26.07.24</td>
-  <td class="date">3664</td>
-</tr>
-</table></body></html>
-"""
-
-
-def test_parse_naver_research_index_extracts_rows_with_and_without_pdf() -> None:
-    articles = parse_naver_research_index(_NAVER_RESEARCH_HTML)
-
-    assert len(articles) == 2
-    first = articles[0]
-    assert first.title == "[SK텔레콤] AIDC 사업개발 전문회사 SK하이퍼 설립 관련"
-    assert first.url == "https://finance.naver.com/research/company_read.naver?nid=94484"
-    assert first.author == "신한투자증권"
-    assert first.published_at.isoformat() == "2026-07-24"
-    assert first.pdf_url is None
-
-    second = articles[1]
-    assert second.title == "[펌텍코리아] 정상화, 개선 그리고 추가 증설"
-    assert second.author == "한화투자증권"
-    assert second.pdf_url == "https://stock.pstatic.net/stock-research/company/16/report.pdf"

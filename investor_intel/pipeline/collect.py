@@ -13,6 +13,7 @@ from investor_intel.collectors.essay import EssayCollector
 from investor_intel.collectors.http_client import SimpleHttpClient
 from investor_intel.collectors.ib_insights import IB_INSIGHTS_SOURCES, IBInsightsCollector
 from investor_intel.collectors.naver_blog import NaverBlogCollector
+from investor_intel.collectors.naver_research import NaverResearchCollector
 from investor_intel.collectors.sec_client import SECClient
 from investor_intel.collectors.sec_filings import SECFilingsCollector
 from investor_intel.collectors.sec_thirteenf import ThirteenFCollector
@@ -234,6 +235,11 @@ def build_collect_entries(
             elif source.type == "telegram":
                 telegram_collector = TelegramCollector(source, http_client, checkpoint_store)
                 entries.append((telegram_collector, SourceType.TELEGRAM, source.name))
+            elif source.type == "naver_research":
+                naver_research_collector = NaverResearchCollector(
+                    source, http_client, checkpoint_store
+                )
+                entries.append((naver_research_collector, SourceType.IB_INSIGHTS, source.name))
             elif source.type in IB_INSIGHTS_SOURCES:
                 ib_source = IB_INSIGHTS_SOURCES[source.type]
                 ib_collector = IBInsightsCollector(

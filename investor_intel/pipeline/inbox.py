@@ -13,6 +13,7 @@ import yaml
 from investor_intel.collectors.dart_client import DartClient
 from investor_intel.collectors.dart_corp_code import resolve_dart_company
 from investor_intel.collectors.ib_insights import IB_INSIGHTS_SOURCES
+from investor_intel.collectors.naver_research import LIST_URL as NAVER_RESEARCH_LIST_URL
 from investor_intel.collectors.sec_client import SECClient
 from investor_intel.config.loaders import (
     load_companies_yaml,
@@ -30,7 +31,7 @@ from investor_intel.models.config import (
 _CHECKLIST_RE = re.compile(r"^-\s\[([ xX])\]\s*(.*)$")
 _ENTRY_RE = re.compile(r"^(\w+):\s*(.+)$")
 
-IB_INSIGHTS_TYPES = set(IB_INSIGHTS_SOURCES.keys())
+IB_INSIGHTS_TYPES = set(IB_INSIGHTS_SOURCES.keys()) | {"naver_research"}
 SUPPORTED_TYPES = {
     "naver",
     "telegram",
@@ -155,7 +156,12 @@ def resolve_telegram_private(value: str) -> SourceConfig:
 def resolve_ib_insights(type_: str, value: str) -> SourceConfig:
     # unlike naver/telegram, there is exactly one fixed index page per bank - `value` is just a
     # free-text label for the id/name (e.g. the bank's short name), not a URL the user supplies.
-    index_url = IB_INSIGHTS_SOURCES[type_].index_url
+    # naver_research isn't in IB_INSIGHTS_SOURCES (it uses its own dedicated collector, not the
+    # generic IBInsightsCollector), so its display URL is looked up separately.
+    if type_ == "naver_research":
+        index_url = NAVER_RESEARCH_LIST_URL
+    else:
+        index_url = IB_INSIGHTS_SOURCES[type_].index_url
     slug = re.sub(r"[^a-z0-9]+", "_", value.strip().lower()).strip("_") or type_
     return SourceConfig(
         id=f"{type_}_{slug}",
