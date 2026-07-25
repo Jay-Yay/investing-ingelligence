@@ -5,6 +5,7 @@ import respx
 
 from investor_intel.collectors.http_client import SimpleHttpClient
 from investor_intel.collectors.naver_html_parser import (
+    fetch_post_detail,
     fetch_posts_via_html,
     parse_post_detail_html,
     parse_post_log_nos,
@@ -43,6 +44,20 @@ def test_parse_post_detail_html_extracts_title_body_and_kst_datetime() -> None:
     assert "매출과 CapEx가 동시에 증가했다" in detail.body_text
     assert "한 줄 요약" in detail.body_text
     assert detail.published_at.isoformat() == "2026-07-23T11:30:00+09:00"
+
+
+@respx.mock
+def test_fetch_post_detail_fetches_and_parses_single_post() -> None:
+    respx.get(_DETAIL_URL.format(log_no="224355263150")).mock(
+        return_value=httpx.Response(200, text=_post_view_html())
+    )
+
+    client = SimpleHttpClient()
+    detail = fetch_post_detail(client, _BLOG_ID, "224355263150")
+    client.close()
+
+    assert detail.title == "구글 실적 후기"
+    assert "매출과 CapEx가 동시에 증가했다" in detail.body_text
 
 
 @respx.mock

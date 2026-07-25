@@ -22,6 +22,36 @@ _RSS_FEED = """<?xml version="1.0" encoding="UTF-8"?>
 </rss>
 """
 
+_POST_VIEW_HTML = """<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="UTF-8"></head>
+<body>
+<div class="se-viewer">
+  <div class="blog_content">
+    <span class="setting">
+      <span class="desc">
+        <span class="se_publishDate pcol2">2026. 7. 1. 09:00</span>
+      </span>
+    </span>
+  </div>
+  <div class="se-module se-module-text se-title-text">
+    <p class="se-text-paragraph"><span>테스트 포스트</span></p>
+  </div>
+  <div class="se-main-container">
+    <div class="se-component se-text se-l-default">
+      <div class="se-component-content">
+        <div class="se-section se-section-text se-l-default">
+          <div class="se-module se-module-text">
+            <p class="se-text-paragraph"><span>본문 전체 내용</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>"""
+
 _VALID_CLAIMS_INPUT = {
     "claims": [
         {
@@ -77,6 +107,9 @@ def test_run_daily_happy_path_produces_report(tmp_path) -> None:
     _write_sources_yaml(config_dir)
     respx.get("https://rss.blog.naver.com/testblog.xml").mock(
         return_value=httpx.Response(200, text=_RSS_FEED)
+    )
+    respx.get("https://blog.naver.com/PostView.naver?blogId=testblog&logNo=1").mock(
+        return_value=httpx.Response(200, text=_POST_VIEW_HTML)
     )
 
     vault_path = tmp_path / "vault"

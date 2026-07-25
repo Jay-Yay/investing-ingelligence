@@ -117,6 +117,11 @@ def parse_post_detail_html(html_text: str) -> _PostDetail:
     )
 
 
+def fetch_post_detail(client: SimpleHttpClient, blog_id: str, log_no: str) -> _PostDetail:
+    detail_html = client.get_text(_DETAIL_URL.format(blog_id=blog_id, log_no=log_no))
+    return parse_post_detail_html(detail_html)
+
+
 def fetch_posts_via_html(client: SimpleHttpClient, blog_id: str) -> list[NaverPost]:
     log_nos: list[str] = []
     for page in range(1, _HTML_FALLBACK_MAX_PAGES + 1):
@@ -128,8 +133,7 @@ def fetch_posts_via_html(client: SimpleHttpClient, blog_id: str) -> list[NaverPo
 
     posts: list[NaverPost] = []
     for log_no in log_nos:
-        detail_html = client.get_text(_DETAIL_URL.format(blog_id=blog_id, log_no=log_no))
-        detail = parse_post_detail_html(detail_html)
+        detail = fetch_post_detail(client, blog_id, log_no)
         link = f"https://blog.naver.com/{blog_id}/{log_no}"
         posts.append(
             NaverPost(

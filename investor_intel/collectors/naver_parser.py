@@ -34,3 +34,7 @@ def parse_naver_rss(xml_text: str) -> list[NaverPost]:
 
 def extract_blog_id(source_url: str) -> str:
     return source_url.rstrip("/").rsplit("/", 1)[-1]
+
+
+def extract_log_no(url: str) -> str:
+    return url.split("?", 1)[0].rstrip("/").rsplit("/", 1)[-1]

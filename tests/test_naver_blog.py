@@ -29,6 +29,15 @@ def _mock_rss() -> None:
             200, text=(FIXTURES / "rss_feed.xml").read_text(encoding="utf-8")
         )
     )
+    _mock_post_view_detail()
+
+
+def _mock_post_view_detail() -> None:
+    post_view_html = (FIXTURES / "post_view.html").read_text(encoding="utf-8")
+    for log_no in ("223456789", "223456790"):
+        respx.get(
+            f"https://blog.naver.com/PostView.naver?blogId=engineerinvestor&logNo={log_no}"
+        ).mock(return_value=httpx.Response(200, text=post_view_html))
 
 
 def _mock_rss_unavailable() -> None:
@@ -82,6 +91,23 @@ def test_backfill_returns_only_in_window_posts(tmp_path) -> None:
     assert item.language == "ko"
     assert item.content_capture_mode == "full"
     assert item.document_type == "blog_post"
+
+
+@respx.mock
+@freeze_time("2024-05-03")
+def test_backfill_uses_full_body_from_detail_page_not_rss_summary(tmp_path) -> None:
+    _mock_rss()
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    client = SimpleHttpClient()
+    collector = NaverBlogCollector(_source(), client, CheckpointStore(conn))
+
+    result = collector.backfill(days=1)
+    client.close()
+
+    item = result.items[0]
+    assert "매출과 CapEx가 동시에 증가했다" in item.body_text
+    assert "엔비디아 이번 분기 실적이 시장 예상을 상회했다" not in item.body_text
 
 
 @respx.mock
