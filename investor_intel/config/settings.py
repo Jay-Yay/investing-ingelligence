@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -21,3 +22,18 @@ class AppSettings(BaseSettings):
     sqlite_path: Path = Path("./data/index.sqlite3")
     config_dir: Path = Path("./config")
     timezone: str = "Asia/Seoul"
+
+    @field_validator(
+        "anthropic_api_key",
+        "sec_user_agent",
+        "dart_api_key",
+        "telegram_api_id",
+        "telegram_api_hash",
+        "telegram_session",
+        mode="before",
+    )
+    @classmethod
+    def _blank_to_none(cls, value: str | None) -> str | None:
+        if isinstance(value, str) and value.strip() == "":
+            return None
+        return value

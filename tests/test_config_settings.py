@@ -23,3 +23,11 @@ def test_env_overrides(monkeypatch) -> None:
     settings = AppSettings(_env_file=None)
     assert settings.anthropic_model == "claude-custom-test"
     assert settings.sec_user_agent == "Test Agent test@example.com"
+
+
+def test_blank_env_value_treated_as_unset(monkeypatch) -> None:
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "")
+    monkeypatch.setenv("DART_API_KEY", "   ")
+    settings = AppSettings(_env_file=None)
+    assert settings.anthropic_api_key is None
+    assert settings.dart_api_key is None
