@@ -6,7 +6,7 @@ from datetime import date, timedelta
 from investor_intel.collectors.base import CheckpointStore, CollectItem, CollectResult
 from investor_intel.collectors.http_client import SimpleHttpClient
 from investor_intel.collectors.naver_document import render_naver_post_body
-from investor_intel.collectors.naver_html_parser import fetch_post_detail, fetch_posts_via_html
+from investor_intel.collectors.naver_html_parser import fetch_post_body, fetch_posts_via_html
 from investor_intel.collectors.naver_parser import (
     NaverPost,
     extract_blog_id,
@@ -43,8 +43,8 @@ class NaverBlogCollector:
 
     def _build_item(self, post: NaverPost) -> CollectItem:
         log_no = extract_log_no(post.guid or post.link)
-        detail = fetch_post_detail(self._client, self._blog_id, log_no)
-        full_post = replace(post, description=detail.body_text)
+        body_text = fetch_post_body(self._client, self._blog_id, log_no)
+        full_post = replace(post, description=body_text)
         body = render_naver_post_body(full_post, self._source, full_post.link)
 
         return CollectItem(

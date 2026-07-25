@@ -122,6 +122,20 @@ def fetch_post_detail(client: SimpleHttpClient, blog_id: str, log_no: str) -> _P
     return parse_post_detail_html(detail_html)
 
 
+def parse_post_body_html(html_text: str) -> str:
+    parser = _PostViewParser()
+    parser.feed(html_text)
+    return "\n\n".join(parser.body_paragraphs)
+
+
+def fetch_post_body(client: SimpleHttpClient, blog_id: str, log_no: str) -> str:
+    # unlike fetch_post_detail, this never touches se_publishDate - posts published within the
+    # last day render a relative string there ("N시간 전") that datetime.strptime can't parse,
+    # but body text extraction doesn't need the date at all.
+    detail_html = client.get_text(_DETAIL_URL.format(blog_id=blog_id, log_no=log_no))
+    return parse_post_body_html(detail_html)
+
+
 def fetch_posts_via_html(client: SimpleHttpClient, blog_id: str) -> list[NaverPost]:
     log_nos: list[str] = []
     for page in range(1, _HTML_FALLBACK_MAX_PAGES + 1):

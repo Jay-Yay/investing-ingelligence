@@ -112,6 +112,37 @@ def test_backfill_uses_full_body_from_detail_page_not_rss_summary(tmp_path) -> N
 
 @respx.mock
 @freeze_time("2024-05-03")
+def test_backfill_succeeds_when_detail_page_has_relative_publish_date(tmp_path) -> None:
+    # a post published within the last day renders se_publishDate as a relative string
+    # ("N시간 전") on PostView.naver instead of an absolute timestamp - body enrichment must
+    # not fail just because that field isn't a parseable date.
+    respx.get("https://rss.blog.naver.com/engineerinvestor.xml").mock(
+        return_value=httpx.Response(
+            200, text=(FIXTURES / "rss_feed.xml").read_text(encoding="utf-8")
+        )
+    )
+    respx.get(
+        "https://blog.naver.com/PostView.naver?blogId=engineerinvestor&logNo=223456790"
+    ).mock(
+        return_value=httpx.Response(
+            200, text=(FIXTURES / "post_view_relative_date.html").read_text(encoding="utf-8")
+        )
+    )
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    client = SimpleHttpClient()
+    collector = NaverBlogCollector(_source(), client, CheckpointStore(conn))
+
+    result = collector.backfill(days=1)
+    client.close()
+
+    assert result.success
+    assert result.new_count == 1
+    assert "발행 직후라 상대 시간으로 표시되는 글이다" in result.items[0].body_text
+
+
+@respx.mock
+@freeze_time("2024-05-03")
 def test_collect_incremental_is_idempotent(tmp_path) -> None:
     _mock_rss()
     conn = connect(tmp_path / "index.sqlite3")

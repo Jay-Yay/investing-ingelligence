@@ -5,6 +5,7 @@ import respx
 
 from investor_intel.collectors.http_client import SimpleHttpClient
 from investor_intel.collectors.naver_html_parser import (
+    fetch_post_body,
     fetch_post_detail,
     fetch_posts_via_html,
     parse_post_detail_html,
@@ -26,6 +27,10 @@ def _list_json(name: str) -> str:
 
 def _post_view_html() -> str:
     return (FIXTURES / "post_view.html").read_text(encoding="utf-8")
+
+
+def _post_view_relative_date_html() -> str:
+    return (FIXTURES / "post_view_relative_date.html").read_text(encoding="utf-8")
 
 
 def test_parse_post_log_nos_returns_all_ids() -> None:
@@ -58,6 +63,22 @@ def test_fetch_post_detail_fetches_and_parses_single_post() -> None:
 
     assert detail.title == "구글 실적 후기"
     assert "매출과 CapEx가 동시에 증가했다" in detail.body_text
+
+
+@respx.mock
+def test_fetch_post_body_succeeds_even_when_publish_date_is_relative() -> None:
+    # se_publishDate renders as a relative string ("N시간 전") for posts published within the
+    # last day - parse_post_detail_html/fetch_post_detail can't parse that as a date, but
+    # fetch_post_body only needs the body text and must not fail on it.
+    respx.get(_DETAIL_URL.format(log_no="224356537553")).mock(
+        return_value=httpx.Response(200, text=_post_view_relative_date_html())
+    )
+
+    client = SimpleHttpClient()
+    body = fetch_post_body(client, _BLOG_ID, "224356537553")
+    client.close()
+
+    assert "발행 직후라 상대 시간으로 표시되는 글이다" in body
 
 
 @respx.mock
