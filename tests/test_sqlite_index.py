@@ -7,6 +7,7 @@ from investor_intel.storage.content_hash import compute_content_hash, compute_st
 from investor_intel.storage.obsidian_repo import write_document
 from investor_intel.storage.sqlite_index import (
     connect,
+    find_dart_company_by_stock_code,
     find_dart_corp_code,
     find_duplicate,
     get_collector_state,
@@ -248,3 +249,12 @@ def test_replace_dart_corp_codes_clears_previous_entries(tmp_path: Path) -> None
 
     assert find_dart_corp_code(conn, stock_code="005930", name=None) is None
     assert find_dart_corp_code(conn, stock_code="123456", name=None) == "00111111"
+
+
+def test_find_dart_company_by_stock_code_returns_code_and_name(tmp_path: Path) -> None:
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    replace_dart_corp_codes(conn, _entries())
+
+    assert find_dart_company_by_stock_code(conn, "005930") == ("00126380", "삼성전자")
+    assert find_dart_company_by_stock_code(conn, "000000") is None

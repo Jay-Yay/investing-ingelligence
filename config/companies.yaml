@@ -1,0 +1,18 @@
+companies:
+  - ticker: NBIS
+    cik: "0001513845"
+    name: Nebius Group
+    filing_types: [20-F, 6-K]
+    is_foreign_private_issuer: true
+
+  - ticker: BE
+    cik: "0001664703"
+    name: Bloom Energy
+    filing_types: [10-K, 10-Q, 8-K]
+    is_foreign_private_issuer: false
+
+  - ticker: RDDT
+    cik: "0001713445"
+    name: Reddit
+    filing_types: [10-K, 10-Q, 8-K]
+    is_foreign_private_issuer: false

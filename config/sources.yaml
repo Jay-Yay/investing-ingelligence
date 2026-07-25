@@ -1,0 +1,22 @@
+sources:
+  - id: naver_engineerinvestor
+    type: naver
+    name: engineerinvestor
+    enabled: true
+    url: https://m.blog.naver.com/engineerinvestor
+    author: engineerinvestor
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags: [blog, korean]
+
+  - id: telegram_allbareun
+    type: telegram
+    name: allbareun
+    enabled: true
+    url: https://t.me/s/allbareun
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags: [telegram, korean]

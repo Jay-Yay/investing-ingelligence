@@ -1,0 +1,6 @@
+dart_companies:
+  # corp_code는 생략 가능하다 - 최초 수집 시 ticker/name으로 OpenDART corpCode.xml에서
+  # 자동 조회 후 캐시된다. 직접 알고 있다면 채워도 된다.
+  - ticker: "005930"
+    name: 삼성전자
+    report_types: [A, B]

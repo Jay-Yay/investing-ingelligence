@@ -266,5 +266,15 @@ def find_dart_corp_code(
         ).fetchone()
         if row:
             return str(row["corp_code"])
+    return None
 
+
+def find_dart_company_by_stock_code(
+    conn: sqlite3.Connection, stock_code: str
+) -> tuple[str, str] | None:
+    row = conn.execute(
+        "SELECT corp_code, corp_name FROM dart_corp_codes WHERE stock_code = ?", (stock_code,)
+    ).fetchone()
+    if row:
+        return str(row["corp_code"]), str(row["corp_name"])
     return None

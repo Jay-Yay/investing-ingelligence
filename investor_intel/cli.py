@@ -7,7 +7,9 @@ from typing import Annotated
 import typer
 
 from investor_intel.collectors.base import CheckpointStore
+from investor_intel.collectors.dart_client import DartClient
 from investor_intel.collectors.http_client import SimpleHttpClient
+from investor_intel.collectors.sec_client import SECClient
 from investor_intel.config.settings import AppSettings
 from investor_intel.llm.client import AnthropicClient
 from investor_intel.llm.cost_tracker import CostTracker
@@ -16,6 +18,7 @@ from investor_intel.market_data.coingecko_adapter import CoinGeckoAdapter
 from investor_intel.market_data.yfinance_adapter import YahooFinanceAdapter
 from investor_intel.pipeline.analyze import analyze_pending_documents
 from investor_intel.pipeline.collect import build_collect_entries, run_collectors
+from investor_intel.pipeline.inbox import InboxDeps, sync_inbox
 from investor_intel.pipeline.orchestrator import (
     ANALYZE_SYSTEM_PROMPT,
     DAILY_REPORT_SYSTEM_PROMPT,
@@ -126,6 +129,27 @@ timezone: Asia/Seoul
 daily_report_time: "09:00"
 """
 
+INBOX_SOURCES_MD = """# 소스 Inbox
+
+아래에 `- [ ] 타입: 값` 형식으로 한 줄씩 추가하면 `uv run python -m investor_intel
+sync-inbox` 실행 시 알맞은 config/*.yaml에 자동으로 반영된다. 처리된 줄은 `- [x]`로
+자동 변경되어 재실행해도 중복 추가되지 않는다.
+
+지원 타입과 형식 예시 (아래는 설명용이며 체크리스트 항목이 아니다):
+
+```
+naver: https://m.blog.naver.com/블로그id
+telegram: https://t.me/s/채널명
+telegram_private: https://t.me/채널유저네임
+sec: 티커 (예: AAPL)
+dart: 종목코드 (예: 005930)
+investor: CIK | 에세이URL(선택)
+```
+
+## 추가할 소스
+
+"""
+
 PORTFOLIO_YAML = """as_of: 2026-07-24
 base_currency: KRW
 constraints:
@@ -216,6 +240,15 @@ vault의 Markdown+frontmatter가 유일한 원본(source of truth)이므로 이 
 복구된다.
 
 ## 새 소스/기업/투자자 추가
+
+가장 간단한 방법은 `vault/00_System/inbox_sources.md`에 `- [ ] 타입: 값` 한 줄을 추가하고
+`uv run python -m investor_intel sync-inbox`를 실행하는 것이다. 티커/CIK/종목코드만 적으면
+회사명 등 나머지 메타데이터는 SEC/DART 공개 API로 자동 조회되어 알맞은 config/*.yaml에
+추가되고, 처리된 줄은 `- [x]`로 표시되어 재실행해도 중복 추가되지 않는다. `sec` 타입은
+filing_types를 국내 상장사 기본값(10-K/10-Q/8-K)으로 채우므로, Nebius처럼 외국민간발행인
+(20-F/6-K)이면 `companies.yaml`에서 한 번 직접 고쳐야 한다.
+
+직접 YAML을 편집해도 된다:
 
 - 네이버 블로그, 텔레그램 채널 -> `config/sources.yaml` (`init`이 생성한 예제 항목 형식을
   그대로 따른다)
@@ -310,6 +343,7 @@ def init(
     _write_if_missing(vault_path / "30_Portfolio" / "portfolio.yaml", PORTFOLIO_YAML)
     _write_if_missing(config_dir.parent / ".env.example", ENV_EXAMPLE)
     _write_if_missing(vault_path / "00_System" / "Runbook.md", RUNBOOK_MD)
+    _write_if_missing(vault_path / "00_System" / "inbox_sources.md", INBOX_SOURCES_MD)
 
     typer.echo(f"초기화 완료: vault={vault_path}, config={config_dir}")
 
@@ -578,3 +612,58 @@ def run_daily_cmd(
         typer.echo(f"리포트 생성 완료: {result.report_path}")
 
     raise typer.Exit(code=0 if result.success else 1)
+
+
+@app.command(name="sync-inbox")
+def sync_inbox_cmd(
+    config_dir: Annotated[Path, typer.Option(help="Config directory")] = Path("./config"),
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    sqlite_path: Annotated[Path, typer.Option(help="SQLite index path")] = Path(
+        "./data/index.sqlite3"
+    ),
+) -> None:
+    """vault/00_System/inbox_sources.md의 미체크 항목을 config/*.yaml에 반영한다."""
+    settings = AppSettings()
+    inbox_path = vault_path / "00_System" / "inbox_sources.md"
+    if not inbox_path.exists():
+        typer.echo(f"{inbox_path} 파일이 없다. `init`을 먼저 실행하거나 직접 생성하라.")
+        raise typer.Exit(code=1)
+
+    sec_client = SECClient(user_agent=settings.sec_user_agent) if settings.sec_user_agent else None
+    dart_conn = None
+    dart_client = None
+    if settings.dart_api_key:
+        dart_conn = connect(sqlite_path)
+        init_db(dart_conn)
+        dart_client = DartClient(api_key=settings.dart_api_key)
+
+    try:
+        deps = InboxDeps(
+            config_dir=config_dir,
+            sec_client=sec_client,
+            sec_ticker_cache_path=sqlite_path.parent / "sec_company_tickers.json",
+            dart_conn=dart_conn,
+            dart_client=dart_client,
+            dart_api_key=settings.dart_api_key,
+        )
+        results, _ = sync_inbox(inbox_path, deps)
+    finally:
+        if sec_client is not None:
+            sec_client.close()
+        if dart_client is not None:
+            dart_client.close()
+        if dart_conn is not None:
+            dart_conn.close()
+
+    had_failure = False
+    for result in results:
+        typer.echo(f"[줄 {result.line_no}] {result.status} ({result.type}) - {result.message}")
+        if result.status in ("failed", "parse_error"):
+            had_failure = True
+
+    added = sum(1 for r in results if r.status == "added")
+    skipped = sum(1 for r in results if r.status == "skipped_duplicate")
+    failed = sum(1 for r in results if r.status in ("failed", "parse_error"))
+    typer.echo(f"총 {added}건 추가, {skipped}건 스킵(중복), {failed}건 실패")
+
+    raise typer.Exit(code=1 if had_failure else 0)

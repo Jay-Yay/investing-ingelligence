@@ -8,6 +8,7 @@ from investor_intel.collectors.dart_client import DartClient
 from investor_intel.collectors.dart_corp_code import (
     parse_corp_code_xml,
     resolve_corp_code,
+    resolve_dart_company,
     unzip_corp_code_xml,
 )
 from investor_intel.storage.sqlite_index import connect, init_db, is_dart_corp_code_cache_populated
@@ -132,3 +133,33 @@ def test_resolve_corp_code_returns_none_when_unresolvable(tmp_path) -> None:
     client.close()
 
     assert corp_code is None
+
+
+@respx.mock
+def test_resolve_dart_company_returns_code_and_name_on_cold_cache(tmp_path) -> None:
+    respx.get(_CORP_CODE_URL).mock(
+        return_value=httpx.Response(200, content=_sample_zip_bytes())
+    )
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    client = DartClient(api_key=_API_KEY)
+
+    result = resolve_dart_company(conn, client, _API_KEY, stock_code="005930")
+    client.close()
+
+    assert result == ("00126380", "삼성전자")
+
+
+@respx.mock
+def test_resolve_dart_company_returns_none_when_unresolvable(tmp_path) -> None:
+    respx.get(_CORP_CODE_URL).mock(
+        return_value=httpx.Response(200, content=_sample_zip_bytes())
+    )
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    client = DartClient(api_key=_API_KEY)
+
+    result = resolve_dart_company(conn, client, _API_KEY, stock_code="000000")
+    client.close()
+
+    assert result is None

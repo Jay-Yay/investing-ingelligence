@@ -1,0 +1,12 @@
+investors:
+  - id: duquesne_family_office
+    name: Stanley Druckenmiller
+    fund_name: Duquesne Family Office LLC
+    cik: "0001536411"
+    related_essay_url: null
+
+  - id: situational_awareness_lp
+    name: Leopold Aschenbrenner
+    fund_name: Situational Awareness LP
+    cik: "0002045724"
+    related_essay_url: https://situational-awareness.ai/

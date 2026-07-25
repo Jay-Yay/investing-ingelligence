@@ -8,6 +8,7 @@ from dataclasses import dataclass
 
 from investor_intel.collectors.dart_client import DartClient
 from investor_intel.storage.sqlite_index import (
+    find_dart_company_by_stock_code,
     find_dart_corp_code,
     is_dart_corp_code_cache_populated,
     replace_dart_corp_codes,
@@ -66,3 +67,18 @@ def resolve_corp_code(
 
     _refresh_cache(conn, client, api_key)
     return find_dart_corp_code(conn, stock_code=ticker, name=name)
+
+
+def resolve_dart_company(
+    conn: sqlite3.Connection, client: DartClient, api_key: str, *, stock_code: str
+) -> tuple[str, str] | None:
+    """Look up (corp_code, corp_name) for a stock code, refreshing the cache if cold or missed."""
+    if not is_dart_corp_code_cache_populated(conn):
+        _refresh_cache(conn, client, api_key)
+
+    result = find_dart_company_by_stock_code(conn, stock_code)
+    if result is not None:
+        return result
+
+    _refresh_cache(conn, client, api_key)
+    return find_dart_company_by_stock_code(conn, stock_code)
