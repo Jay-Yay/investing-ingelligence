@@ -200,33 +200,20 @@ def test_build_collect_entries_adds_telegram_private_when_credentials_present(
 
 
 def test_build_collect_entries_adds_ib_insights_collectors(tmp_path) -> None:
+    from investor_intel.collectors.ib_insights import IB_INSIGHTS_SOURCES
+
     _write_sources_yaml(
         tmp_path,
         [
             {
-                "id": "gs_insights_goldman_sachs",
-                "type": "gs_insights",
-                "name": "goldman-sachs",
+                "id": f"{type_}_test",
+                "type": type_,
+                "name": type_,
                 "enabled": True,
-                "url": "https://www.goldmansachs.com/insights",
+                "url": ib_source.index_url,
                 "author": None,
-            },
-            {
-                "id": "jpm_insights_jpmorgan",
-                "type": "jpm_insights",
-                "name": "jpmorgan",
-                "enabled": True,
-                "url": "https://www.jpmorgan.com/insights/research",
-                "author": None,
-            },
-            {
-                "id": "bofa_insights_bofa",
-                "type": "bofa_insights",
-                "name": "bofa",
-                "enabled": True,
-                "url": "https://business.bofa.com/en-us/content/institutional-investing-insights.html",
-                "author": None,
-            },
+            }
+            for type_, ib_source in IB_INSIGHTS_SOURCES.items()
         ],
     )
     conn = connect(tmp_path / "index.sqlite3")
@@ -238,9 +225,5 @@ def test_build_collect_entries_adds_ib_insights_collectors(tmp_path) -> None:
 
     assert setup_errors == []
     ib_entries = [e for e in entries if isinstance(e[0], IBInsightsCollector)]
-    assert {source_name for _, _, source_name in ib_entries} == {
-        "goldman-sachs",
-        "jpmorgan",
-        "bofa",
-    }
+    assert {source_name for _, _, source_name in ib_entries} == set(IB_INSIGHTS_SOURCES.keys())
     assert all(source_type == SourceType.IB_INSIGHTS for _, source_type, _ in ib_entries)

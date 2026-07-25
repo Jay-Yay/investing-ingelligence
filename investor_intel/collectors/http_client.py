@@ -56,5 +56,8 @@ class SimpleHttpClient:
     def get_json(self, url: str) -> Any:
         return self._request(url).json()
 
+    def get(self, url: str) -> httpx.Response:
+        return self._request(url)
+
     def close(self) -> None:
         self._client.close()

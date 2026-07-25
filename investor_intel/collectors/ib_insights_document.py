@@ -12,13 +12,20 @@ IB_INSIGHTS_LIMITATIONS_NOTE = (
 )
 
 
-def render_ib_insights_body(article: IBArticle, source: SourceConfig) -> str:
+def render_ib_insights_body(
+    article: IBArticle, source: SourceConfig, pdf_text: str | None = None
+) -> str:
+    header = [f"{source.name} — {article.title}"]
+    if pdf_text:
+        header.append("(첨부된 PDF 리포트에서 추출한 원문 전체)")
+    body_text = pdf_text or article.summary or "(요약 미제공 - 원문 링크 참고)"
+
     sections = [
         "## 원문",
         "",
-        f"{source.name} — {article.title}",
+        *header,
         "",
-        article.summary or "(요약 미제공 - 원문 링크 참고)",
+        body_text,
         "",
         "## 수집 시 유의사항",
         "",

@@ -2,11 +2,25 @@ investors:
   - id: duquesne_family_office
     name: Stanley Druckenmiller
     fund_name: Duquesne Family Office LLC
-    cik: "0001536411"
+    cik: '0001536411'
     related_essay_url: null
-
   - id: situational_awareness_lp
     name: Leopold Aschenbrenner
     fund_name: Situational Awareness LP
-    cik: "0002045724"
+    cik: '0002045724'
     related_essay_url: https://situational-awareness.ai/
+  - id: berkshire_hathaway_inc
+    name: BERKSHIRE HATHAWAY INC
+    fund_name: BERKSHIRE HATHAWAY INC
+    cik: 0001067983
+    related_essay_url: null
+  - id: baillie_gifford_co
+    name: BAILLIE GIFFORD & CO
+    fund_name: BAILLIE GIFFORD & CO
+    cik: 0001088875
+    related_essay_url: null
+  - id: pershing_square_capital_management_l_p
+    name: Pershing Square Capital Management, L.P.
+    fund_name: Pershing Square Capital Management, L.P.
+    cik: 0001336528
+    related_essay_url: null

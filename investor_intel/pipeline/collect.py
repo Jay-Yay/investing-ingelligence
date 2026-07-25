@@ -235,9 +235,16 @@ def build_collect_entries(
                 telegram_collector = TelegramCollector(source, http_client, checkpoint_store)
                 entries.append((telegram_collector, SourceType.TELEGRAM, source.name))
             elif source.type in IB_INSIGHTS_SOURCES:
-                index_url, parse_index = IB_INSIGHTS_SOURCES[source.type]
+                ib_source = IB_INSIGHTS_SOURCES[source.type]
                 ib_collector = IBInsightsCollector(
-                    source, http_client, checkpoint_store, index_url, parse_index
+                    source,
+                    http_client,
+                    checkpoint_store,
+                    ib_source.index_url,
+                    ib_source.parse_index,
+                    base_url=ib_source.base_url,
+                    pdf_link_finder=ib_source.pdf_link_finder,
+                    language=ib_source.language,
                 )
                 entries.append((ib_collector, SourceType.IB_INSIGHTS, source.name))
             elif source.type == "telegram_private":

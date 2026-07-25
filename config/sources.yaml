@@ -188,3 +188,47 @@ sources:
     backfill_days: 365
     tags:
       - ib_insights
+  - id: citi_insights_citi
+    type: citi_insights
+    name: citi
+    enabled: true
+    url: https://www.citigroup.com/global/insights/citi-institute
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - ib_insights
+  - id: blackrock_insights_blackrock
+    type: blackrock_insights
+    name: blackrock
+    enabled: true
+    url: https://www.blackrock.com/us/individual/insights
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - ib_insights
+  - id: vanguard_insights_vanguard
+    type: vanguard_insights
+    name: vanguard
+    enabled: true
+    url: https://investor.vanguard.com/investor-resources-education
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - ib_insights
+  - id: naver_research_naver
+    type: naver_research
+    name: naver
+    enabled: true
+    url: https://finance.naver.com/research/company_list.naver
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - ib_insights

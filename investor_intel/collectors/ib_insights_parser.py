@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from datetime import date, datetime
 from html.parser import HTMLParser
@@ -11,6 +12,8 @@ class IBArticle:
     url: str
     published_at: date | None
     summary: str | None
+    pdf_url: str | None = None
+    author: str | None = None
 
 
 def _absolutize(href: str, base_url: str) -> str:
@@ -109,7 +112,7 @@ def parse_gs_insights_index(
 # tracks the sequence rather than nesting depth.
 
 
-def _parse_jpm_date(text: str) -> date | None:
+def _parse_mon_dd_yyyy(text: str) -> date | None:
     try:
         return datetime.strptime(text.strip(), "%b %d, %Y").date()
     except ValueError:
@@ -161,7 +164,7 @@ class _JPMInsightsParser(HTMLParser):
                     IBArticle(
                         title=title,
                         url=self._pending_url,
-                        published_at=_parse_jpm_date("".join(self._pending_date)),
+                        published_at=_parse_mon_dd_yyyy("".join(self._pending_date)),
                         summary="".join(self._pending_summary).strip() or None,
                     )
                 )
@@ -292,3 +295,413 @@ def parse_bofa_insights_index(
         for a in parser.articles
     ]
     return _dedupe_by_url(articles)
+
+
+# --- Citigroup (citigroup.com/global/insights, "Citi Institute") -------------
+# Cards are `<article data-id="gpa-card">` wrapping a title `<h3 class="...title...">`,
+# a summary `<p class="Summary ...">` (which itself malformedly nests a bare `<p>`, hence
+# the depth tracking rather than a flat start/end pair), and eventually an `<a href>` -
+# the anchor comes *after* the text content here, unlike GS/BofA where it wraps everything.
+# No reliable per-card publish date is exposed.
+
+
+class _CitiInsightsParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self._article_depth = 0
+        self._card_article_depth: int | None = None
+        self._h3_depth = 0
+        self._title_h3_depth: int | None = None
+        self._p_depth = 0
+        self._summary_p_depth: int | None = None
+        self._title_parts: list[str] = []
+        self._summary_parts: list[str] = []
+        self._href_captured = False
+
+        self.articles: list[IBArticle] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        attrs_dict = dict(attrs)
+        classes = [c.lower() for c in (attrs_dict.get("class") or "").split()]
+        if tag == "article":
+            self._article_depth += 1
+            if self._card_article_depth is None and attrs_dict.get("data-id") == "gpa-card":
+                self._card_article_depth = self._article_depth
+                self._title_parts = []
+                self._summary_parts = []
+                self._href_captured = False
+        elif tag == "h3":
+            self._h3_depth += 1
+            if (
+                self._card_article_depth is not None
+                and self._title_h3_depth is None
+                and any("title" in c for c in classes)
+            ):
+                self._title_h3_depth = self._h3_depth
+        elif tag == "p":
+            self._p_depth += 1
+            if (
+                self._card_article_depth is not None
+                and self._summary_p_depth is None
+                and any("summary" in c for c in classes)
+            ):
+                self._summary_p_depth = self._p_depth
+        elif tag == "a":
+            href = attrs_dict.get("href")
+            if self._card_article_depth is not None and not self._href_captured and href:
+                title = "".join(self._title_parts).strip()
+                if title:
+                    self.articles.append(
+                        IBArticle(
+                            title=title,
+                            url=href,
+                            published_at=None,
+                            summary="".join(self._summary_parts).strip() or None,
+                        )
+                    )
+                self._href_captured = True
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "h3":
+            if self._title_h3_depth is not None and self._h3_depth == self._title_h3_depth:
+                self._title_h3_depth = None
+            self._h3_depth -= 1
+        elif tag == "p":
+            if self._summary_p_depth is not None and self._p_depth == self._summary_p_depth:
+                self._summary_p_depth = None
+            self._p_depth -= 1
+        elif tag == "article":
+            if (
+                self._card_article_depth is not None
+                and self._article_depth == self._card_article_depth
+            ):
+                self._card_article_depth = None
+            self._article_depth -= 1
+
+    def handle_data(self, data: str) -> None:
+        if self._title_h3_depth is not None:
+            self._title_parts.append(data)
+        if self._summary_p_depth is not None:
+            self._summary_parts.append(data)
+
+
+def parse_citi_insights_index(
+    html_text: str, base_url: str = "https://www.citigroup.com"
+) -> list[IBArticle]:
+    parser = _CitiInsightsParser()
+    parser.feed(html_text)
+    articles = [
+        IBArticle(a.title, _absolutize(a.url, base_url), a.published_at, a.summary)
+        for a in parser.articles
+    ]
+    return _dedupe_by_url(articles)
+
+
+# --- BlackRock (blackrock.com/us/individual/insights) -------------------------
+# Cards are `<a class="... article-wrapper-link ..." href="..." title="...">` - the title is
+# the attribute value directly, no nested text to walk. Inside: an `<div class="attribution-text
+# date">` wrapping the first publish-date `<span>`, and a `<div class="description">` teaser.
+
+
+class _BlackRockInsightsParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self._a_depth = 0
+        self._card_a_depth: int | None = None
+        self._card_href: str | None = None
+        self._card_title: str | None = None
+        self._div_depth = 0
+        self._attribution_div_depth: int | None = None
+        self._description_div_depth: int | None = None
+        self._span_depth = 0
+        self._date_span_depth: int | None = None
+        self._date_span_done = False
+        self._date_parts: list[str] = []
+        self._summary_parts: list[str] = []
+
+        self.articles: list[IBArticle] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        attrs_dict = dict(attrs)
+        classes = (attrs_dict.get("class") or "").split()
+        href = attrs_dict.get("href")
+        title = attrs_dict.get("title")
+        if tag == "a":
+            self._a_depth += 1
+            if (
+                self._card_a_depth is None
+                and "article-wrapper-link" in classes
+                and href
+                and title
+            ):
+                self._card_a_depth = self._a_depth
+                self._card_href = href
+                self._card_title = title
+                self._attribution_div_depth = None
+                self._description_div_depth = None
+                self._date_span_done = False
+                self._date_parts = []
+                self._summary_parts = []
+        elif tag == "div":
+            self._div_depth += 1
+            if self._card_a_depth is not None:
+                if self._attribution_div_depth is None and "attribution-text" in classes:
+                    self._attribution_div_depth = self._div_depth
+                if self._description_div_depth is None and "description" in classes:
+                    self._description_div_depth = self._div_depth
+        elif tag == "span":
+            self._span_depth += 1
+            if (
+                self._attribution_div_depth is not None
+                and not self._date_span_done
+                and self._date_span_depth is None
+            ):
+                self._date_span_depth = self._span_depth
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "span":
+            if self._date_span_depth is not None and self._span_depth == self._date_span_depth:
+                self._date_span_depth = None
+                self._date_span_done = True
+            self._span_depth -= 1
+        elif tag == "div":
+            if (
+                self._attribution_div_depth is not None
+                and self._div_depth == self._attribution_div_depth
+            ):
+                self._attribution_div_depth = None
+            if (
+                self._description_div_depth is not None
+                and self._div_depth == self._description_div_depth
+            ):
+                self._description_div_depth = None
+            self._div_depth -= 1
+        elif tag == "a":
+            if self._card_a_depth is not None and self._a_depth == self._card_a_depth:
+                if self._card_title and self._card_href:
+                    self.articles.append(
+                        IBArticle(
+                            title=self._card_title.strip(),
+                            url=self._card_href,
+                            published_at=_parse_mon_dd_yyyy("".join(self._date_parts)),
+                            summary="".join(self._summary_parts).strip() or None,
+                        )
+                    )
+                self._card_a_depth = None
+                self._card_href = None
+                self._card_title = None
+            self._a_depth -= 1
+
+    def handle_data(self, data: str) -> None:
+        if self._date_span_depth is not None:
+            self._date_parts.append(data)
+        if self._description_div_depth is not None:
+            self._summary_parts.append(data)
+
+
+def parse_blackrock_insights_index(
+    html_text: str, base_url: str = "https://www.blackrock.com"
+) -> list[IBArticle]:
+    parser = _BlackRockInsightsParser()
+    parser.feed(html_text)
+    articles = [
+        IBArticle(a.title, _absolutize(a.url, base_url), a.published_at, a.summary)
+        for a in parser.articles
+    ]
+    return _dedupe_by_url(articles)
+
+
+# --- Vanguard (investor.vanguard.com/investor-resources-education) -----------
+# Cards use a stable `cmp-articlecard-*` class family from Vanguard's CMS component. The
+# title is the `<a class="cmp-articlecard-content__link" title="...">` attribute value, but
+# the description `<div>` is a *sibling* after the anchor closes, not nested inside it - so
+# this tracks state across the flat tag sequence like the JPMorgan parser, not by nesting.
+
+
+class _VanguardInsightsParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.articles: list[IBArticle] = []
+        self._pending_url: str | None = None
+        self._pending_title: str | None = None
+        self._capturing_summary = False
+        self._pending_summary_parts: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        attrs_dict = dict(attrs)
+        classes = (attrs_dict.get("class") or "").split()
+        href = attrs_dict.get("href")
+        title = attrs_dict.get("title")
+        if tag == "a" and "cmp-articlecard-content__link" in classes and href and title:
+            self._flush()
+            self._pending_url = href
+            self._pending_title = title
+        elif (
+            tag == "div"
+            and self._pending_url is not None
+            and "cmp-articlecard-content__description" in classes
+        ):
+            self._capturing_summary = True
+            self._pending_summary_parts = []
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "div" and self._capturing_summary:
+            self._capturing_summary = False
+
+    def handle_data(self, data: str) -> None:
+        if self._capturing_summary:
+            self._pending_summary_parts.append(data)
+
+    def _flush(self) -> None:
+        if self._pending_url and self._pending_title:
+            self.articles.append(
+                IBArticle(
+                    title=self._pending_title.strip(),
+                    url=self._pending_url,
+                    published_at=None,
+                    summary="".join(self._pending_summary_parts).strip() or None,
+                )
+            )
+        self._pending_url = None
+        self._pending_title = None
+        self._capturing_summary = False
+        self._pending_summary_parts = []
+
+    def close(self) -> None:
+        self._flush()
+        super().close()
+
+
+def parse_vanguard_insights_index(
+    html_text: str, base_url: str = "https://investor.vanguard.com"
+) -> list[IBArticle]:
+    parser = _VanguardInsightsParser()
+    parser.feed(html_text)
+    parser.close()
+    articles = [
+        IBArticle(a.title, _absolutize(a.url, base_url), a.published_at, a.summary)
+        for a in parser.articles
+    ]
+    return _dedupe_by_url(articles)
+
+
+# --- PDF link finders ---------------------------------------------------------
+# Some banks attach the actual report as a PDF on the article detail page rather than
+# publishing the full text as HTML. These scan a fetched detail page for a link to that PDF;
+# the collector downloads and extracts it as the document body when one is found.
+
+_PDF_HREF_RE = re.compile(r'href="([^"]*\.pdf[^"]*)"', re.IGNORECASE)
+
+
+def find_pdf_href(detail_html: str, base_url: str) -> str | None:
+    """Matches a direct `<a href="...something.pdf">` link (BofA, BlackRock)."""
+    match = _PDF_HREF_RE.search(detail_html)
+    if match is None:
+        return None
+    return _absolutize(match.group(1), base_url)
+
+
+_CITI_DOWNLOAD_LINK_RE = re.compile(r'"buttonLink":"(https://ir\.citi\.com/[^"]+)"')
+
+
+def find_citi_pdf_link(detail_html: str, base_url: str) -> str | None:
+    """Citi's "Download Here" CTA links to an ir.citi.com redirect, not a literal .pdf URL -
+    the collector must fetch it and check the response Content-Type to confirm it's a PDF."""
+    match = _CITI_DOWNLOAD_LINK_RE.search(detail_html)
+    return match.group(1) if match else None
+
+
+# --- Naver Finance research (finance.naver.com/research/company_list.naver) --------------
+# A classic server-rendered EUC-KR table (httpx decodes this correctly via the response's
+# Content-Type header) aggregating Korean brokerage analyst reports across all listed stocks.
+# Unlike the bank sites above, the PDF link (when the report has one - not every row does) is
+# already on the listing row itself, so no separate detail-page fetch is needed to find it.
+
+
+def _parse_naver_research_date(text: str) -> date | None:
+    try:
+        return datetime.strptime(text.strip(), "%y.%m.%d").date()
+    except ValueError:
+        return None
+
+
+class _NaverResearchParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.articles: list[IBArticle] = []
+        self._in_row = False
+        self._td_index = -1
+        self._capture_title = False
+        self._company_name: str | None = None
+        self._nid: str | None = None
+        self._title_parts: list[str] = []
+        self._brokerage_parts: list[str] = []
+        self._pdf_url: str | None = None
+        self._date_parts: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        attrs_dict = dict(attrs)
+        if tag == "tr":
+            self._reset_row()
+            self._in_row = True
+        elif tag == "td" and self._in_row:
+            self._td_index += 1
+        elif tag == "a" and self._in_row:
+            href = attrs_dict.get("href")
+            classes = (attrs_dict.get("class") or "").split()
+            if self._td_index == 0 and "stock_item" in classes:
+                self._company_name = attrs_dict.get("title")
+            elif self._td_index == 1 and href:
+                match = re.search(r"nid=(\d+)", href)
+                if match:
+                    self._nid = match.group(1)
+                self._capture_title = True
+            elif self._td_index == 3 and href:
+                self._pdf_url = href
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "a":
+            self._capture_title = False
+        elif tag == "tr":
+            self._finalize_row()
+            self._in_row = False
+
+    def handle_data(self, data: str) -> None:
+        if self._capture_title:
+            self._title_parts.append(data)
+        elif self._td_index == 2:
+            self._brokerage_parts.append(data)
+        elif self._td_index == 4:
+            self._date_parts.append(data)
+
+    def _reset_row(self) -> None:
+        self._td_index = -1
+        self._capture_title = False
+        self._company_name = None
+        self._nid = None
+        self._title_parts = []
+        self._brokerage_parts = []
+        self._pdf_url = None
+        self._date_parts = []
+
+    def _finalize_row(self) -> None:
+        title = "".join(self._title_parts).strip()
+        if not (title and self._nid):
+            return
+        full_title = f"[{self._company_name}] {title}" if self._company_name else title
+        self.articles.append(
+            IBArticle(
+                title=full_title,
+                url=f"https://finance.naver.com/research/company_read.naver?nid={self._nid}",
+                published_at=_parse_naver_research_date("".join(self._date_parts)),
+                summary=None,
+                pdf_url=self._pdf_url,
+                author="".join(self._brokerage_parts).strip() or None,
+            )
+        )
+
+
+def parse_naver_research_index(html_text: str) -> list[IBArticle]:
+    parser = _NaverResearchParser()
+    parser.feed(html_text)
+    return _dedupe_by_url(parser.articles)

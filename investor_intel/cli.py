@@ -20,8 +20,10 @@ from investor_intel.pipeline.analyze import analyze_pending_documents
 from investor_intel.pipeline.collect import build_collect_entries, run_collectors
 from investor_intel.pipeline.inbox import InboxDeps, sync_inbox
 from investor_intel.pipeline.orchestrator import (
-    ANALYZE_SYSTEM_PROMPT,
-    DAILY_REPORT_SYSTEM_PROMPT,
+    DEFAULT_ANALYZE_SYSTEM_PROMPT,
+    DEFAULT_DAILY_REPORT_SYSTEM_PROMPT,
+    load_investment_mandate,
+    load_prompt,
     run_daily,
     run_portfolio_stage,
 )
@@ -147,13 +149,26 @@ investor: CIK | 에세이URL(선택)
 gs_insights: 아무 이름 (예: goldman-sachs) - Goldman Sachs 공개 인사이트 페이지
 jpm_insights: 아무 이름 (예: jpmorgan) - J.P. Morgan 공개 리서치/인사이트 페이지
 bofa_insights: 아무 이름 (예: bofa) - BofA Global Research 공개 인사이트 페이지
+citi_insights: 아무 이름 (예: citi) - Citi Institute 공개 인사이트 페이지
+blackrock_insights: 아무 이름 (예: blackrock) - BlackRock 공개 인사이트 페이지
+vanguard_insights: 아무 이름 (예: vanguard) - Vanguard 공개 투자자 교육 페이지
+naver_research: 아무 이름 (예: naver) - 네이버 증권 종목분석 리포트(국내 증권사 발행)
 ```
 
-`gs_insights`/`jpm_insights`/`bofa_insights`는 은행마다 페이지가 하나뿐이라 값은 URL이
-아니라 자유롭게 붙일 이름표일 뿐이다 (예: `- [ ] jpm_insights: jpmorgan`). Morgan
-Stanley는 봇 차단으로 자동 수집이 막혀 있어 지원하지 않는다 - `morganstanley.com/ideas`를
-직접 확인해야 한다. 이 3개는 각 사가 공개하는 마케팅성 인사이트/요약 콘텐츠이며, 기관
-고객 전용 셀사이드 리서치 풀 리포트가 아니다.
+`*_insights`/`naver_research` 타입은 페이지가 하나뿐이라 값은 URL이 아니라 자유롭게
+붙일 이름표일 뿐이다 (예: `- [ ] jpm_insights: jpmorgan`). 이들은 각 사가 공개하는
+마케팅성 인사이트/요약 콘텐츠이며, 기관 고객 전용 셀사이드 리서치 풀 리포트가 아니다.
+`naver_research`만 예외로, 국내 증권사(신한투자증권, 한화투자증권 등)가 실제로 발행한
+정식 종목 리포트를 네이버가 모아 놓은 페이지라 첨부 PDF가 진짜 애널리스트 리포트다.
+
+자동 수집을 지원하지 않는 곳도 있다 - Morgan Stanley/State Street는 봇 차단 또는
+JS 렌더링 없이는 콘텐츠가 아예 노출되지 않아서, Fidelity Learn은 대부분 날짜 없는
+상시 교육 콘텐츠라 "새 리포트" 피드로 의미가 없어서 제외했다. 필요하면 직접 사이트를
+확인해야 한다.
+
+Berkshire Hathaway, Baillie Gifford, Pershing Square 같은 자산운용사/투자자는
+스크래핑 대상이 아니라 SEC에 13F를 제출하는 "투자자"이므로, `investor:` 타입에 CIK를
+적어서 추가한다 (예: `- [ ] investor: 0001067983` - Berkshire Hathaway Inc).
 
 ## 추가할 소스
 
@@ -259,20 +274,51 @@ filing_types를 국내 상장사 기본값(10-K/10-Q/8-K)으로 채우므로, Ne
 
 직접 YAML을 편집해도 된다:
 
-- 네이버 블로그, 텔레그램 채널, IB 인사이트(gs_insights/jpm_insights/bofa_insights) ->
+- 네이버 블로그, 텔레그램 채널, IB/자산운용사 인사이트(gs_insights/jpm_insights/
+  bofa_insights/citi_insights/blackrock_insights/vanguard_insights/naver_research) ->
   `config/sources.yaml` (`init`이 생성한 예제 항목 형식을 그대로 따른다)
 - 미국 기업 SEC 공시 -> `config/companies.yaml`
-- 13F 추적 투자자 -> `config/investors.yaml`
+- 13F 추적 투자자(Berkshire Hathaway, Baillie Gifford, Pershing Square 등) ->
+  `config/investors.yaml`
 - 한국 기업 DART 공시 -> `config/dart_companies.yaml` (`corp_code`는 생략 가능 - 최초 수집 시
   ticker/name으로 자동 조회 후 캐시된다)
 
-IB 인사이트 수집기(`investor_intel/collectors/ib_insights.py`)는 각 사 공개 인사이트
-페이지의 최신 목록만 긁어오며, 실제 애널리스트 풀 리포트(기관 고객 전용)가 아니라
-마케팅성 요약 콘텐츠다. Goldman Sachs/BofA는 목록에 정확한 게시일이 없어 수집일로
-대체하고, Morgan Stanley는 봇 차단으로 자동 수집을 지원하지 않는다.
+IB/자산운용사 인사이트 수집기(`investor_intel/collectors/ib_insights.py`)는 각 사
+공개 인사이트 페이지의 최신 목록만 긁어오며, 실제 애널리스트 풀 리포트(기관 고객
+전용)가 아니라 마케팅성 요약 콘텐츠다. Goldman Sachs/BofA/Citi/Vanguard는 목록에
+정확한 게시일이 없어 수집일로 대체한다. Morgan Stanley/State Street(봇 차단·JS
+렌더링 필요)와 Fidelity Learn(날짜 없는 상시 교육 콘텐츠라 신규 피드로 의미 없음)은
+지원하지 않는다. 각 사 인덱스 페이지는 그 시점에 서버 렌더링된 카드 몇 개만
+노출하는 구조라(스크롤/필터로 더 불러오는 콘텐츠는 미포함) 한 번에 잡히는 개수가
+적을 수 있다 - `sync-inbox`/`collect`를 주기적으로 돌리면 새로 올라온 카드가 누적된다.
+
+일부 글(BofA/BlackRock/Citi에서 자주 발견됨)은 본문이 웹페이지가 아니라 첨부 PDF
+리포트로 제공된다. 이 경우 컬렉터가 상세 페이지에서 PDF 링크를 찾아 다운로드하고
+(`investor_intel/collectors/pdf_extract.py`, `pypdf` 사용) 전체 텍스트를 추출해
+`content_capture: full`로 저장한다 - 요약이 아니라 원문 그대로다. PDF를 못 찾거나
+추출에 실패하면 조용히 인덱스 페이지의 짧은 요약으로 대체된다(`excerpt`). PDF가
+없는 사이트(GS/JPM/Vanguard 상당수, State Street·MS 제외 대상 무관)는 기존처럼
+요약만 저장된다.
+
+`naver_research`(네이버 증권 종목분석 리포트, `finance.naver.com/research/company_list.naver`)는
+목록 페이지 자체에 종목명·증권사·작성일과 PDF 링크가 이미 다 나와 있어서, 다른 은행처럼
+상세 페이지를 따로 fetch하지 않고 목록에서 바로 PDF를 받아 원문을 추출한다. PDF가 없는
+행(가끔 있음)은 요약도 없어서 `metadata_only`(제목/링크만)로 저장된다. 첫 페이지에
+노출되는 전체 종목 최신 리포트 ~30건만 수집하며(페이지네이션 미지원), 회사별 필터링은
+하지 않는다.
 
 추가 후 `uv run python -m investor_intel collect --backfill 365` 로 신규 소스를 과거 데이터까지
 백필할 수 있다(생략 시 증분 수집만 수행).
+
+## 분석 관점(투자 원칙) 커스터마이징
+
+일일 리포트가 "무엇을 우선시할지"는 `vault/00_System/Investment_Mandate.md`에 있다. 이
+파일은 코드가 아니라 데이터이므로, 직접 편집하면 다음 `run-daily`(크론 또는 수동 실행)부터
+바로 반영된다 — 재배포나 재시작이 필요 없다.
+
+`config/prompts/*.md`(extract_claims/daily_report 등)도 마찬가지로 실행 시점에 실제로
+로드되는 프롬프트 원본이다 — 추출/종합 단계의 세부 지시를 바꾸고 싶으면 이 파일들을 직접
+고친다.
 
 ## 포트폴리오 갱신
 
@@ -320,11 +366,14 @@ PROMPTS = {
         "공매도, 옵션 매매는 추천하지 않는다.\n"
     ),
     "daily_report.md": (
-        "# 일일 리포트 종합 프롬프트 (v1)\n\n"
+        "# 일일 리포트 종합 프롬프트 (v2)\n\n"
         "역할: 수석 애널리스트.\n\n"
         "당일 신규 문서들의 주장을 같은 관점/반대 관점/종합 관점으로 나누어 정리하라. 지정된 "
         "출처가 하나뿐인 주장을 복수 출처의 합의처럼 표현하지 마라. 모든 핵심 주장에 원문 "
-        "링크를 포함하라.\n"
+        "링크와 발행일을 포함하라.\n\n"
+        "입력에는 \"오늘 새로 추출된 주장\" 목록이 발행일 최신순으로 포함되어 있다. 이 "
+        "프롬프트 뒤에는 `vault/00_System/Investment_Mandate.md`의 내용이 자동으로 이어 "
+        "붙는다 — 그 지침을 반드시 따라서 리포트를 작성하라.\n"
     ),
 }
 
@@ -516,6 +565,7 @@ def collect(
 
 @app.command()
 def analyze(
+    config_dir: Annotated[Path, typer.Option(help="Config directory")] = Path("./config"),
     vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
     sqlite_path: Annotated[Path, typer.Option(help="SQLite index path")] = Path(
         "./data/index.sqlite3"
@@ -537,8 +587,11 @@ def analyze(
         cost_tracker = CostTracker(
             conn, settings.daily_llm_budget_usd, settings.monthly_llm_budget_usd
         )
+        analyze_prompt = load_prompt(
+            config_dir, "extract_claims.md", DEFAULT_ANALYZE_SYSTEM_PROMPT
+        )
         result = analyze_pending_documents(
-            conn, vault_path, client, cost_tracker, ANALYZE_SYSTEM_PROMPT
+            conn, vault_path, client, cost_tracker, analyze_prompt
         )
 
         typer.echo(f"{result.processed}건 분석 완료")
@@ -575,6 +628,7 @@ def portfolio(
 
 @app.command()
 def report(
+    config_dir: Annotated[Path, typer.Option(help="Config directory")] = Path("./config"),
     vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
 ) -> None:
     """현재 포트폴리오 상태로 일일 리포트를 생성한다 (수집/분석 없이)."""
@@ -589,7 +643,13 @@ def report(
             api_key=settings.anthropic_api_key, model=settings.anthropic_model
         )
         summary = f"포트폴리오 종목 {len(position_rows)}개, 가드레일 위반 {len(violations)}건"
-        narrative = synthesize_daily_narrative(client, summary, DAILY_REPORT_SYSTEM_PROMPT)
+        daily_report_prompt = load_prompt(
+            config_dir, "daily_report.md", DEFAULT_DAILY_REPORT_SYSTEM_PROMPT
+        )
+        mandate = load_investment_mandate(vault_path)
+        if mandate:
+            daily_report_prompt = f"{daily_report_prompt}\n\n---\n\n{mandate}"
+        narrative = synthesize_daily_narrative(client, summary, daily_report_prompt)
 
     context = DailyReportContext(
         report_date=date.today(),
