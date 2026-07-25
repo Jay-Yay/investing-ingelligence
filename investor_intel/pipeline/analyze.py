@@ -15,14 +15,36 @@ from investor_intel.storage.sqlite_index import upsert_document
 
 
 @dataclass
+class ClaimDigestEntry:
+    """One extracted claim plus the source metadata needed to rank it (recency, origin)."""
+
+    published_at: str
+    source_type: str
+    source_name: str
+    source_url: str
+    assets: list[str]
+    direction: str
+    confidence: str
+    claim: str
+
+
+@dataclass
 class AnalyzeResult:
     processed: int
     errors: list[str] = field(default_factory=list)
     extractions: dict[str, ExtractionResult] = field(default_factory=dict)
+    digest: list[ClaimDigestEntry] = field(default_factory=list)
 
 
 def find_unprocessed_document_paths(conn: sqlite3.Connection) -> list[str]:
-    rows = conn.execute("SELECT file_path FROM documents WHERE llm_processed = 0").fetchall()
+    """미분석 문서 경로를 최신 발행일 순으로 반환한다.
+
+    일일 LLM 예산이 소진되어 이번 실행에서 일부만 처리하게 되더라도, 오래된 백로그가
+    최근 문서를 밀어내지 않고 최신성이 높은 문서부터 우선 분석되도록 정렬한다.
+    """
+    rows = conn.execute(
+        "SELECT file_path FROM documents WHERE llm_processed = 0 ORDER BY published_at DESC"
+    ).fetchall()
     return [row["file_path"] for row in rows]
 
 
@@ -36,6 +58,7 @@ def analyze_pending_documents(
     processed = 0
     errors: list[str] = []
     extractions: dict[str, ExtractionResult] = {}
+    digest: list[ClaimDigestEntry] = []
 
     for file_path in find_unprocessed_document_paths(conn):
         if not cost_tracker.is_within_budget():
@@ -68,8 +91,22 @@ def analyze_pending_documents(
             )
 
             extractions[updated_doc.id] = extraction
+            for claim in extraction.claims:
+                digest.append(
+                    ClaimDigestEntry(
+                        published_at=updated_doc.published_at.isoformat(),
+                        source_type=updated_doc.source_type.value,
+                        source_name=updated_doc.source_name,
+                        source_url=updated_doc.source_url,
+                        assets=claim.assets,
+                        direction=claim.direction.value,
+                        confidence=claim.confidence.value,
+                        claim=claim.claim,
+                    )
+                )
             processed += 1
         except Exception as exc:  # noqa: BLE001
             errors.append(f"{file_path}: {exc}")
 
-    return AnalyzeResult(processed=processed, errors=errors, extractions=extractions)
+    digest.sort(key=lambda entry: entry.published_at, reverse=True)
+    return AnalyzeResult(processed=processed, errors=errors, extractions=extractions, digest=digest)
