@@ -13,6 +13,7 @@ from investor_intel.llm.client import AnthropicClient
 from investor_intel.llm.cost_tracker import CostTracker
 from investor_intel.llm.daily_report import synthesize_daily_narrative
 from investor_intel.market_data.coingecko_adapter import CoinGeckoAdapter
+from investor_intel.market_data.fx import build_fx_rates
 from investor_intel.market_data.provider import MarketDataProvider
 from investor_intel.market_data.yfinance_adapter import YahooFinanceAdapter
 from investor_intel.models.portfolio import Position
@@ -48,7 +49,10 @@ def load_prompt(config_dir: Path, filename: str, default: str) -> str:
 
 
 def load_investment_mandate(vault_path: Path) -> str:
-    """vault/00_System/Investment_Mandate.md — 분석 관점(무엇을 우선시할지) 지침. 없으면 빈 문자열."""
+    """vault/00_System/Investment_Mandate.md - 분석 관점(무엇을 우선시할지) 지침.
+
+    없으면 빈 문자열.
+    """
     path = vault_path / "00_System" / "Investment_Mandate.md"
     if path.exists():
         return path.read_text(encoding="utf-8").strip()
@@ -100,7 +104,10 @@ def run_portfolio_stage(
         if price is not None:
             prices[position.symbol] = price
 
-    metrics = compute_portfolio_metrics(portfolio.positions, prices)
+    currencies = {position.cost_currency for position in portfolio.positions}
+    fx_rates = build_fx_rates(currencies, portfolio.base_currency, yahoo)
+
+    metrics = compute_portfolio_metrics(portfolio.positions, prices, fx_rates)
     violations = check_guardrails(portfolio, metrics)
     position_rows = [metric.model_dump() for metric in metrics]
     return position_rows, violations

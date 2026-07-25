@@ -20,8 +20,13 @@ def compute_position_metrics(
     position: Position,
     current_price: float | None,
     total_market_value: float | None,
+    fx_rate_to_base: float = 1.0,
 ) -> PositionMetrics:
-    cost_basis = position.quantity * position.average_cost
+    # market_value/cost_basis/unrealized_pnl are expressed in the portfolio's base_currency
+    # (needed so portfolio_weight/sector weights sum correctly across mixed-currency
+    # positions) - current_price stays in the position's own cost_currency since that's the
+    # recognizable quote a user expects to see (e.g. an actual $187.77 for a US stock).
+    cost_basis = position.quantity * position.average_cost * fx_rate_to_base
 
     if current_price is None:
         return PositionMetrics(
@@ -35,7 +40,7 @@ def compute_position_metrics(
             upside_to_target_pct=None,
         )
 
-    market_value = position.quantity * current_price
+    market_value = position.quantity * current_price * fx_rate_to_base
     unrealized_pnl = market_value - cost_basis
     unrealized_pnl_pct = (unrealized_pnl / cost_basis * 100) if cost_basis else None
     portfolio_weight = (
@@ -60,15 +65,24 @@ def compute_position_metrics(
 
 
 def compute_portfolio_metrics(
-    positions: list[Position], prices: dict[str, float]
+    positions: list[Position],
+    prices: dict[str, float],
+    fx_rates: dict[str, float] | None = None,
 ) -> list[PositionMetrics]:
+    fx_rates = fx_rates or {}
+
+    def rate_for(position: Position) -> float:
+        return fx_rates.get(position.cost_currency, 1.0)
+
     total_market_value = sum(
-        position.quantity * prices[position.symbol]
+        position.quantity * prices[position.symbol] * rate_for(position)
         for position in positions
         if position.symbol in prices
     )
     return [
-        compute_position_metrics(position, prices.get(position.symbol), total_market_value)
+        compute_position_metrics(
+            position, prices.get(position.symbol), total_market_value, rate_for(position)
+        )
         for position in positions
     ]
 

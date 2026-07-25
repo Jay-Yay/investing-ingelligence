@@ -65,3 +65,84 @@ def test_error_response_raises() -> None:
         raise AssertionError("expected YahooFinanceError")
     except YahooFinanceError:
         pass
+
+
+@respx.mock
+def test_get_quote_tries_kospi_suffix_for_six_digit_kr_codes() -> None:
+    route = respx.get(
+        "https://query1.finance.yahoo.com/v8/finance/chart/005930.KS?interval=1d&range=1d"
+    ).mock(
+        return_value=httpx.Response(
+            200, text=(FIXTURES / "yahoo_chart_quote.json").read_text(encoding="utf-8")
+        )
+    )
+    adapter = YahooFinanceAdapter(SimpleHttpClient())
+
+    quote = adapter.get_quote("005930")
+
+    assert route.call_count == 1
+    # the raw KR code is preserved on the Quote so callers (e.g. portfolio.yaml matching)
+    # don't need to know which exchange suffix resolved it
+    assert quote.symbol == "005930"
+    assert quote.price == 42.5
+
+
+@respx.mock
+def test_get_quote_falls_back_to_kosdaq_suffix_when_kospi_not_found() -> None:
+    respx.get(
+        "https://query1.finance.yahoo.com/v8/finance/chart/483650.KS?interval=1d&range=1d"
+    ).mock(
+        return_value=httpx.Response(
+            200, text=(FIXTURES / "yahoo_chart_error.json").read_text(encoding="utf-8")
+        )
+    )
+    respx.get(
+        "https://query1.finance.yahoo.com/v8/finance/chart/483650.KQ?interval=1d&range=1d"
+    ).mock(
+        return_value=httpx.Response(
+            200, text=(FIXTURES / "yahoo_chart_quote.json").read_text(encoding="utf-8")
+        )
+    )
+    adapter = YahooFinanceAdapter(SimpleHttpClient())
+
+    quote = adapter.get_quote("483650")
+
+    assert quote.symbol == "483650"
+    assert quote.price == 42.5
+
+
+@respx.mock
+def test_get_quote_raises_when_both_kr_suffixes_fail() -> None:
+    respx.get(
+        "https://query1.finance.yahoo.com/v8/finance/chart/000000.KS?interval=1d&range=1d"
+    ).mock(
+        return_value=httpx.Response(
+            200, text=(FIXTURES / "yahoo_chart_error.json").read_text(encoding="utf-8")
+        )
+    )
+    respx.get(
+        "https://query1.finance.yahoo.com/v8/finance/chart/000000.KQ?interval=1d&range=1d"
+    ).mock(
+        return_value=httpx.Response(
+            200, text=(FIXTURES / "yahoo_chart_error.json").read_text(encoding="utf-8")
+        )
+    )
+    adapter = YahooFinanceAdapter(SimpleHttpClient())
+    try:
+        adapter.get_quote("000000")
+        raise AssertionError("expected YahooFinanceError")
+    except YahooFinanceError:
+        pass
+
+
+@respx.mock
+def test_get_quote_leaves_non_kr_symbols_unsuffixed() -> None:
+    route = respx.get(
+        "https://query1.finance.yahoo.com/v8/finance/chart/NBIS?interval=1d&range=1d"
+    ).mock(
+        return_value=httpx.Response(
+            200, text=(FIXTURES / "yahoo_chart_quote.json").read_text(encoding="utf-8")
+        )
+    )
+    YahooFinanceAdapter(SimpleHttpClient()).get_quote("NBIS")
+    assert route.call_count == 1
