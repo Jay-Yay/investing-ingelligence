@@ -12,6 +12,7 @@ import yaml
 
 from investor_intel.collectors.dart_client import DartClient
 from investor_intel.collectors.dart_corp_code import resolve_dart_company
+from investor_intel.collectors.ib_insights import IB_INSIGHTS_SOURCES
 from investor_intel.collectors.sec_client import SECClient
 from investor_intel.config.loaders import (
     load_companies_yaml,
@@ -29,7 +30,16 @@ from investor_intel.models.config import (
 _CHECKLIST_RE = re.compile(r"^-\s\[([ xX])\]\s*(.*)$")
 _ENTRY_RE = re.compile(r"^(\w+):\s*(.+)$")
 
-SUPPORTED_TYPES = {"naver", "telegram", "telegram_private", "sec", "dart", "investor"}
+IB_INSIGHTS_TYPES = {"gs_insights", "jpm_insights", "bofa_insights"}
+SUPPORTED_TYPES = {
+    "naver",
+    "telegram",
+    "telegram_private",
+    "sec",
+    "dart",
+    "investor",
+    *IB_INSIGHTS_TYPES,
+}
 
 _SEC_TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"
 _SEC_SUBMISSIONS_URL = "https://data.sec.gov/submissions/CIK{cik}.json"
@@ -109,12 +119,15 @@ def resolve_naver(value: str) -> SourceConfig:
 
 def resolve_telegram(value: str) -> SourceConfig:
     slug = _slug_from_url(value)
+    # the public-preview collector only understands t.me/s/{channel} - normalize a bare
+    # t.me/{channel} link (what users naturally copy) to that shape.
+    url = f"https://t.me/s/{slug}"
     return SourceConfig(
         id=f"telegram_{slug}",
         type="telegram",
         name=slug,
         enabled=True,
-        url=value,
+        url=url,
         author=None,
         weight=1.0,
         collection_mode="full",
@@ -136,6 +149,25 @@ def resolve_telegram_private(value: str) -> SourceConfig:
         collection_mode="full",
         backfill_days=365,
         tags=["telegram", "private"],
+    )
+
+
+def resolve_ib_insights(type_: str, value: str) -> SourceConfig:
+    # unlike naver/telegram, there is exactly one fixed index page per bank - `value` is just a
+    # free-text label for the id/name (e.g. the bank's short name), not a URL the user supplies.
+    index_url, _ = IB_INSIGHTS_SOURCES[type_]
+    slug = re.sub(r"[^a-z0-9]+", "_", value.strip().lower()).strip("_") or type_
+    return SourceConfig(
+        id=f"{type_}_{slug}",
+        type=type_,
+        name=value.strip() or type_,
+        enabled=True,
+        url=index_url,
+        author=None,
+        weight=1.0,
+        collection_mode="full",
+        backfill_days=365,
+        tags=["ib_insights"],
     )
 
 
@@ -327,7 +359,7 @@ def _resolve_and_apply(
     value = line.value
     assert value is not None
 
-    if line.type in ("naver", "telegram", "telegram_private"):
+    if line.type in ("naver", "telegram", "telegram_private", *IB_INSIGHTS_TYPES):
         return _apply_source(line, value, sources, dirty)
     if line.type == "sec":
         return _apply_sec(line, value, companies, dirty, deps)
@@ -346,8 +378,11 @@ def _apply_source(
         entry = resolve_naver(value)
     elif line.type == "telegram_private":
         entry = resolve_telegram_private(value)
-    else:
+    elif line.type == "telegram":
         entry = resolve_telegram(value)
+    else:
+        assert line.type is not None
+        entry = resolve_ib_insights(line.type, value)
 
     if any(existing.url == entry.url for existing in sources):
         message = "이미 sources.yaml에 존재"

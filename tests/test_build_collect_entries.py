@@ -5,6 +5,7 @@ import yaml
 from investor_intel.collectors.base import CheckpointStore
 from investor_intel.collectors.dart import DartCollector
 from investor_intel.collectors.essay import EssayCollector
+from investor_intel.collectors.ib_insights import IBInsightsCollector
 from investor_intel.collectors.sec_thirteenf import ThirteenFCollector
 from investor_intel.config.settings import AppSettings
 from investor_intel.models.common import SourceType
@@ -196,3 +197,50 @@ def test_build_collect_entries_adds_telegram_private_when_credentials_present(
     assert source_type == SourceType.TELEGRAM
     assert source_name == "allbareun (비공개)"
     assert collector.source_id == "telegram_private_allbareun"
+
+
+def test_build_collect_entries_adds_ib_insights_collectors(tmp_path) -> None:
+    _write_sources_yaml(
+        tmp_path,
+        [
+            {
+                "id": "gs_insights_goldman_sachs",
+                "type": "gs_insights",
+                "name": "goldman-sachs",
+                "enabled": True,
+                "url": "https://www.goldmansachs.com/insights",
+                "author": None,
+            },
+            {
+                "id": "jpm_insights_jpmorgan",
+                "type": "jpm_insights",
+                "name": "jpmorgan",
+                "enabled": True,
+                "url": "https://www.jpmorgan.com/insights/research",
+                "author": None,
+            },
+            {
+                "id": "bofa_insights_bofa",
+                "type": "bofa_insights",
+                "name": "bofa",
+                "enabled": True,
+                "url": "https://business.bofa.com/en-us/content/institutional-investing-insights.html",
+                "author": None,
+            },
+        ],
+    )
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    checkpoint_store = CheckpointStore(conn)
+    settings = AppSettings()
+
+    entries, setup_errors = build_collect_entries(tmp_path, settings, checkpoint_store, conn)
+
+    assert setup_errors == []
+    ib_entries = [e for e in entries if isinstance(e[0], IBInsightsCollector)]
+    assert {source_name for _, _, source_name in ib_entries} == {
+        "goldman-sachs",
+        "jpmorgan",
+        "bofa",
+    }
+    assert all(source_type == SourceType.IB_INSIGHTS for _, source_type, _ in ib_entries)

@@ -10,6 +10,7 @@ class SourceType(StrEnum):
     SEC_FILING = "sec_filing"
     DART = "dart"
     ESSAY = "essay"
+    IB_INSIGHTS = "ib_insights"
 
 
 class ContentCaptureMode(StrEnum):

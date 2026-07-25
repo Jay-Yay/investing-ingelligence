@@ -11,6 +11,7 @@ from investor_intel.collectors.dart_client import DartClient
 from investor_intel.collectors.dart_corp_code import resolve_corp_code
 from investor_intel.collectors.essay import EssayCollector
 from investor_intel.collectors.http_client import SimpleHttpClient
+from investor_intel.collectors.ib_insights import IB_INSIGHTS_SOURCES, IBInsightsCollector
 from investor_intel.collectors.naver_blog import NaverBlogCollector
 from investor_intel.collectors.sec_client import SECClient
 from investor_intel.collectors.sec_filings import SECFilingsCollector
@@ -233,6 +234,12 @@ def build_collect_entries(
             elif source.type == "telegram":
                 telegram_collector = TelegramCollector(source, http_client, checkpoint_store)
                 entries.append((telegram_collector, SourceType.TELEGRAM, source.name))
+            elif source.type in IB_INSIGHTS_SOURCES:
+                index_url, parse_index = IB_INSIGHTS_SOURCES[source.type]
+                ib_collector = IBInsightsCollector(
+                    source, http_client, checkpoint_store, index_url, parse_index
+                )
+                entries.append((ib_collector, SourceType.IB_INSIGHTS, source.name))
             elif source.type == "telegram_private":
                 if settings.telegram_api_id and settings.telegram_api_hash and (
                     settings.telegram_session

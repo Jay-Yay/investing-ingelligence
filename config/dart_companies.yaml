@@ -1,6 +1,27 @@
 dart_companies:
   # corp_code는 생략 가능하다 - 최초 수집 시 ticker/name으로 OpenDART corpCode.xml에서
   # 자동 조회 후 캐시된다. 직접 알고 있다면 채워도 된다.
-  - ticker: "005930"
+  - ticker: 005930
+    corp_code: null
     name: 삼성전자
-    report_types: [A, B]
+    report_types:
+      - A
+      - B
+  - ticker: '483650'
+    corp_code: 01649204
+    name: 달바글로벌
+    report_types:
+      - A
+      - B
+  - ticker: '278470'
+    corp_code: 01190568
+    name: 에이피알
+    report_types:
+      - A
+      - B
+  - ticker: '000660'
+    corp_code: 00164779
+    name: SK하이닉스
+    report_types:
+      - A
+      - B

@@ -8,8 +8,9 @@ sources:
     weight: 1.0
     collection_mode: full
     backfill_days: 365
-    tags: [blog, korean]
-
+    tags:
+      - blog
+      - korean
   - id: telegram_allbareun
     type: telegram
     name: allbareun
@@ -19,4 +20,171 @@ sources:
     weight: 1.0
     collection_mode: full
     backfill_days: 365
-    tags: [telegram, korean]
+    tags:
+      - telegram
+      - korean
+  - id: naver_a463508
+    type: naver
+    name: a463508
+    enabled: true
+    url: https://m.blog.naver.com/a463508
+    author: a463508
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - blog
+  - id: naver_slowwalkingbull
+    type: naver
+    name: slowwalkingbull
+    enabled: true
+    url: https://m.blog.naver.com/slowwalkingbull
+    author: slowwalkingbull
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - blog
+  - id: naver_royvalue
+    type: naver
+    name: royvalue
+    enabled: true
+    url: https://m.blog.naver.com/royvalue
+    author: royvalue
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - blog
+  - id: naver_tmdejr1267
+    type: naver
+    name: tmdejr1267
+    enabled: true
+    url: https://m.blog.naver.com/tmdejr1267
+    author: tmdejr1267
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - blog
+  - id: telegram_BRILLER_Research
+    type: telegram
+    name: BRILLER_Research
+    enabled: true
+    url: https://t.me/s/BRILLER_Research
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - telegram
+  - id: telegram_kimcharger
+    type: telegram
+    name: kimcharger
+    enabled: true
+    url: https://t.me/s/kimcharger
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - telegram
+  - id: telegram_getfeed
+    type: telegram
+    name: getfeed
+    enabled: true
+    url: https://t.me/s/getfeed
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - telegram
+  - id: telegram_dolbikong
+    type: telegram
+    name: dolbikong
+    enabled: true
+    url: https://t.me/s/dolbikong
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - telegram
+  - id: telegram_skitteam
+    type: telegram
+    name: skitteam
+    enabled: true
+    url: https://t.me/s/skitteam
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - telegram
+  - id: telegram_Jstockclass
+    type: telegram
+    name: Jstockclass
+    enabled: true
+    url: https://t.me/s/Jstockclass
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - telegram
+  - id: telegram_Samsung_Global_AI_SW
+    type: telegram
+    name: Samsung_Global_AI_SW
+    enabled: true
+    url: https://t.me/s/Samsung_Global_AI_SW
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - telegram
+  - id: telegram_kyobofnbcosmetic
+    type: telegram
+    name: kyobofnbcosmetic
+    enabled: true
+    url: https://t.me/s/kyobofnbcosmetic
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - telegram
+  - id: gs_insights_goldman_sachs
+    type: gs_insights
+    name: goldman-sachs
+    enabled: true
+    url: https://www.goldmansachs.com/insights
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - ib_insights
+  - id: jpm_insights_jpmorgan
+    type: jpm_insights
+    name: jpmorgan
+    enabled: true
+    url: https://www.jpmorgan.com/insights/research
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - ib_insights
+  - id: bofa_insights_bofa
+    type: bofa_insights
+    name: bofa
+    enabled: true
+    url: https://business.bofa.com/en-us/content/institutional-investing-insights.html
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - ib_insights

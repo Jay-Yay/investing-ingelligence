@@ -144,7 +144,16 @@ telegram_private: https://t.me/채널유저네임
 sec: 티커 (예: AAPL)
 dart: 종목코드 (예: 005930)
 investor: CIK | 에세이URL(선택)
+gs_insights: 아무 이름 (예: goldman-sachs) - Goldman Sachs 공개 인사이트 페이지
+jpm_insights: 아무 이름 (예: jpmorgan) - J.P. Morgan 공개 리서치/인사이트 페이지
+bofa_insights: 아무 이름 (예: bofa) - BofA Global Research 공개 인사이트 페이지
 ```
+
+`gs_insights`/`jpm_insights`/`bofa_insights`는 은행마다 페이지가 하나뿐이라 값은 URL이
+아니라 자유롭게 붙일 이름표일 뿐이다 (예: `- [ ] jpm_insights: jpmorgan`). Morgan
+Stanley는 봇 차단으로 자동 수집이 막혀 있어 지원하지 않는다 - `morganstanley.com/ideas`를
+직접 확인해야 한다. 이 3개는 각 사가 공개하는 마케팅성 인사이트/요약 콘텐츠이며, 기관
+고객 전용 셀사이드 리서치 풀 리포트가 아니다.
 
 ## 추가할 소스
 
@@ -250,12 +259,17 @@ filing_types를 국내 상장사 기본값(10-K/10-Q/8-K)으로 채우므로, Ne
 
 직접 YAML을 편집해도 된다:
 
-- 네이버 블로그, 텔레그램 채널 -> `config/sources.yaml` (`init`이 생성한 예제 항목 형식을
-  그대로 따른다)
+- 네이버 블로그, 텔레그램 채널, IB 인사이트(gs_insights/jpm_insights/bofa_insights) ->
+  `config/sources.yaml` (`init`이 생성한 예제 항목 형식을 그대로 따른다)
 - 미국 기업 SEC 공시 -> `config/companies.yaml`
 - 13F 추적 투자자 -> `config/investors.yaml`
 - 한국 기업 DART 공시 -> `config/dart_companies.yaml` (`corp_code`는 생략 가능 - 최초 수집 시
   ticker/name으로 자동 조회 후 캐시된다)
+
+IB 인사이트 수집기(`investor_intel/collectors/ib_insights.py`)는 각 사 공개 인사이트
+페이지의 최신 목록만 긁어오며, 실제 애널리스트 풀 리포트(기관 고객 전용)가 아니라
+마케팅성 요약 콘텐츠다. Goldman Sachs/BofA는 목록에 정확한 게시일이 없어 수집일로
+대체하고, Morgan Stanley는 봇 차단으로 자동 수집을 지원하지 않는다.
 
 추가 후 `uv run python -m investor_intel collect --backfill 365` 로 신규 소스를 과거 데이터까지
 백필할 수 있다(생략 시 증분 수집만 수행).

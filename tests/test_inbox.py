@@ -18,6 +18,7 @@ from investor_intel.pipeline.inbox import (
     InboxResolveError,
     parse_inbox_lines,
     resolve_dart,
+    resolve_ib_insights,
     resolve_investor,
     resolve_naver,
     resolve_sec,
@@ -124,10 +125,33 @@ def test_resolve_telegram_derives_id_from_last_path_segment() -> None:
     assert entry.type == "telegram"
 
 
+def test_resolve_telegram_normalizes_bare_channel_url_to_public_preview() -> None:
+    # the public-preview collector only understands t.me/s/{channel} - a bare t.me/{channel}
+    # link (what users naturally copy from the Telegram app/web) must be normalized to that
+    # shape rather than stored as-is and silently breaking collection.
+    entry = resolve_telegram("https://t.me/BRILLER_Research")
+    assert entry.id == "telegram_BRILLER_Research"
+    assert entry.url == "https://t.me/s/BRILLER_Research"
+
+
 def test_resolve_telegram_private_uses_private_prefix() -> None:
     entry = resolve_telegram_private("https://t.me/someprivatechannel")
     assert entry.id == "telegram_private_someprivatechannel"
     assert entry.type == "telegram_private"
+
+
+def test_resolve_ib_insights_uses_fixed_index_url_per_bank() -> None:
+    entry = resolve_ib_insights("jpm_insights", "jpmorgan")
+    assert entry.id == "jpm_insights_jpmorgan"
+    assert entry.type == "jpm_insights"
+    assert entry.name == "jpmorgan"
+    assert entry.url == "https://www.jpmorgan.com/insights/research"
+
+
+def test_resolve_ib_insights_slugifies_free_text_label() -> None:
+    entry = resolve_ib_insights("gs_insights", "Goldman Sachs!")
+    assert entry.id == "gs_insights_goldman_sachs"
+    assert entry.url == "https://www.goldmansachs.com/insights"
 
 
 # --- sec resolver --------------------------------------------------------------
@@ -259,6 +283,22 @@ def test_resolve_investor_rejects_non_numeric_value() -> None:
 def _write_inbox(path: Path, lines: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def test_sync_inbox_adds_ib_insights_source_without_network_call(tmp_path: Path) -> None:
+    config_dir = tmp_path / "config"
+    config_dir.mkdir()
+    inbox_path = tmp_path / "vault" / "00_System" / "inbox_sources.md"
+    _write_inbox(inbox_path, ["- [ ] jpm_insights: jpmorgan"])
+
+    deps = InboxDeps(config_dir=config_dir)
+    results, new_text = sync_inbox(inbox_path, deps)
+
+    assert results[0].status == "added"
+    assert "- [x] jpm_insights: jpmorgan" in new_text
+    sources = load_sources_yaml(config_dir / "sources.yaml")
+    assert sources[0].type == "jpm_insights"
+    assert sources[0].url == "https://www.jpmorgan.com/insights/research"
 
 
 def test_sync_inbox_adds_naver_and_telegram_sources(tmp_path: Path) -> None:

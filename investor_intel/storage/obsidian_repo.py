@@ -16,6 +16,7 @@ _SOURCE_TYPE_DIR = {
     "sec_13f": "13F",
     "dart": "DART",
     "essay": "Essays",
+    "ib_insights": "IB",
 }
 
 _FRONTMATTER_FIELD_ORDER = [
