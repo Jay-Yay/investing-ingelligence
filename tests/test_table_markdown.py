@@ -45,6 +45,15 @@ def test_dart_style_table_becomes_markdown_with_merged_two_row_header() -> None:
     assert "| 부채총계 | 66,621 | 56,780 |" in result
 
 
+def test_caption_is_separated_from_table_by_a_blank_line() -> None:
+    # regression: a caption ("(단위 : 백만원)") directly adjacent to the header row (no blank
+    # line between them) makes Obsidian/CommonMark render the whole thing as one text paragraph
+    # instead of a table - only the *later* table in the same document (with no caption) rendered
+    # correctly, which is what exposed this.
+    result = convert_tables_to_markdown(_DART_TABLE)
+    assert "**(단위 : 백만원)**\n\n| 구 분 |" in result
+
+
 def test_dart_style_table_keeps_row_and_column_aligned() -> None:
     # regression: naive tag-stripping used to turn every cell into its own line with no way to
     # tell which fiscal period a number belonged to - this asserts the row label and both period
@@ -54,6 +63,72 @@ def test_dart_style_table_keeps_row_and_column_aligned() -> None:
     header_cols = lines[0].split("|")
     liability_row_cols = [line for line in lines if "유동부채" in line][0].split("|")
     assert len(header_cols) == len(liability_row_cols)
+
+
+_DART_XBRL_TABLE = """
+<TABLE ACLASS="NORMAL" AFIXTABLE="Y" WIDTH="600" BORDER="1" FRAME="BORDER" RULES="ALL">
+<COLGROUP WIDTH="600">
+<COL WIDTH="200"></COL>
+<COL WIDTH="200"></COL>
+<COL WIDTH="200"></COL>
+</COLGROUP>
+<THEAD>
+<TR>
+<TH>　</TH>
+<TH ENG="FY 2026">제 11 기 1분기말</TH>
+<TH ENG="FY 2025">제 10 기말</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR>
+<TE ENG="Assets">자산</TE>
+<TE ACODE="ifrs-full_AssetsAbstract">　</TE>
+<TE ACODE="ifrs-full_AssetsAbstract">　</TE>
+</TR>
+<TR>
+<TE ENG="　Current assets">　유동자산</TE>
+<TE ACODE="ifrs-full_CurrentAssets" ADECIMAL="0">281,110,885,179</TE>
+<TE ACODE="ifrs-full_CurrentAssets" ADECIMAL="0">239,109,582,847</TE>
+</TR>
+</TBODY>
+</TABLE>
+"""
+
+
+def test_dart_xbrl_table_with_te_data_cells_becomes_markdown() -> None:
+    # regression: some DART financial-statement tables (XBRL-tagged, ACODE attributes) use <TE>
+    # instead of <TD> for data cells and <TU> for period/unit cells - the parser only recognized
+    # <TD>/<TH>, so these tables silently produced zero data rows and fell through unconverted to
+    # strip_markup, which flattened them into a bare list of numbers with no row/column context.
+    result = convert_tables_to_markdown(_DART_XBRL_TABLE)
+
+    assert "<TABLE" not in result
+    assert "| 제 11 기 1분기말 | 제 10 기말 |" in result
+    assert "| 유동자산 | 281,110,885,179 | 239,109,582,847 |" in result
+
+
+_DART_TU_TABLE = """
+<TABLE WIDTH="600" BORDER="1">
+<TBODY>
+<TR>
+<TD ROWSPAN="2">사업연도</TD>
+<TU AUNIT="PERIODFROM" AUNITVALUE="20260101">2026년 01월 01일</TU>
+<TD>부터</TD>
+</TR>
+<TR>
+<TU AUNIT="PERIODTO" AUNITVALUE="20260331">2026년 03월 31일</TU>
+<TD>까지</TD>
+</TR>
+</TBODY>
+</TABLE>
+"""
+
+
+def test_dart_table_with_tu_period_cells_becomes_markdown() -> None:
+    result = convert_tables_to_markdown(_DART_TU_TABLE)
+    assert "<TABLE" not in result
+    assert "2026년 01월 01일" in result
+    assert "2026년 03월 31일" in result
 
 
 _SEC_STYLE_TABLE = (

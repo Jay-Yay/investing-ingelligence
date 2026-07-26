@@ -25,8 +25,11 @@ class _TableParser(HTMLParser):
 
     DART document.xml(THEAD/TBODY/TH/TD 명시)과 SEC iXBRL HTML(태그 전부 소문자 td, thead 없음)
     둘 다 이 파서로 처리한다 - HTMLParser는 태그명을 자동으로 소문자화하므로 대소문자 차이는
-    문제되지 않는다.
+    문제되지 않는다. DART는 데이터 셀에 TD 외에도 TE(XBRL 태깅된 셀)/TU(기간·단위 셀)를 섞어
+    쓴다 - 실제 재무제표 표에서 확인된 태그셋이며, 헤더는 TH만 쓴다.
     """
+
+    _DATA_CELL_TAGS = ("td", "te", "tu")
 
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
@@ -55,7 +58,7 @@ class _TableParser(HTMLParser):
             self._section_stack.append(tag)
         elif tag == "tr":
             self._current_row = _Row(section=self._current_section())
-        elif tag in ("td", "th"):
+        elif tag == "th" or tag in self._DATA_CELL_TAGS:
             self._cell_parts = []
             self._cell_colspan = _safe_int(attr_map.get("colspan"), 1)
             self._cell_rowspan = _safe_int(attr_map.get("rowspan"), 1)
@@ -68,7 +71,7 @@ class _TableParser(HTMLParser):
             return
         if self._skip_depth:
             return
-        if tag in ("td", "th") and self._cell_parts is not None:
+        if (tag == "th" or tag in self._DATA_CELL_TAGS) and self._cell_parts is not None:
             text = " ".join("".join(self._cell_parts).split())
             if self._current_row is not None:
                 self._current_row.cells.append(
@@ -198,6 +201,10 @@ def _table_to_markdown(table_html: str) -> str | None:
     header = header + [""] * (col_count - len(header))
 
     lines = [f"**{_escape_cell(c)}**" for c in captions]
+    if captions:
+        # 캡션과 표 사이에 빈 줄이 없으면 Obsidian/CommonMark가 표를 표로 인식하지 못하고
+        # 앞 문단에 이어붙은 순수 텍스트로 렌더링한다.
+        lines.append("")
     lines.append("| " + " | ".join(_escape_cell(c) for c in header) + " |")
     lines.append("| " + " | ".join(["---"] * col_count) + " |")
     for row_cells in data_rows:
