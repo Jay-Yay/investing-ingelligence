@@ -2,6 +2,7 @@ import json
 
 import httpx
 import respx
+from freezegun import freeze_time
 
 from investor_intel.collectors.base import CheckpointStore
 from investor_intel.collectors.http_client import SimpleHttpClient
@@ -175,6 +176,7 @@ def test_collect_incremental_second_run_only_returns_new_reports(tmp_path) -> No
 
 
 @respx.mock
+@freeze_time("2026-07-24")
 def test_backfill_filters_by_write_date(tmp_path) -> None:
     _mock_list([_stub(94484, write_date="2026-07-24"), _stub(94400, write_date="2025-01-01")])
     _mock_detail(94484)
@@ -188,6 +190,7 @@ def test_backfill_filters_by_write_date(tmp_path) -> None:
 
 
 @respx.mock
+@freeze_time("2026-07-24")
 def test_backfill_paginates_when_cutoff_not_reached_on_first_page(tmp_path) -> None:
     # regression: backfill used to only ever look at the single default page (~20 items), so a
     # configured backfill_days of e.g. 365 was silently a no-op beyond the current day.
@@ -211,6 +214,7 @@ def test_backfill_paginates_when_cutoff_not_reached_on_first_page(tmp_path) -> N
 
 
 @respx.mock
+@freeze_time("2026-07-24")
 def test_backfill_stops_paginating_once_a_page_is_entirely_before_cutoff(tmp_path) -> None:
     _mock_paginated_list(
         {
