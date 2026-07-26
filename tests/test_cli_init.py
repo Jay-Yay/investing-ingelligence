@@ -27,7 +27,8 @@ def test_init_creates_vault_and_config(tmp_path: Path, monkeypatch: pytest.Monke
     assert (vault / "30_Portfolio" / "portfolio.yaml").exists()
     assert (config_dir / "prompts" / "extract_claims.md").exists()
     assert (config_dir / "prompts" / "analyze_filing.md").exists()
-    assert (config_dir / "prompts" / "portfolio_impact.md").exists()
+    assert (config_dir / "prompts" / "portfolio_monitor.md").exists()
+    assert (config_dir / "prompts" / "tenbagger_discovery.md").exists()
     assert (config_dir / "prompts" / "daily_report.md").exists()
 
     sources = load_sources_yaml(config_dir / "sources.yaml")

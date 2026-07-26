@@ -70,6 +70,31 @@ _VALID_CLAIMS_INPUT = {
     ]
 }
 
+_VALID_POSITION_SIGNALS_INPUT = {
+    "signals": [
+        {
+            "symbol": "NBIS",
+            "new_facts": [],
+            "thesis_shift": "neutral",
+            "causal_chain": "특이사항 없음",
+            "expectation_vs_price": "확인 불가",
+            "counter_evidence": [],
+            "decision_status": "pending",
+            "signal_strength": 0,
+            "action_conditions": "추가 정보 대기",
+            "next_check_conditions": "다음 실행 시 재확인",
+        }
+    ]
+}
+
+_VALID_TENBAGGER_CANDIDATES_INPUT: dict = {"candidates": []}
+
+_TOOL_INPUT_BY_NAME = {
+    "record_claims": _VALID_CLAIMS_INPUT,
+    "record_position_signals": _VALID_POSITION_SIGNALS_INPUT,
+    "record_tenbagger_candidates": _VALID_TENBAGGER_CANDIDATES_INPUT,
+}
+
 
 class _FakeAnthropicSDKClient:
     def __init__(self):
@@ -79,10 +104,11 @@ class _FakeAnthropicSDKClient:
     def _create(self, **kwargs):
         self.calls += 1
         usage = SimpleNamespace(input_tokens=100, output_tokens=50)
-        tools = kwargs.get("tools")
-        if tools:
+        tool_choice = kwargs.get("tool_choice")
+        if tool_choice:
+            tool_input = _TOOL_INPUT_BY_NAME[tool_choice["name"]]
             return SimpleNamespace(
-                content=[SimpleNamespace(type="tool_use", input=_VALID_CLAIMS_INPUT)],
+                content=[SimpleNamespace(type="tool_use", input=tool_input)],
                 usage=usage,
             )
         return SimpleNamespace(
@@ -104,6 +130,34 @@ def _write_sources_yaml(config_dir) -> None:
     )
 
 
+def _write_single_position_portfolio_yaml(vault_path) -> None:
+    (vault_path / "30_Portfolio").mkdir(parents=True, exist_ok=True)
+    (vault_path / "30_Portfolio" / "portfolio.yaml").write_text(
+        """as_of: 2026-07-26
+base_currency: USD
+constraints:
+  horizon_max_months: 6
+  max_single_position_weight: 0.60
+  max_sector_weight: 0.60
+  leverage_allowed: false
+  short_selling_allowed: false
+  options_allowed: false
+positions:
+  - symbol: NBIS
+    name: Nebius Group
+    asset_type: us_equity
+    sector: AI Infrastructure
+    quantity: 10
+    average_cost: 40.0
+    cost_currency: USD
+    thesis: "AI 인프라 확장 수혜"
+    target_price: null
+    stop_loss_price: null
+""",
+        encoding="utf-8",
+    )
+
+
 @respx.mock
 def test_run_daily_happy_path_produces_report(tmp_path) -> None:
     config_dir = tmp_path / "config"
@@ -117,6 +171,7 @@ def test_run_daily_happy_path_produces_report(tmp_path) -> None:
     )
 
     vault_path = tmp_path / "vault"
+    _write_single_position_portfolio_yaml(vault_path)
     settings = AppSettings(_env_file=None)
     fake_sdk_client = _FakeAnthropicSDKClient()
     anthropic_client = AnthropicClient(
@@ -136,7 +191,13 @@ def test_run_daily_happy_path_produces_report(tmp_path) -> None:
     assert result.collect_errors == []
     assert result.analyze_errors == []
     report_files = list((vault_path / "50_Reports" / "Daily").glob("*.md"))
-    assert "오늘의 종합 요약." in report_files[0].read_text(encoding="utf-8")
+    report_body = report_files[0].read_text(encoding="utf-8")
+    assert "오늘의 종합 요약." in report_body
+    assert "NBIS" in report_body
+    # 포트폴리오 모니터가 낸 판단이 vault 신호 로그(다음날 "전일 판단" 입력)에 기록됐는지 확인
+    signal_log = vault_path / "40_Analysis" / "Claims" / "NBIS.md"
+    assert signal_log.exists()
+    assert "decision_status: pending" in signal_log.read_text(encoding="utf-8")
 
 
 @respx.mock

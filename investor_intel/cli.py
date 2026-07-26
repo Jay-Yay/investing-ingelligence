@@ -153,13 +153,16 @@ citi_insights: 아무 이름 (예: citi) - Citi Institute 공개 인사이트 �
 blackrock_insights: 아무 이름 (예: blackrock) - BlackRock 공개 인사이트 페이지
 vanguard_insights: 아무 이름 (예: vanguard) - Vanguard 공개 투자자 교육 페이지
 naver_research: 아무 이름 (예: naver) - 네이버 증권 종목분석 리포트(국내 증권사 발행)
+naver_weekly_hot: 아무 이름 (예: naver-hot) - 네이버 증권 "요즘 많이 보는 리포트" 주간 Top 10
 ```
 
-`*_insights`/`naver_research` 타입은 페이지가 하나뿐이라 값은 URL이 아니라 자유롭게
-붙일 이름표일 뿐이다 (예: `- [ ] jpm_insights: jpmorgan`). 이들은 각 사가 공개하는
-마케팅성 인사이트/요약 콘텐츠이며, 기관 고객 전용 셀사이드 리서치 풀 리포트가 아니다.
-`naver_research`만 예외로, 국내 증권사(신한투자증권, 한화투자증권 등)가 실제로 발행한
-정식 종목 리포트를 네이버가 모아 놓은 페이지라 첨부 PDF가 진짜 애널리스트 리포트다.
+`*_insights`/`naver_research`/`naver_weekly_hot` 타입은 페이지가 하나뿐이라 값은 URL이
+아니라 자유롭게 붙일 이름표일 뿐이다 (예: `- [ ] jpm_insights: jpmorgan`). 이들은 각 사가
+공개하는 마케팅성 인사이트/요약 콘텐츠이며, 기관 고객 전용 셀사이드 리서치 풀 리포트가
+아니다. `naver_research`/`naver_weekly_hot`만 예외로, 국내 증권사(신한투자증권,
+한화투자증권 등)가 실제로 발행한 정식 종목 리포트를 네이버가 모아 놓은 페이지라 첨부
+PDF가 진짜 애널리스트 리포트다. `naver_weekly_hot`은 조회수 기준 주간 인기 랭킹이라
+`naver_research`와 콘텐츠가 겹칠 수 있지만 별도 vault 폴더에 저장된다.
 
 자동 수집을 지원하지 않는 곳도 있다 - Morgan Stanley/State Street는 봇 차단 또는
 JS 렌더링 없이는 콘텐츠가 아예 노출되지 않아서, Fidelity Learn은 대부분 날짜 없는
@@ -275,8 +278,8 @@ filing_types를 국내 상장사 기본값(10-K/10-Q/8-K)으로 채우므로, Ne
 직접 YAML을 편집해도 된다:
 
 - 네이버 블로그, 텔레그램 채널, IB/자산운용사 인사이트(gs_insights/jpm_insights/
-  bofa_insights/citi_insights/blackrock_insights/vanguard_insights/naver_research) ->
-  `config/sources.yaml` (`init`이 생성한 예제 항목 형식을 그대로 따른다)
+  bofa_insights/citi_insights/blackrock_insights/vanguard_insights/naver_research/
+  naver_weekly_hot) -> `config/sources.yaml` (`init`이 생성한 예제 항목 형식을 그대로 따른다)
 - 미국 기업 SEC 공시 -> `config/companies.yaml`
 - 13F 추적 투자자(Berkshire Hathaway, Baillie Gifford, Pershing Square 등) ->
   `config/investors.yaml`
@@ -300,12 +303,21 @@ IB/자산운용사 인사이트 수집기(`investor_intel/collectors/ib_insights
 없는 사이트(GS/JPM/Vanguard 상당수, State Street·MS 제외 대상 무관)는 기존처럼
 요약만 저장된다.
 
-`naver_research`(네이버 증권 종목분석 리포트, `finance.naver.com/research/company_list.naver`)는
-목록 페이지 자체에 종목명·증권사·작성일과 PDF 링크가 이미 다 나와 있어서, 다른 은행처럼
-상세 페이지를 따로 fetch하지 않고 목록에서 바로 PDF를 받아 원문을 추출한다. PDF가 없는
-행(가끔 있음)은 요약도 없어서 `metadata_only`(제목/링크만)로 저장된다. 첫 페이지에
-노출되는 전체 종목 최신 리포트 ~30건만 수집하며(페이지네이션 미지원), 회사별 필터링은
-하지 않는다.
+`naver_research`(네이버 증권 종목분석 리포트)는 네이버 앱이 실제로 쓰는 비공개 JSON API
+(`m.stock.naver.com/api/research/company`)를 사용한다 - HTML을 파싱하지 않고 구조화된
+필드(투자의견, 목표주가, 직전 목표주가, 요약)를 그대로 받는다. 목록에는 제목/증권사/작성일만
+있고 PDF·목표주가 등은 건당 상세 API를 한 번 더 불러야 나온다. PDF 있으면 원문 전체 추출,
+없으면 API의 요약 필드로 대체, 둘 다 없으면 `metadata_only`. 시장 전체 최신 리포트 ~30건만
+보이며(페이지네이션·종목 필터 없음), `sync-inbox`/`collect`를 주기적으로 돌리며 누적해야 한다.
+
+`naver_weekly_hot`(네이버 증권 "요즘 많이 보는 리포트" 주간 조회수 Top 10)은 위와 다른
+API(`stock.naver.com/api/stockSecurity/researches/v2/weekly-hot?startDate=...&size=10`)를
+쓰며, `naver_research`와 별도 vault 폴더에 저장된다. 이건 최신순 피드가 아니라 매번 바뀌는
+"현재 랭킹 스냅샷"이라 체크포인트로 "지난번 이후 신규"를 걸러내지 않고, 매번 현재 Top 10
+전체를 다시 시도한 뒤 이미 vault에 있는 건 저장 단계의 중복 판정(source_specific_id 기준)이
+알아서 건너뛴다 - 그래서 순위가 밀렸다 다시 올라온 리포트도 놓치지 않는다. `startDate`가
+오늘/주말처럼 데이터가 아직 없는 날짜면 빈 목록이 오므로, 최대 7일 전까지 하루씩 거슬러
+올라가며 데이터가 있는 날짜를 찾는다.
 
 추가 후 `uv run python -m investor_intel collect --backfill 365` 로 신규 소스를 과거 데이터까지
 백필할 수 있다(생략 시 증분 수집만 수행).
@@ -357,23 +369,34 @@ PROMPTS = {
         "추출하라. 모든 수치는 단위와 기준기간을 함께 기록하고, 계산이 필요한 값은 계산식을 "
         "함께 남겨라. 원문에 없는 값은 추정하지 말고 null로 남겨라.\n"
     ),
-    "portfolio_impact.md": (
-        "# 포트폴리오 영향 분석 프롬프트 (v1)\n\n"
-        "역할: 포트폴리오 매니저 보조.\n\n"
-        "주어진 보유 종목과 신규 정보를 비교하여 기존 투자 논리와의 일치/훼손 여부, 6개월 "
-        "이내 촉매, 반대 관점, 추가로 확인할 정보를 정리하라. 정보가 부족하면 "
-        "decision_status를 pending으로 표시하고 recommendation은 null로 남겨라. 레버리지, "
-        "공매도, 옵션 매매는 추천하지 않는다.\n"
+    "portfolio_monitor.md": (
+        "# 포트폴리오 모니터 프롬프트 (v1)\n\n"
+        "역할: 포트폴리오 리서치 시스템. 특정 유명 투자자의 인격이나 말투를 모방하지 않는다.\n\n"
+        "보유 종목 각각에 대해 오늘 자료가 기존 투자 가설(thesis/key_kpis/"
+        "invalidation_condition)을 얼마나 변화시켰는지, 현재 가격에 이미 반영됐을 가능성이 "
+        "있는지를 판단한다. 뉴스 어조를 그대로 매수/매도 신호로 번역하지 않는다. "
+        "signal_strength가 70 미만이면 매수/매도 계열 신호를 내지 않는다. 정보가 부족하면 "
+        "decision_status를 pending으로 표시한다. 레버리지, 공매도, 옵션 매매는 추천하지 "
+        "않는다.\n\n"
+        "이 프롬프트 뒤에는 `vault/00_System/Investment_Mandate.md`가 자동으로 이어 붙는다 — "
+        "종목군별 렌즈와 소스 신뢰도 등급을 반드시 반영한다.\n"
+    ),
+    "tenbagger_discovery.md": (
+        "# 텐베거 후보 발굴 프롬프트 (v1)\n\n"
+        "역할: 포트폴리오 리서치 시스템. 특정 유명 투자자의 인격이나 말투를 모방하지 않는다.\n\n"
+        "언급량이 아니라 펀더멘털 변곡점 + 10배 시가총액 역산 가능성으로 후보를 스크리닝한다 "
+        "(시장확장성/실적변곡점/단위경제성/경쟁우위/관심격차/밸류에이션경로/재무생존성). "
+        "이미 보유 중인 종목은 후보에서 제외한다. 홍보성 주장이나 가격 급등 후 뒷북 근거만 "
+        "있는 경우는 hard_excluded로 표시한다.\n\n"
+        "이 프롬프트 뒤에는 `vault/00_System/Investment_Mandate.md`가 자동으로 이어 붙는다.\n"
     ),
     "daily_report.md": (
-        "# 일일 리포트 종합 프롬프트 (v2)\n\n"
-        "역할: 수석 애널리스트.\n\n"
-        "당일 신규 문서들의 주장을 같은 관점/반대 관점/종합 관점으로 나누어 정리하라. 지정된 "
-        "출처가 하나뿐인 주장을 복수 출처의 합의처럼 표현하지 마라. 모든 핵심 주장에 원문 "
-        "링크와 발행일을 포함하라.\n\n"
-        "입력에는 \"오늘 새로 추출된 주장\" 목록이 발행일 최신순으로 포함되어 있다. 이 "
-        "프롬프트 뒤에는 `vault/00_System/Investment_Mandate.md`의 내용이 자동으로 이어 "
-        "붙는다 — 그 지침을 반드시 따라서 리포트를 작성하라.\n"
+        "# 일일 브리핑 프로즈 요약 프롬프트 (v3)\n\n"
+        "역할: 수석 애널리스트. 특정 유명 투자자의 인격이나 말투를 모방하지 않는다.\n\n"
+        "포트폴리오 모니터/텐베거 발굴 결과와 자본배분 순위표(이미 구조화됨)를 입력받아 "
+        "\"오늘의 결론\"과 \"추가 확인 과제\" 프로즈만 작성한다. 표는 이미 렌더링되어 있으므로 "
+        "숫자를 새로 계산하지 않는다.\n\n"
+        "이 프롬프트 뒤에는 `vault/00_System/Investment_Mandate.md`가 자동으로 이어 붙는다.\n"
     ),
 }
 
@@ -649,7 +672,7 @@ def report(
         mandate = load_investment_mandate(vault_path)
         if mandate:
             daily_report_prompt = f"{daily_report_prompt}\n\n---\n\n{mandate}"
-        narrative = synthesize_daily_narrative(client, summary, daily_report_prompt)
+        narrative = synthesize_daily_narrative(client, summary, daily_report_prompt).text
 
     context = DailyReportContext(
         report_date=date.today(),

@@ -54,3 +54,15 @@ class RecommendationRating(StrEnum):
     HOLD = "hold"
     REDUCE = "reduce"
     SELL = "sell"
+
+
+class ThesisShift(StrEnum):
+    STRENGTHENED = "strengthened"
+    NEUTRAL = "neutral"
+    WEAKENED = "weakened"
+
+
+class TenbaggerTier(StrEnum):
+    CANDIDATE = "candidate"
+    WATCHLIST = "watchlist"
+    EXCLUDED = "excluded"

@@ -25,6 +25,12 @@ class Position(BaseModel):
     thesis: str = ""
     target_price: float | None = None
     stop_loss_price: float | None = None
+    key_kpis: list[str] = []
+    invalidation_condition: str = ""
+    next_catalyst: str = ""
+    fair_value_low: float | None = None
+    fair_value_high: float | None = None
+    max_position_weight: float | None = None
 
 
 class Portfolio(BaseModel):
