@@ -28,7 +28,7 @@ sources:
     name: a463508
     enabled: true
     url: https://m.blog.naver.com/a463508
-    author: a463508
+    author: 춰릿
     weight: 1.0
     collection_mode: full
     backfill_days: 365
@@ -39,7 +39,7 @@ sources:
     name: slowwalkingbull
     enabled: true
     url: https://m.blog.naver.com/slowwalkingbull
-    author: slowwalkingbull
+    author: 걸음이 느린 황소
     weight: 1.0
     collection_mode: full
     backfill_days: 365
@@ -50,7 +50,7 @@ sources:
     name: royvalue
     enabled: true
     url: https://m.blog.naver.com/royvalue
-    author: royvalue
+    author: 로이의 무지개 세상
     weight: 1.0
     collection_mode: full
     backfill_days: 365
@@ -61,7 +61,7 @@ sources:
     name: tmdejr1267
     enabled: true
     url: https://m.blog.naver.com/tmdejr1267
-    author: tmdejr1267
+    author: Seung's 투자와 생각
     weight: 1.0
     collection_mode: full
     backfill_days: 365
@@ -72,7 +72,7 @@ sources:
     name: BRILLER_Research
     enabled: true
     url: https://t.me/s/BRILLER_Research
-    author: null
+    author: BRILLER
     weight: 1.0
     collection_mode: full
     backfill_days: 365
@@ -83,7 +83,7 @@ sources:
     name: kimcharger
     enabled: true
     url: https://t.me/s/kimcharger
-    author: null
+    author: 김찰저의 관심과 생각 저장소
     weight: 1.0
     collection_mode: full
     backfill_days: 365
@@ -94,7 +94,7 @@ sources:
     name: getfeed
     enabled: true
     url: https://t.me/s/getfeed
-    author: null
+    author: 석학들의 마켓 (인)사이트
     weight: 1.0
     collection_mode: full
     backfill_days: 365
@@ -105,7 +105,7 @@ sources:
     name: dolbikong
     enabled: true
     url: https://t.me/s/dolbikong
-    author: null
+    author: 돌비콩의 투자정복
     weight: 1.0
     collection_mode: full
     backfill_days: 365
@@ -116,7 +116,7 @@ sources:
     name: skitteam
     enabled: true
     url: https://t.me/s/skitteam
-    author: null
+    author: IT는 SK
     weight: 1.0
     collection_mode: full
     backfill_days: 365
@@ -127,7 +127,7 @@ sources:
     name: Jstockclass
     enabled: true
     url: https://t.me/s/Jstockclass
-    author: null
+    author: 엄브렐라리서치 Jay의 주식투자교실
     weight: 1.0
     collection_mode: full
     backfill_days: 365
@@ -138,7 +138,7 @@ sources:
     name: Samsung_Global_AI_SW
     enabled: true
     url: https://t.me/s/Samsung_Global_AI_SW
-    author: null
+    author: 삼성 글로벌AI/SW 이영진
     weight: 1.0
     collection_mode: full
     backfill_days: 365
@@ -149,7 +149,7 @@ sources:
     name: kyobofnbcosmetic
     enabled: true
     url: https://t.me/s/kyobofnbcosmetic
-    author: null
+    author: 교보 음식료/화장품 권우정
     weight: 1.0
     collection_mode: full
     backfill_days: 365
@@ -281,7 +281,7 @@ sources:
     name: tosoha1
     enabled: true
     url: https://blog.naver.com/tosoha1
-    author: tosoha1
+    author: 농구천재
     weight: 1.0
     collection_mode: full
     backfill_days: 365
@@ -292,7 +292,7 @@ sources:
     name: thingschange_
     enabled: true
     url: https://m.blog.naver.com/thingschange_
-    author: thingschange_
+    author: 퀄리티를 찾아서
     weight: 1.0
     collection_mode: full
     backfill_days: 365
@@ -303,7 +303,7 @@ sources:
     name: deskhunter
     enabled: true
     url: https://blog.naver.com/deskhunter
-    author: deskhunter
+    author: 우용용
     weight: 1.0
     collection_mode: full
     backfill_days: 365
@@ -314,9 +314,31 @@ sources:
     name: cazet1
     enabled: true
     url: https://blog.naver.com/cazet1
-    author: cazet1
+    author: 모노
     weight: 1.0
     collection_mode: full
     backfill_days: 365
     tags:
       - blog
+  - id: naver_ranto28
+    type: naver
+    name: ranto28
+    enabled: true
+    url: https://blog.naver.com/ranto28
+    author: 메르
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - blog
+  - id: telegram_yeonsour
+    type: telegram
+    name: yeonsour
+    enabled: true
+    url: https://t.me/s/yeonsour
+    author: 연수르 해외주식
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - telegram
