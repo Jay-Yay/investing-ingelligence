@@ -4,6 +4,7 @@ import zipfile
 from io import BytesIO
 
 from investor_intel.collectors.dart_client import DartClient
+from investor_intel.collectors.table_markdown import convert_tables_to_markdown
 from investor_intel.collectors.text_extract import strip_markup, truncate
 
 _DOCUMENT_URL = (
@@ -27,7 +28,7 @@ def fetch_full_text(client: DartClient, api_key: str, rcept_no: str) -> str | No
     except Exception:  # noqa: BLE001
         return None
 
-    text = strip_markup(raw_xml)
+    text = strip_markup(convert_tables_to_markdown(raw_xml))
     if not text:
         return None
     return truncate(text)

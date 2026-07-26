@@ -4,6 +4,7 @@ import re
 
 from investor_intel.collectors.sec_client import SECClient
 from investor_intel.collectors.sec_urls import document_url, filing_index_url
+from investor_intel.collectors.table_markdown import convert_tables_to_markdown
 from investor_intel.collectors.text_extract import strip_markup, truncate
 
 _TRANSCRIPT_EXHIBIT_NAME_RE = re.compile(r"ex-?99", re.IGNORECASE)
@@ -18,7 +19,7 @@ def fetch_full_text(client: SECClient, cik: str, accession_number: str, filename
     except Exception:  # noqa: BLE001
         return None
 
-    text = strip_markup(html)
+    text = strip_markup(convert_tables_to_markdown(html))
     if not text:
         return None
     return truncate(text)
@@ -52,7 +53,7 @@ def find_transcript_exhibit(client: SECClient, cik: str, accession_number: str) 
             html = client.get_text(document_url(cik, accession_number, filename))
         except Exception:  # noqa: BLE001
             continue
-        text = strip_markup(html)
+        text = strip_markup(convert_tables_to_markdown(html))
         if _TRANSCRIPT_CUE_RE.search(text) and _QA_CUE_RE.search(text):
             return truncate(text)
 
