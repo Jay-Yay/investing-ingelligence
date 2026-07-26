@@ -232,3 +232,14 @@ sources:
     backfill_days: 365
     tags:
       - ib_insights
+  - id: naver_weekly_hot_naver_weekly_hot
+    type: naver_weekly_hot
+    name: naver-weekly-hot
+    enabled: true
+    url: https://stock.naver.com/api/stockSecurity/researches/v2/weekly-hot
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - ib_insights

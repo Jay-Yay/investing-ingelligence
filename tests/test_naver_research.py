@@ -48,6 +48,21 @@ def _mock_list(stubs: list[dict]) -> None:
     respx.get(LIST_URL).mock(return_value=httpx.Response(200, json=stubs))
 
 
+def _mock_paginated_list(pages_by_number: dict[int, list[dict]]) -> None:
+    # a plain `respx.get(LIST_URL).mock(...)` for page 1 also matches `LIST_URL?page=2`, `?page=3`,
+    # etc. (respx treats an unconstrained route as matching any query string), so registering one
+    # route per page number would make every page beyond the last explicitly-mocked one silently
+    # fall back to page 1's response instead of erroring - which would make
+    # `_fetch_stubs_until_cutoff` loop until `_MAX_BACKFILL_PAGES` instead of stopping. A single
+    # side_effect keyed off the request's own `page` query param avoids that trap and matches
+    # "unmocked page -> no data" too.
+    def side_effect(request: httpx.Request) -> httpx.Response:
+        page = int(request.url.params.get("page", "1"))
+        return httpx.Response(200, json=pages_by_number.get(page, []))
+
+    respx.get(url__startswith=LIST_URL).mock(side_effect=side_effect)
+
+
 def _mock_detail(research_id: int, **overrides) -> None:
     payload = {
         "researchContent": {
@@ -162,6 +177,51 @@ def test_collect_incremental_second_run_only_returns_new_reports(tmp_path) -> No
 @respx.mock
 def test_backfill_filters_by_write_date(tmp_path) -> None:
     _mock_list([_stub(94484, write_date="2026-07-24"), _stub(94400, write_date="2025-01-01")])
+    _mock_detail(94484)
+    _mock_detail(94400)
+    collector, _ = _collector(tmp_path)
+
+    result = collector.backfill(days=7)
+
+    ids = {item.source_specific_id for item in result.items}
+    assert ids == {"94484"}
+
+
+@respx.mock
+def test_backfill_paginates_when_cutoff_not_reached_on_first_page(tmp_path) -> None:
+    # regression: backfill used to only ever look at the single default page (~20 items), so a
+    # configured backfill_days of e.g. 365 was silently a no-op beyond the current day.
+    _mock_paginated_list(
+        {
+            1: [_stub(94484, write_date="2026-07-24"), _stub(94483, write_date="2026-07-23")],
+            2: [_stub(94400, write_date="2026-07-01"), _stub(94399, write_date="2026-06-01")],
+        }
+    )
+    for research_id in (94484, 94483, 94400, 94399):
+        _mock_detail(research_id)
+    collector, checkpoint_store = _collector(tmp_path)
+
+    result = collector.backfill(days=30)
+
+    ids = {item.source_specific_id for item in result.items}
+    assert ids == {"94484", "94483", "94400"}  # 94399 (2026-06-01) is older than the 30-day cutoff
+    state = checkpoint_store.get_state(collector.source_id)
+    assert state.last_seen_id == "94484"
+    assert state.backfill_completed is True
+
+
+@respx.mock
+def test_backfill_stops_paginating_once_a_page_is_entirely_before_cutoff(tmp_path) -> None:
+    _mock_paginated_list(
+        {
+            1: [_stub(94484, write_date="2026-07-24")],
+            2: [_stub(94400, write_date="2025-01-01")],
+            # deliberately no page 3 entry - if the collector tried to fetch it, it gets an empty
+            # list (see _mock_paginated_list) rather than looping; page 2's date already ends the
+            # backfill before page 3 would ever be requested, so either behavior would pass here,
+            # but this keeps the fixture honest about what "no more data" looks like.
+        }
+    )
     _mock_detail(94484)
     _mock_detail(94400)
     collector, _ = _collector(tmp_path)

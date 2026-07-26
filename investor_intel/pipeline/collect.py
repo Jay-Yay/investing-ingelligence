@@ -14,6 +14,7 @@ from investor_intel.collectors.http_client import SimpleHttpClient
 from investor_intel.collectors.ib_insights import IB_INSIGHTS_SOURCES, IBInsightsCollector
 from investor_intel.collectors.naver_blog import NaverBlogCollector
 from investor_intel.collectors.naver_research import NaverResearchCollector
+from investor_intel.collectors.naver_weekly_hot import NaverWeeklyHotCollector
 from investor_intel.collectors.sec_client import SECClient
 from investor_intel.collectors.sec_filings import SECFilingsCollector
 from investor_intel.collectors.sec_thirteenf import ThirteenFCollector
@@ -240,6 +241,13 @@ def build_collect_entries(
                     source, http_client, checkpoint_store
                 )
                 entries.append((naver_research_collector, SourceType.IB_INSIGHTS, source.name))
+            elif source.type == "naver_weekly_hot":
+                naver_weekly_hot_collector = NaverWeeklyHotCollector(
+                    source, http_client, checkpoint_store
+                )
+                entries.append(
+                    (naver_weekly_hot_collector, SourceType.IB_INSIGHTS, source.name)
+                )
             elif source.type in IB_INSIGHTS_SOURCES:
                 ib_source = IB_INSIGHTS_SOURCES[source.type]
                 ib_collector = IBInsightsCollector(

@@ -26,11 +26,12 @@ def render_naver_research_body(
 
     body_text = pdf_text or detail.content_text or "(본문 미제공 - 원문 링크 참고)"
     body_note = "(첨부된 PDF 리포트에서 추출한 원문 전체)" if pdf_text else None
+    rank_prefix = f"[주간 인기 {stub.rank}위] " if stub.rank else ""
 
     sections = [
         "## 원문",
         "",
-        f"{stub.broker_name} — [{stub.item_name}] {stub.title}",
+        f"{rank_prefix}{stub.broker_name} — [{stub.item_name}] {stub.title}",
         f"{opinion_line} | {goal_price_line}",
         *([body_note] if body_note else []),
         "",

@@ -16,6 +16,7 @@ class NaverResearchStub:
     title: str
     broker_name: str
     write_date: date | None
+    rank: int | None = None
 
 
 @dataclass
@@ -25,6 +26,7 @@ class NaverResearchDetail:
     goal_price: float | None
     prev_goal_price: float | None
     attach_url: str | None
+    item_name: str | None = None
 
 
 def _parse_write_date(text: object) -> date | None:
@@ -80,4 +82,33 @@ def parse_naver_research_detail(json_text: str) -> NaverResearchDetail:
         goal_price=_parse_price(content.get("goalPrice")),
         prev_goal_price=_parse_price(content.get("prevGoalPrice")),
         attach_url=content.get("attachUrl") or None,
+        item_name=content.get("itemName") or None,
     )
+
+
+def parse_weekly_hot_list(json_text: str) -> list[NaverResearchStub]:
+    """stock.naver.com/api/stockSecurity/researches/v2/weekly-hot - the "요즘 많이 보는 리포트"
+    ranking widget. Unlike the general listing, rows here have no itemName (only itemCode),
+    so callers should prefer NaverResearchDetail.item_name once fetched."""
+    data = json.loads(json_text)
+    stubs: list[NaverResearchStub] = []
+    for item in data.get("researchList", []):
+        nid = item.get("nid")
+        if nid is None:
+            continue
+        try:
+            rank = int(item["ranking"]) if item.get("ranking") is not None else None
+        except (TypeError, ValueError):
+            rank = None
+        stubs.append(
+            NaverResearchStub(
+                research_id=int(nid),
+                item_code=str(item.get("itemCode") or ""),
+                item_name="",
+                title=str(item.get("title") or ""),
+                broker_name=str(item.get("brokerName") or ""),
+                write_date=_parse_write_date(item.get("writeDate")),
+                rank=rank,
+            )
+        )
+    return stubs

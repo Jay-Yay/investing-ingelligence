@@ -3,6 +3,7 @@ import json
 from investor_intel.collectors.naver_research_parser import (
     parse_naver_research_detail,
     parse_naver_research_list,
+    parse_weekly_hot_list,
 )
 
 _LIST_JSON = json.dumps(
@@ -95,3 +96,60 @@ def test_parse_naver_research_detail_handles_unwrapped_payload() -> None:
 
     assert detail.opinion == "매수"
     assert detail.goal_price == 50000.0
+
+
+def test_parse_naver_research_detail_extracts_item_name() -> None:
+    data = json.dumps({"researchContent": {"itemName": "SK텔레콤"}})
+    detail = parse_naver_research_detail(data)
+    assert detail.item_name == "SK텔레콤"
+
+
+_WEEKLY_HOT_JSON = json.dumps(
+    {
+        "startDate": "2026-07-19",
+        "researchList": [
+            {
+                "ranking": "1",
+                "type": "company",
+                "nid": "94282",
+                "title": "2Q26 프리뷰: 우려를 넘어 로봇 모멘텀 주목",
+                "brokerName": "미래에셋증권",
+                "writeDate": "2026-07-21",
+                "readCount": "11774",
+                "itemCode": "005380",
+                "analystName": None,
+            },
+            {
+                "ranking": "2",
+                "nid": "94277",
+                "title": "수요와 공급 모두 여전히 우호적인 상황",
+                "brokerName": "하나증권",
+                "writeDate": "2026-07-20",
+                "itemCode": "009150",
+            },
+            {"ranking": "3", "title": "nid 없는 항목은 건너뜀"},
+        ],
+    }
+)
+
+
+def test_parse_weekly_hot_list_extracts_ranked_stubs() -> None:
+    stubs = parse_weekly_hot_list(_WEEKLY_HOT_JSON)
+
+    assert len(stubs) == 2
+    first = stubs[0]
+    assert first.research_id == 94282
+    assert first.rank == 1
+    assert first.item_code == "005380"
+    assert first.item_name == ""
+    assert first.title == "2Q26 프리뷰: 우려를 넘어 로봇 모멘텀 주목"
+    assert first.broker_name == "미래에셋증권"
+    assert first.write_date.isoformat() == "2026-07-21"
+
+    second = stubs[1]
+    assert second.research_id == 94277
+    assert second.rank == 2
+
+
+def test_parse_weekly_hot_list_handles_empty_research_list() -> None:
+    assert parse_weekly_hot_list(json.dumps({"startDate": "2026-07-26", "researchList": []})) == []
