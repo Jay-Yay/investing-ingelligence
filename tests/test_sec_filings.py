@@ -170,3 +170,88 @@ def test_8k_item_without_report_date_still_produces_item(tmp_path) -> None:
     eightk = next(item for item in result.items if item.filing_type == "8-K")
     assert eightk.reporting_period is None
     assert "2.02" in eightk.body_text
+
+
+@respx.mock
+@freeze_time("2024-06-01")
+def test_10q_captures_full_text_and_tags_title(tmp_path) -> None:
+    _mock_submissions()
+    respx.get(
+        "https://www.sec.gov/Archives/edgar/data/1664703/000166470324000010/form10q.htm"
+    ).mock(return_value=httpx.Response(200, text="<html><body><p>테스트 10-Q 본문</p></body></html>"))
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    client = SECClient(user_agent="Investor Intel test@example.com")
+    collector = SECFilingsCollector(_company(), client, CheckpointStore(conn))
+
+    result = collector.backfill(days=45)
+    client.close()
+
+    item = result.items[0]
+    assert item.title.startswith("[분기보고서] ")
+    assert item.content_capture_mode == "full"
+    assert "테스트 10-Q 본문" in item.body_text
+
+
+@respx.mock
+@freeze_time("2024-06-01")
+def test_8k_captures_transcript_when_exhibit_matches_call_cues(tmp_path) -> None:
+    _mock_submissions()
+    archive = "https://www.sec.gov/Archives/edgar/data/1664703/000166470324000005"
+    respx.get(f"{archive}/index.json").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "directory": {
+                    "item": [
+                        {"name": "form8k.htm", "type": "text.gif"},
+                        {"name": "ex992transcript.htm", "type": "text.gif"},
+                    ]
+                }
+            },
+        )
+    )
+    respx.get(f"{archive}/ex992transcript.htm").mock(
+        return_value=httpx.Response(
+            200,
+            text=(
+                "<html><body>Operator: welcome to the call. "
+                "question-and-answer session begins now.</body></html>"
+            ),
+        )
+    )
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    client = SECClient(user_agent="Investor Intel test@example.com")
+    collector = SECFilingsCollector(_company(), client, CheckpointStore(conn))
+
+    result = collector.collect_incremental()
+    client.close()
+
+    eightk = next(item for item in result.items if item.filing_type == "8-K")
+    assert eightk.title.startswith("[컨퍼런스콜] ")
+    assert eightk.content_capture_mode == "full"
+    assert "question-and-answer" in eightk.body_text.lower()
+
+
+@respx.mock
+@freeze_time("2024-06-01")
+def test_8k_stays_metadata_only_when_no_transcript_exhibit(tmp_path) -> None:
+    _mock_submissions()
+    archive = "https://www.sec.gov/Archives/edgar/data/1664703/000166470324000005"
+    respx.get(f"{archive}/index.json").mock(
+        return_value=httpx.Response(
+            200, json={"directory": {"item": [{"name": "form8k.htm", "type": "text.gif"}]}}
+        )
+    )
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    client = SECClient(user_agent="Investor Intel test@example.com")
+    collector = SECFilingsCollector(_company(), client, CheckpointStore(conn))
+
+    result = collector.collect_incremental()
+    client.close()
+
+    eightk = next(item for item in result.items if item.filing_type == "8-K")
+    assert eightk.content_capture_mode == "metadata_only"
+    assert not eightk.title.startswith("[컨퍼런스콜]")

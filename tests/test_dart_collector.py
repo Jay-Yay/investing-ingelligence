@@ -1,3 +1,5 @@
+import zipfile
+from io import BytesIO
 from pathlib import Path
 
 import httpx
@@ -87,6 +89,61 @@ def test_collect_incremental_dedupes_across_report_types_and_is_idempotent(tmp_p
 
     assert second_result.new_count == 0
     assert second_result.items == []
+
+
+def _document_zip_bytes(xml_text: str) -> bytes:
+    buffer = BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        archive.writestr("doc.xml", xml_text)
+    return buffer.getvalue()
+
+
+@respx.mock
+@freeze_time("2024-06-01")
+def test_annual_report_captures_full_text_and_tags_title(tmp_path) -> None:
+    _mock_list_routes()
+    respx.get(
+        f"https://opendart.fss.or.kr/api/document.xml?crtfc_key={_API_KEY}"
+        "&rcept_no=20240315000001"
+    ).mock(
+        return_value=httpx.Response(
+            200,
+            content=_document_zip_bytes(
+                "<DOCUMENT><TITLE>사업보고서</TITLE><BODY><P>테스트 본문</P></BODY></DOCUMENT>"
+            ),
+        )
+    )
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    client = DartClient(api_key=_API_KEY)
+    collector = DartCollector(_company(), client, CheckpointStore(conn), api_key=_API_KEY)
+
+    result = collector.collect_incremental()
+    client.close()
+
+    annual = next(item for item in result.items if item.accession_number == "20240315000001")
+    assert annual.title.startswith("[연간보고서] ")
+    assert annual.content_capture_mode == "full"
+    assert "테스트 본문" in annual.body_text
+
+
+@respx.mock
+@freeze_time("2024-06-01")
+def test_non_periodic_report_stays_metadata_only(tmp_path) -> None:
+    _mock_list_routes()
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    client = DartClient(api_key=_API_KEY)
+    collector = DartCollector(_company(), client, CheckpointStore(conn), api_key=_API_KEY)
+
+    result = collector.collect_incremental()
+    client.close()
+
+    major_report = next(
+        item for item in result.items if item.accession_number == "20240401000002"
+    )
+    assert major_report.content_capture_mode == "metadata_only"
+    assert not major_report.title.startswith("[")
 
 
 @respx.mock

@@ -16,7 +16,10 @@ _SNAPSHOT_LABELS: dict[str, str] = {
 
 SEC_FILING_LIMITATIONS_NOTE = (
     "- 이 공시는 특정 시점의 규제 공시이며 투자 자문이 아니다.\n"
-    "- 원문 전체 텍스트는 이 단계에서 수집하지 않으며, 메타데이터와 원문 링크만 캡처한다.\n"
+    "- 10-K/10-Q는 primaryDocument HTML에서 텍스트를 추출해 캡처한다(태그만 제거한 단순 변환이라 "
+    "표 구조가 완벽히 보존되진 않으며, 최대 4만자까지만 담긴다). 8-K는 컨퍼런스콜 녹취록이 "
+    "exhibit로 실제 첨부된 경우에만 원문을 캡처하고(전체 8-K 중 일부), 그 외 공시 유형은 "
+    "메타데이터와 원문 링크만 캡처한다.\n"
     "- 8-K 항목 코드는 사건의 주제를 나타낼 뿐 호재/악재 방향을 의미하지 않는다.\n"
     "- 외국민간발행인(FPI)의 6-K는 국내 기업의 8-K와 제출 주기 및 내용 기준이 달라 "
     "직접 비교할 수 없다.\n"
@@ -52,6 +55,8 @@ def render_sec_filing_body(
     company: CompanyConfig,
     canonical_url: str,
     snapshot: FinancialStatementSnapshot | None = None,
+    full_text: str | None = None,
+    is_transcript: bool = False,
 ) -> str:
     period = filing.period_of_report.isoformat() if filing.period_of_report else "해당 없음"
     items_line = (
@@ -59,6 +64,13 @@ def render_sec_filing_body(
         if filing.items
         else "8-K 항목 코드: 해당 없음"
     )
+    body_note = None
+    if full_text:
+        body_note = (
+            "(8-K 첨부 컨퍼런스콜 녹취록 원문)"
+            if is_transcript
+            else "(primaryDocument에서 추출한 원문 전체)"
+        )
 
     sections = [
         "## 원문",
@@ -67,8 +79,11 @@ def render_sec_filing_body(
         f"보고 기준일 {period}, "
         f"제출일 {filing.filing_date.isoformat()}, "
         f"accession {filing.accession_number}",
+        *([body_note] if body_note else []),
         "",
         items_line,
+        "",
+        *([full_text] if full_text else []),
         "",
         *_render_financial_snapshot_section(snapshot),
         "## 공시 해석 시 유의사항",

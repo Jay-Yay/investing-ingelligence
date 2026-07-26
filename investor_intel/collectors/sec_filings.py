@@ -10,6 +10,8 @@ from investor_intel.collectors.sec_companyfacts import (
     extract_financial_snapshot,
     parse_companyfacts,
 )
+from investor_intel.collectors.filing_kind import classify_sec_form, title_prefix
+from investor_intel.collectors.sec_document_fetch import fetch_full_text, find_transcript_exhibit
 from investor_intel.collectors.sec_filings_document import render_sec_filing_body
 from investor_intel.collectors.sec_filings_parser import CompanyFilingRef, parse_company_filings
 from investor_intel.collectors.sec_urls import companyfacts_url, filing_index_page_url
@@ -65,7 +67,32 @@ class SECFilingsCollector:
     def _build_item(self, filing: CompanyFilingRef) -> CollectItem:
         canonical_url = filing_index_page_url(self._company.cik, filing.accession_number)
         snapshot = self._snapshot_for(filing)
-        body = render_sec_filing_body(filing, self._company, canonical_url, snapshot=snapshot)
+
+        report_kind = classify_sec_form(filing.form)
+        title_tag = title_prefix(report_kind)
+        full_text: str | None = None
+        is_transcript = False
+
+        if report_kind is not None:
+            full_text = fetch_full_text(
+                self._client, self._company.cik, filing.accession_number, filing.primary_document
+            )
+        elif filing.form == "8-K":
+            full_text = find_transcript_exhibit(
+                self._client, self._company.cik, filing.accession_number
+            )
+            if full_text is not None:
+                is_transcript = True
+                title_tag = "[컨퍼런스콜] "
+
+        body = render_sec_filing_body(
+            filing,
+            self._company,
+            canonical_url,
+            snapshot=snapshot,
+            full_text=full_text,
+            is_transcript=is_transcript,
+        )
 
         published_at = datetime(
             filing.filing_date.year,
@@ -74,18 +101,22 @@ class SECFilingsCollector:
             tzinfo=UTC,
         )
         reporting_period_date = filing.period_of_report or filing.filing_date
+        title = f"{title_tag}{self._company.name} {filing.form} ({reporting_period_date.isoformat()})"
+        mode, reason = (
+            ("full", None) if full_text is not None else ("metadata_only", _CONTENT_CAPTURE_REASON)
+        )
 
         return CollectItem(
             source_specific_id=filing.accession_number,
             canonical_url=canonical_url,
-            title=f"{self._company.name} {filing.form} ({reporting_period_date.isoformat()})",
+            title=title,
             author=self._company.name,
             published_at=published_at,
             updated_at=None,
             language="en",
             body_text=body,
-            content_capture_mode="metadata_only",
-            content_capture_reason=_CONTENT_CAPTURE_REASON,
+            content_capture_mode=mode,
+            content_capture_reason=reason,
             companies=[self._company.ticker],
             document_type="sec_filing",
             filing_type=filing.form,

@@ -5,7 +5,9 @@ from datetime import UTC, date, datetime, timedelta
 from investor_intel.collectors.base import CheckpointStore, CollectItem, CollectResult
 from investor_intel.collectors.dart_client import DartClient
 from investor_intel.collectors.dart_document import render_dart_filing_body
+from investor_intel.collectors.dart_document_fetch import fetch_full_text
 from investor_intel.collectors.dart_filings_parser import DartFilingRef, parse_dart_list_response
+from investor_intel.collectors.filing_kind import classify_dart_report, title_prefix
 from investor_intel.models.config import KoreanCompanyConfig
 
 _LIST_URL = (
@@ -71,22 +73,35 @@ class DartCollector:
 
     def _build_item(self, filing: DartFilingRef) -> CollectItem:
         canonical_url = _filing_viewer_url(filing.rcept_no)
-        body = render_dart_filing_body(filing, canonical_url)
         published_at = datetime(
             filing.rcept_dt.year, filing.rcept_dt.month, filing.rcept_dt.day, tzinfo=UTC
         )
+        report_kind = classify_dart_report(filing.report_nm)
+        title = (
+            f"{title_prefix(report_kind)}{filing.corp_name} {filing.report_nm} "
+            f"({filing.rcept_dt.isoformat()})"
+        )
+
+        full_text = None
+        if report_kind is not None:
+            full_text = fetch_full_text(self._client, self._api_key, filing.rcept_no)
+        body = render_dart_filing_body(filing, canonical_url, full_text=full_text)
+        if full_text is not None:
+            mode, reason = "full", None
+        else:
+            mode, reason = "metadata_only", _CONTENT_CAPTURE_REASON
 
         return CollectItem(
             source_specific_id=filing.rcept_no,
             canonical_url=canonical_url,
-            title=f"{filing.corp_name} {filing.report_nm} ({filing.rcept_dt.isoformat()})",
+            title=title,
             author=filing.flr_nm,
             published_at=published_at,
             updated_at=None,
             language="ko",
             body_text=body,
-            content_capture_mode="metadata_only",
-            content_capture_reason=_CONTENT_CAPTURE_REASON,
+            content_capture_mode=mode,
+            content_capture_reason=reason,
             companies=[self._company.ticker],
             document_type="dart_filing",
             filing_type=filing.report_nm,
