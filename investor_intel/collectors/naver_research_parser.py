@@ -5,6 +5,8 @@ import re
 from dataclasses import dataclass
 from datetime import date, datetime
 
+from investor_intel.collectors.table_markdown import convert_tables_to_markdown
+
 _TAG_RE = re.compile(r"<[^>]+>")
 
 
@@ -59,7 +61,7 @@ def parse_naver_research_list(json_text: str) -> list[NaverResearchStub]:
 
 
 def _strip_html(html_fragment: str) -> str:
-    text = _TAG_RE.sub("", html_fragment)
+    text = _TAG_RE.sub("", convert_tables_to_markdown(html_fragment))
     return text.replace("&nbsp;", " ").replace("&amp;", "&").strip()
 
 
