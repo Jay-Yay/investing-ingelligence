@@ -610,3 +610,112 @@ def find_citi_pdf_link(detail_html: str, base_url: str) -> str | None:
     match = _CITI_DOWNLOAD_LINK_RE.search(detail_html)
     return match.group(1) if match else None
 
+
+# --- Berkshire Hathaway (berkshirehathaway.com/letters/letters.html) ----------
+# Plain hand-written HTML (no CMS). Each year is a single `<a href="...">YYYY</a>`; from 2004
+# onward the href is a direct PDF (`2024ltr.pdf`), before that it's a same-site HTML page
+# (`1998.html`). Only the PDF-era (2004+) is supported - the pre-2004 pages are themselves the
+# full letter text rather than a listing-with-attached-PDF, which is a different capture shape
+# (see EssayCollector) that this registry doesn't handle; 20+ years of letters is still deep
+# coverage.
+
+_BERKSHIRE_LETTER_RE = re.compile(r'<a\s+href="(\d{4})ltr\.pdf">\s*\d{4}\s*</a>', re.IGNORECASE)
+
+
+def parse_berkshire_letters_index(
+    html_text: str, base_url: str = "https://www.berkshirehathaway.com/letters"
+) -> list[IBArticle]:
+    articles = [
+        IBArticle(
+            title=f"Berkshire Hathaway {year} Shareholder Letter",
+            url=_absolutize(f"{year}ltr.pdf", f"{base_url}/"),
+            published_at=None,
+            summary=None,
+            pdf_url=_absolutize(f"{year}ltr.pdf", f"{base_url}/"),
+        )
+        for year in sorted({m.group(1) for m in _BERKSHIRE_LETTER_RE.finditer(html_text)}, reverse=True)
+    ]
+    return _dedupe_by_url(articles)
+
+
+# --- Oaktree Capital memos (oaktreecapital.com/insights/memos) ----------------
+# Each card is a `<time datetime="...">` immediately followed by
+# `<a class="oc-title-link" href="/insights/memo/{slug}">{Title}</a>`. The listing has no PDF
+# link - the memo's own detail page does (see find_oaktree_pdf_link).
+
+_OAKTREE_CARD_RE = re.compile(
+    r'<time[^>]*datetime="[^"]*?(\d{4}-\d{2}-\d{2})[^"]*"[^>]*>.*?</time>\s*'
+    r'<a class="oc-title-link" href="([^"]+)">([^<]+)</a>',
+    re.DOTALL,
+)
+
+
+def parse_oaktree_memos_index(
+    html_text: str, base_url: str = "https://www.oaktreecapital.com"
+) -> list[IBArticle]:
+    articles = [
+        IBArticle(
+            title=title.strip(),
+            url=_absolutize(href, base_url),
+            published_at=datetime.strptime(date_str, "%Y-%m-%d").date(),
+            summary=None,
+        )
+        for date_str, href, title in _OAKTREE_CARD_RE.findall(html_text)
+    ]
+    return _dedupe_by_url(articles)
+
+
+_OAKTREE_PDF_RE = re.compile(r"openPDF\('([^']*)',\s*'(https://[^']*\.pdf[^']*)'\)")
+_OAKTREE_TRANSLATED_SUFFIX_RE = re.compile(r"_(JPN|KRN|SC|TC)$")
+
+
+def find_oaktree_pdf_link(detail_html: str, base_url: str) -> str | None:
+    """Memo pages offer the English original plus several translated PDFs via
+    `openPDF('<label>', '<url>')` calls (not real hrefs). Picks the first entry whose label
+    isn't a translated-language suffix."""
+    for label, url in _OAKTREE_PDF_RE.findall(detail_html):
+        if not _OAKTREE_TRANSLATED_SUFFIX_RE.search(label):
+            return url
+    return None
+
+
+# --- Pershing Square Holdings (pershingsquareholdings.com/materials/) ---------
+# A single flat page listing every published document as
+# `<li class="materials--list--item ...">` with date/description/category/link spans already
+# inline - no detail-page fetch needed. Filtered to the "Letters & Presentations" category and
+# descriptions naming a shareholder letter, since the same page also lists fact sheets,
+# investor-presentation slides, and shareholder notices that aren't letters.
+
+_PSH_ITEM_RE = re.compile(
+    r'<li class="materials--list--item[^"]*">'
+    r'<span class="materials--list--item--date">([^<]+)</span>'
+    r'<span class="materials--list--item--description">([^<]+)</span>'
+    r'<span class="materials--list--item--category">([^<]+)</span>'
+    r'<span class="materials--list--item--link"><a href="([^"]+)"',
+    re.IGNORECASE,
+)
+
+
+def parse_pershing_square_letters_index(
+    html_text: str, base_url: str = "https://pershingsquareholdings.com"
+) -> list[IBArticle]:
+    articles = []
+    for date_str, description, category, href in _PSH_ITEM_RE.findall(html_text):
+        if "letter" not in description.lower() and "letters" not in category.lower():
+            continue
+        try:
+            published_at = datetime.strptime(date_str.strip(), "%B %d, %Y").date()
+        except ValueError:
+            published_at = None
+        pdf_url = _absolutize(href, base_url)
+        articles.append(
+            IBArticle(
+                title=description.strip(),
+                url=pdf_url,
+                published_at=published_at,
+                summary=None,
+                pdf_url=pdf_url,
+            )
+        )
+    return _dedupe_by_url(articles)
+

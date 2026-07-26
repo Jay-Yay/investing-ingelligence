@@ -1,11 +1,17 @@
+from datetime import date
+
 from investor_intel.collectors.ib_insights_parser import (
     find_citi_pdf_link,
+    find_oaktree_pdf_link,
     find_pdf_href,
+    parse_berkshire_letters_index,
     parse_blackrock_insights_index,
     parse_bofa_insights_index,
     parse_citi_insights_index,
     parse_gs_insights_index,
     parse_jpm_insights_index,
+    parse_oaktree_memos_index,
+    parse_pershing_square_letters_index,
     parse_vanguard_insights_index,
 )
 
@@ -265,3 +271,84 @@ def test_find_citi_pdf_link_extracts_ir_redirect_url() -> None:
 
 def test_find_citi_pdf_link_returns_none_when_absent() -> None:
     assert find_citi_pdf_link("no download button here", "https://www.citigroup.com") is None
+
+
+_BERKSHIRE_HTML = """
+<td><a href="1998.html">1998</a></td>
+<td><a href="2004ltr.pdf">2004</a></td>
+<td><a href="2005ltr.pdf">2005</a></td>
+<td><a href="2024ltr.pdf">2024</a></td>
+"""
+
+
+def test_parse_berkshire_letters_index_only_captures_pdf_era_sorted_newest_first() -> None:
+    articles = parse_berkshire_letters_index(_BERKSHIRE_HTML)
+
+    assert [a.title for a in articles] == [
+        "Berkshire Hathaway 2024 Shareholder Letter",
+        "Berkshire Hathaway 2005 Shareholder Letter",
+        "Berkshire Hathaway 2004 Shareholder Letter",
+    ]
+    assert articles[0].url == "https://www.berkshirehathaway.com/letters/2024ltr.pdf"
+    assert articles[0].pdf_url == articles[0].url
+    assert articles[0].published_at is None
+
+
+_OAKTREE_HTML = """
+<div class="col"><time datetime="2026-02-26T08:00:00.0000000Z">Feb 26, 2026</time>
+<a class="oc-title-link" href="/insights/memo/example-memo-one">Example Memo One</a></div>
+<div class="col"><time datetime="2025-11-06T08:00:00.0000000Z">Nov 6, 2025</time>
+<a class="oc-title-link" href="/insights/memo/example-memo-two">Example Memo Two</a></div>
+"""
+
+
+def test_parse_oaktree_memos_index_extracts_title_url_and_date() -> None:
+    articles = parse_oaktree_memos_index(_OAKTREE_HTML)
+
+    assert len(articles) == 2
+    assert articles[0].title == "Example Memo One"
+    assert articles[0].url == "https://www.oaktreecapital.com/insights/memo/example-memo-one"
+    assert articles[0].published_at == date(2026, 2, 26)
+    assert articles[0].pdf_url is None
+
+
+def test_find_oaktree_pdf_link_skips_translated_variants() -> None:
+    html = (
+        "openPDF('Example Memo_KRN','https://www.oaktreecapital.com/docs/example_krn.pdf?sfvrsn=1')"
+        "openPDF('Example Memo','https://www.oaktreecapital.com/docs/example.pdf?sfvrsn=2')"
+    )
+    link = find_oaktree_pdf_link(html, "https://www.oaktreecapital.com")
+    assert link == "https://www.oaktreecapital.com/docs/example.pdf?sfvrsn=2"
+
+
+def test_find_oaktree_pdf_link_returns_none_when_only_translated_variants_present() -> None:
+    html = "openPDF('Example Memo_JPN','https://www.oaktreecapital.com/docs/example_jpn.pdf')"
+    assert find_oaktree_pdf_link(html, "https://www.oaktreecapital.com") is None
+
+
+_PSH_HTML = (
+    '<li class="materials--list--item 2026 fact-sheets">'
+    '<span class="materials--list--item--date">March 13, 2026</span>'
+    '<span class="materials--list--item--description">February 2026 Fact Sheet</span>'
+    '<span class="materials--list--item--category">Fact Sheets</span>'
+    '<span class="materials--list--item--link">'
+    '<a href="https://assets.pershingsquareholdings.com/fact-sheet.pdf" target="_blank">PDF</a>'
+    "</span></li>"
+    '<li class="materials--list--item 2026 letters-presentations">'
+    '<span class="materials--list--item--date">February 18, 2026</span>'
+    '<span class="materials--list--item--description">Letter to Shareholders in the 2025 Annual Report</span>'
+    '<span class="materials--list--item--category">Letters &amp; Presentations</span>'
+    '<span class="materials--list--item--link">'
+    '<a href="https://assets.pershingsquareholdings.com/2025-annual-report.pdf#page=9" target="_blank">PDF</a>'
+    "</span></li>"
+)
+
+
+def test_parse_pershing_square_letters_index_filters_to_letters_only() -> None:
+    articles = parse_pershing_square_letters_index(_PSH_HTML)
+
+    assert len(articles) == 1
+    assert articles[0].title == "Letter to Shareholders in the 2025 Annual Report"
+    assert articles[0].url == "https://assets.pershingsquareholdings.com/2025-annual-report.pdf#page=9"
+    assert articles[0].pdf_url == articles[0].url
+    assert articles[0].published_at == date(2026, 2, 18)

@@ -243,3 +243,36 @@ sources:
     backfill_days: 365
     tags:
       - ib_insights
+  - id: berkshire_letters_berkshire
+    type: berkshire_letters
+    name: berkshire
+    enabled: true
+    url: https://www.berkshirehathaway.com/letters/letters.html
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - ib_insights
+  - id: oaktree_memos_oaktree
+    type: oaktree_memos
+    name: oaktree
+    enabled: true
+    url: https://www.oaktreecapital.com/insights/memos
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - ib_insights
+  - id: pershing_square_letters_pershing_square
+    type: pershing_square_letters
+    name: pershing-square
+    enabled: true
+    url: https://pershingsquareholdings.com/materials/
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - ib_insights

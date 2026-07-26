@@ -154,24 +154,37 @@ blackrock_insights: 아무 이름 (예: blackrock) - BlackRock 공개 인사이�
 vanguard_insights: 아무 이름 (예: vanguard) - Vanguard 공개 투자자 교육 페이지
 naver_research: 아무 이름 (예: naver) - 네이버 증권 종목분석 리포트(국내 증권사 발행)
 naver_weekly_hot: 아무 이름 (예: naver-hot) - 네이버 증권 "요즘 많이 보는 리포트" 주간 Top 10
+berkshire_letters: 아무 이름 (예: berkshire) - Berkshire Hathaway 연례 주주서한(2004년~, PDF)
+oaktree_memos: 아무 이름 (예: oaktree) - Oaktree Capital(Howard Marks) 메모
+pershing_square_letters: 아무 이름 (예: pershing-square) - Pershing Square Holdings 주주서한
 ```
 
-`*_insights`/`naver_research`/`naver_weekly_hot` 타입은 페이지가 하나뿐이라 값은 URL이
-아니라 자유롭게 붙일 이름표일 뿐이다 (예: `- [ ] jpm_insights: jpmorgan`). 이들은 각 사가
-공개하는 마케팅성 인사이트/요약 콘텐츠이며, 기관 고객 전용 셀사이드 리서치 풀 리포트가
-아니다. `naver_research`/`naver_weekly_hot`만 예외로, 국내 증권사(신한투자증권,
-한화투자증권 등)가 실제로 발행한 정식 종목 리포트를 네이버가 모아 놓은 페이지라 첨부
-PDF가 진짜 애널리스트 리포트다. `naver_weekly_hot`은 조회수 기준 주간 인기 랭킹이라
-`naver_research`와 콘텐츠가 겹칠 수 있지만 별도 vault 폴더에 저장된다.
+`*_insights`/`naver_research`/`naver_weekly_hot`/`berkshire_letters`/`oaktree_memos`/
+`pershing_square_letters` 타입은 페이지가 하나뿐이라 값은 URL이 아니라 자유롭게 붙일
+이름표일 뿐이다 (예: `- [ ] jpm_insights: jpmorgan`). `*_insights`는 각 사가 공개하는
+마케팅성 인사이트/요약 콘텐츠이며, 기관 고객 전용 셀사이드 리서치 풀 리포트가 아니다.
+`naver_research`/`naver_weekly_hot`은 국내 증권사가 실제로 발행한 정식 종목 리포트를
+네이버가 모아 놓은 페이지라 첨부 PDF가 진짜 애널리스트 리포트다(`naver_weekly_hot`은
+조회수 기준 주간 인기 랭킹이라 콘텐츠가 겹칠 수 있지만 별도 vault 폴더에 저장).
+`berkshire_letters`/`oaktree_memos`/`pershing_square_letters`는 각 운용사가 자사
+웹사이트에 직접 무료 공개하는 주주서한/메모다(버핏과 마크스 둘 다 자기 글이 널리
+읽히길 원한다고 공개적으로 밝혀왔다) — 네이버 리서치 리포트처럼 제3자 유료 리서치가
+아니라서 대량 수집 우려가 없다. 버크셔는 2004년 이전 서한(PDF가 아니라 개별 HTML
+페이지)은 지원하지 않는다.
 
 자동 수집을 지원하지 않는 곳도 있다 - Morgan Stanley/State Street는 봇 차단 또는
 JS 렌더링 없이는 콘텐츠가 아예 노출되지 않아서, Fidelity Learn은 대부분 날짜 없는
-상시 교육 콘텐츠라 "새 리포트" 피드로 의미가 없어서 제외했다. 필요하면 직접 사이트를
-확인해야 한다.
+상시 교육 콘텐츠라 "새 리포트" 피드로 의미가 없어서 제외했다. Greenlight Capital은
+자사 웹사이트 자체가 투자자 전용 로그인 포털이라(공개 페이지가 아예 없음) 제외했다.
+Fisher Investments(MarketMinder)는 봇 차단(403)으로 접근 자체가 안 되고, 엄밀히는
+주주서한이 아니라 마케팅성 시황 코멘터리라 제외했다. 필요하면 직접 사이트를 확인해야
+한다.
 
-Berkshire Hathaway, Baillie Gifford, Pershing Square 같은 자산운용사/투자자는
-스크래핑 대상이 아니라 SEC에 13F를 제출하는 "투자자"이므로, `investor:` 타입에 CIK를
-적어서 추가한다 (예: `- [ ] investor: 0001067983` - Berkshire Hathaway Inc).
+Baillie Gifford 같은 자산운용사/투자자는 별도 무료 공개 주주서한 페이지가 없고 SEC에
+13F를 제출하는 "투자자"로서의 가치가 크므로, `investor:` 타입에 CIK를 적어서 추가한다
+(예: `- [ ] investor: 0001067983` - Berkshire Hathaway Inc). 버크셔/퍼싱스퀘어는 이미
+`investor:`(13F 보유종목 추적)와 `berkshire_letters`/`pershing_square_letters`(주주서한
+원문) 둘 다로 등록돼 있다 - 서로 다른 데이터라 상호 배타적이지 않다.
 
 ## 추가할 소스
 

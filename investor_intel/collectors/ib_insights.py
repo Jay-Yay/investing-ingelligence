@@ -10,12 +10,16 @@ from investor_intel.collectors.ib_insights_document import render_ib_insights_bo
 from investor_intel.collectors.ib_insights_parser import (
     IBArticle,
     find_citi_pdf_link,
+    find_oaktree_pdf_link,
     find_pdf_href,
+    parse_berkshire_letters_index,
     parse_blackrock_insights_index,
     parse_bofa_insights_index,
     parse_citi_insights_index,
     parse_gs_insights_index,
     parse_jpm_insights_index,
+    parse_oaktree_memos_index,
+    parse_pershing_square_letters_index,
     parse_vanguard_insights_index,
 )
 from investor_intel.collectors.pdf_extract import PdfExtractError, extract_pdf_text
@@ -69,6 +73,22 @@ IB_INSIGHTS_SOURCES: dict[str, IBInsightsSource] = {
         index_url="https://investor.vanguard.com/investor-resources-education",
         parse_index=parse_vanguard_insights_index,
         base_url="https://investor.vanguard.com",
+    ),
+    "berkshire_letters": IBInsightsSource(
+        index_url="https://www.berkshirehathaway.com/letters/letters.html",
+        parse_index=parse_berkshire_letters_index,
+        base_url="https://www.berkshirehathaway.com/letters",
+    ),
+    "oaktree_memos": IBInsightsSource(
+        index_url="https://www.oaktreecapital.com/insights/memos",
+        parse_index=parse_oaktree_memos_index,
+        base_url="https://www.oaktreecapital.com",
+        pdf_link_finder=find_oaktree_pdf_link,
+    ),
+    "pershing_square_letters": IBInsightsSource(
+        index_url="https://pershingsquareholdings.com/materials/",
+        parse_index=parse_pershing_square_letters_index,
+        base_url="https://pershingsquareholdings.com",
     ),
 }
 
