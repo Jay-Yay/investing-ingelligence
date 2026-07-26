@@ -22,7 +22,11 @@ permissions:
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # First run does a full historical backfill (years of 13F/DART filings across every
+    # tracked source) at a conservative 2 req/s rate limit, which can take well over an hour.
+    # Later runs are incremental and finish in seconds/minutes - this ceiling only matters
+    # for that first (or any large backfill) run.
+    timeout-minutes: 180
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -68,9 +72,12 @@ jobs:
             --vault-path state/vault \
             --sqlite-path state/data/index.sqlite3
 
-      # Commit whatever was collected even if some sources errored above (partial collect is
-      # still worth keeping) — the job is failed explicitly in the final step instead.
+      # `if: always()` matters here, not just `continue-on-error` above: if the job hits
+      # timeout-minutes and gets cancelled mid-collect, steps without always() are skipped
+      # entirely - which previously meant a timeout silently threw away everything collected
+      # up to that point. With always(), whatever's on disk still gets committed.
       - name: Commit and push collected data
+        if: always()
         run: |
           cd state
           git add -A
@@ -82,5 +89,5 @@ jobs:
           fi
 
       - name: Fail job if collect had errors
-        if: steps.collect.outcome == 'failure'
+        if: always() && steps.collect.outcome == 'failure'
         run: exit 1
