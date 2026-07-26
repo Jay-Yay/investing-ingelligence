@@ -1,0 +1,15 @@
+{
+  "quoteSummary": {
+    "result": [
+      {
+        "price": {
+          "regularMarketPrice": { "raw": 99.5, "fmt": "99.50" },
+          "marketCap": { "raw": 47674466304.0, "fmt": "47.67B" },
+          "currency": "USD",
+          "shortName": "Nebius Group N.V."
+        }
+      }
+    ],
+    "error": null
+  }
+}

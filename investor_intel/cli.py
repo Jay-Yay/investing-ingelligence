@@ -6,6 +6,7 @@ from typing import Annotated
 
 import typer
 
+from investor_intel.analysis.tenbagger_verifier import verify_tenbagger
 from investor_intel.collectors.base import CheckpointStore
 from investor_intel.collectors.dart_client import DartClient
 from investor_intel.collectors.http_client import SimpleHttpClient
@@ -15,7 +16,12 @@ from investor_intel.llm.client import AnthropicClient
 from investor_intel.llm.cost_tracker import CostTracker
 from investor_intel.llm.daily_report import synthesize_daily_narrative
 from investor_intel.market_data.coingecko_adapter import CoinGeckoAdapter
+from investor_intel.market_data.yahoo_fundamentals_adapter import (
+    BROWSER_LIKE_USER_AGENT,
+    YahooFundamentalsAdapter,
+)
 from investor_intel.market_data.yfinance_adapter import YahooFinanceAdapter
+from investor_intel.models.analysis import TenbaggerVerification
 from investor_intel.pipeline.analyze import analyze_pending_documents
 from investor_intel.pipeline.collect import build_collect_entries, run_collectors
 from investor_intel.pipeline.inbox import InboxDeps, sync_inbox
@@ -236,9 +242,14 @@ RUNBOOK_MD = """# Runbook
 
 ## 일일 실행
 
-- 자동: `.github/workflows/daily-collect.yml`이 매일 00:00 UTC(09:00 KST)에 `run-daily`를
-  실행한다.
-- 수동: `uv run python -m investor_intel run-daily`
+- 자동 (수집만): `.github/workflows/daily-collect.yml`이 매일 00:00 UTC(09:00 KST)에
+  `collect`만 실행하고, 결과를 전용 `data` 브랜치에 커밋한다. LLM을 쓰는 analyze/portfolio/
+  report는 무인 크론에서 돌리지 않는다(토큰 소비를 검토 없이 반복하지 않기 위함) — 로컬에서
+  Claude Code로 직접 실행한다. 자세한 내용은 README "자동 실행" 참고.
+- 수동 전체 파이프라인: `uv run python -m investor_intel run-daily`
+- 수동 분석만 (자동 수집분에 대해): `git fetch origin data` 후
+  `uv run python -m investor_intel analyze --vault-path <data 브랜치 체크아웃>/vault
+  --sqlite-path <...>/data/index.sqlite3`, 이어서 `portfolio`/`report`
 
 `run-daily`는 collect -> analyze -> portfolio -> report 순서로 실행되며, 한 단계 안에서 한
 소스/문서가 실패해도 나머지는 계속 진행한다(부분 실패 허용). 종료 코드가 0이 아니면
@@ -252,6 +263,8 @@ RUNBOOK_MD = """# Runbook
 - `SEC_USER_AGENT`, `VAULT_WRITE` — 필수. 이 둘이 없으면 `doctor`가 종료 코드 1을 반환한다.
 - `ANTHROPIC_API_KEY` — 없으면 `analyze`/`report`의 LLM 단계가 자동으로 건너뛰어지고
   (`run-daily`도 마찬가지) 대신 안내 메시지가 `analyze_errors`에 남는다. 수집 자체는 계속된다.
+  로컬에서만 필요하다 — GitHub Actions는 `collect`만 실행하므로 이 키를 저장소 Secret으로
+  등록할 필요가 없다.
 - `DART_API_KEY` — 없으면 `dart_companies.yaml`이 존재해도 DART 수집만 건너뛴다.
 - `TELEGRAM_API_ID`/`TELEGRAM_API_HASH`/`TELEGRAM_SESSION` — 공개 채널 웹 미리보기 수집에는
   불필요. `sources.yaml`에 `type: telegram_private` 항목이 있고 이 셋이 모두 설정된 경우에만
@@ -338,7 +351,7 @@ API(`stock.naver.com/api/stockSecurity/researches/v2/weekly-hot?startDate=...&si
 ## 분석 관점(투자 원칙) 커스터마이징
 
 일일 리포트가 "무엇을 우선시할지"는 `vault/00_System/Investment_Mandate.md`에 있다. 이
-파일은 코드가 아니라 데이터이므로, 직접 편집하면 다음 `run-daily`(크론 또는 수동 실행)부터
+파일은 코드가 아니라 데이터이므로, 직접 편집하면 다음 `analyze`/`report`/`run-daily` 실행부터
 바로 반영된다 — 재배포나 재시작이 필요 없다.
 
 `config/prompts/*.md`(extract_claims/daily_report 등)도 마찬가지로 실행 시점에 실제로
@@ -660,6 +673,124 @@ def portfolio(
         typer.echo(f"[가드레일 위반] {violation.symbol} ({violation.rule}): {violation.message}")
 
     raise typer.Exit(code=1 if violations else 0)
+
+
+_TENBAGGER_COLUMNS = [
+    "종목",
+    "시총",
+    "TTM매출",
+    "TTM순이익",
+    "P/S",
+    "P/E",
+    "필요매출(Q1)",
+    "필요순이익(Q1)",
+    "필요CAGR(Q2)",
+    "추세로가능한가(Q2)",
+    "매출성장가속(Q3프록시)",
+    "영업이익률추세(Q7)",
+    "최근영업이익률",
+    "TTM_CapEx",
+    "실제FCF",
+    "무증자생존(Q9)",
+    "조기경보마진임계치(Q10프록시)",
+]
+
+
+def _fmt_money(value: float | None) -> str:
+    return "N/A" if value is None else f"{value:,.0f}"
+
+
+def _fmt_pct(value: float | None) -> str:
+    return "N/A" if value is None else f"{value * 100:.1f}%"
+
+
+def _fmt_ratio(value: float | None) -> str:
+    return "N/A" if value is None else f"{value:.2f}x"
+
+
+def _format_tenbagger_row(ticker: str, result: TenbaggerVerification) -> dict[str, str]:
+    s = result.scenario
+    accel = result.growth_acceleration
+    margin = result.margin_trend
+    survival = result.survival
+    return {
+        "종목": f"{ticker} ({result.currency})",
+        "시총": _fmt_money(s.market_cap),
+        "TTM매출": _fmt_money(s.ttm_revenue),
+        "TTM순이익": _fmt_money(s.ttm_net_income),
+        "P/S": _fmt_ratio(s.ps_ratio),
+        "P/E": _fmt_ratio(s.pe_ratio),
+        "필요매출(Q1)": _fmt_money(s.required_revenue),
+        "필요순이익(Q1)": _fmt_money(s.required_net_income),
+        "필요CAGR(Q2)": _fmt_pct(s.required_cagr_revenue),
+        "추세로가능한가(Q2)": (
+            "N/A"
+            if s.feasible_by_trend is None
+            else ("가능 영역" if s.feasible_by_trend else "가속 필요")
+        ),
+        "매출성장가속(Q3프록시)": (
+            "N/A" if accel is None else ("가속" if accel.accelerating else "둔화")
+        ),
+        "영업이익률추세(Q7)": "N/A" if margin is None else margin.trend,
+        "최근영업이익률": "N/A" if margin is None else _fmt_pct(margin.latest_margin),
+        "TTM_CapEx": _fmt_money(survival.ttm_capital_expenditure),
+        "실제FCF": _fmt_money(survival.ttm_free_cash_flow),
+        "무증자생존(Q9)": survival.verdict,
+        "조기경보마진임계치(Q10프록시)": (
+            "N/A" if margin is None else _fmt_pct(margin.warning_threshold_margin)
+        ),
+    }
+
+
+def _render_markdown_table(rows: list[dict[str, str]]) -> str:
+    header = "| " + " | ".join(_TENBAGGER_COLUMNS) + " |"
+    separator = "|" + "|".join(["---"] * len(_TENBAGGER_COLUMNS)) + "|"
+    body_lines = [
+        "| " + " | ".join(row[col] for col in _TENBAGGER_COLUMNS) + " |" for row in rows
+    ]
+    return "\n".join([header, separator, *body_lines])
+
+
+@app.command(name="verify-tenbagger")
+def verify_tenbagger_cmd(
+    tickers: Annotated[list[str], typer.Argument(help="종목코드 목록 (예: NBIS 005930 483650)")],
+    target_multiple: Annotated[float, typer.Option(help="목표 시총 배수")] = 10.0,
+    years: Annotated[float, typer.Option(help="목표 달성 기간(년)")] = 2.0,
+    derate_factor: Annotated[
+        float,
+        typer.Option(help="미래 밸류에이션 배수를 현재 대비 몇 배로 가정할지 (1.0=배수 유지)"),
+    ] = 1.0,
+) -> None:
+    """텐베거(10x) 가설 중 정량 계산 가능한 부분(Q1/Q2/Q3프록시/Q7/Q9/Q10프록시)을 종목별로
+    검증한다.
+
+    컨센서스 오류(Q5)/촉매(Q6)/경쟁우위(Q8) 등 정성적 질문은 이 명령의 범위 밖이며 별도
+    리서치가 필요하다 - tenbagger_discovery(LLM 채점 파이프라인)와는 별개의 보완 도구다.
+    """
+    client = SimpleHttpClient(user_agent=BROWSER_LIKE_USER_AGENT)
+    adapter = YahooFundamentalsAdapter(client)
+
+    rows: list[dict[str, str]] = []
+    had_errors = False
+    try:
+        for ticker in tickers:
+            try:
+                market_cap, currency = adapter.get_market_cap(ticker)
+                fundamentals = adapter.get_quarterly_fundamentals(ticker)
+                result = verify_tenbagger(
+                    fundamentals, market_cap, currency, target_multiple, years, derate_factor
+                )
+                rows.append(_format_tenbagger_row(ticker, result))
+            except Exception as exc:  # noqa: BLE001 - 종목 하나 실패해도 나머지는 계속 진행
+                typer.echo(f"[{ticker}] 오류: {exc}")
+                had_errors = True
+    finally:
+        client.close()
+
+    if rows:
+        typer.echo(_render_markdown_table(rows))
+
+    raise typer.Exit(code=1 if had_errors else 0)
 
 
 @app.command()

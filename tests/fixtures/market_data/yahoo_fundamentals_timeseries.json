@@ -1,0 +1,97 @@
+{
+  "timeseries": {
+    "error": null,
+    "result": [
+      {
+        "meta": { "symbol": ["NBIS"], "type": ["quarterlyTotalRevenue"] },
+        "timestamp": [1743379200, 1751241600, 1759190400, 1767139200, 1774915200],
+        "quarterlyTotalRevenue": [
+          { "dataId": 1, "asOfDate": "2025-03-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": 100000000.0, "fmt": "100.00M" } },
+          { "dataId": 1, "asOfDate": "2025-06-30", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": 120000000.0, "fmt": "120.00M" } },
+          { "dataId": 1, "asOfDate": "2025-09-30", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": 150000000.0, "fmt": "150.00M" } },
+          { "dataId": 1, "asOfDate": "2025-12-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": 200000000.0, "fmt": "200.00M" } },
+          { "dataId": 1, "asOfDate": "2026-03-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": 300000000.0, "fmt": "300.00M" } }
+        ]
+      },
+      {
+        "meta": { "symbol": ["NBIS"], "type": ["quarterlyOperatingIncome"] },
+        "timestamp": [1743379200, 1751241600, 1759190400, 1767139200, 1774915200],
+        "quarterlyOperatingIncome": [
+          { "dataId": 2, "asOfDate": "2025-03-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": -40000000.0, "fmt": "-40.00M" } },
+          { "dataId": 2, "asOfDate": "2025-06-30", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": -36000000.0, "fmt": "-36.00M" } },
+          { "dataId": 2, "asOfDate": "2025-09-30", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": -30000000.0, "fmt": "-30.00M" } },
+          { "dataId": 2, "asOfDate": "2025-12-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": -20000000.0, "fmt": "-20.00M" } },
+          { "dataId": 2, "asOfDate": "2026-03-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": -15000000.0, "fmt": "-15.00M" } }
+        ]
+      },
+      {
+        "meta": { "symbol": ["NBIS"], "type": ["quarterlyNetIncome"] },
+        "timestamp": [1743379200, 1751241600, 1759190400, 1767139200, 1774915200],
+        "quarterlyNetIncome": [
+          { "dataId": 3, "asOfDate": "2025-03-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": -10000000.0, "fmt": "-10.00M" } },
+          { "dataId": 3, "asOfDate": "2025-06-30", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": -8000000.0, "fmt": "-8.00M" } },
+          { "dataId": 3, "asOfDate": "2025-09-30", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": -5000000.0, "fmt": "-5.00M" } },
+          { "dataId": 3, "asOfDate": "2025-12-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": 60000000.0, "fmt": "60.00M" } },
+          { "dataId": 3, "asOfDate": "2026-03-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": 82000000.0, "fmt": "82.00M" } }
+        ]
+      },
+      {
+        "meta": { "symbol": ["NBIS"], "type": ["quarterlyOperatingCashFlow"] },
+        "timestamp": [1743379200, 1751241600, 1759190400, 1767139200, 1774915200],
+        "quarterlyOperatingCashFlow": [
+          { "dataId": 4, "asOfDate": "2025-03-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": -20000000.0, "fmt": "-20.00M" } },
+          { "dataId": 4, "asOfDate": "2025-06-30", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": -17000000.0, "fmt": "-17.00M" } },
+          { "dataId": 4, "asOfDate": "2025-09-30", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": -8000000.0, "fmt": "-8.00M" } },
+          { "dataId": 4, "asOfDate": "2025-12-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": 83000000.0, "fmt": "83.00M" } },
+          { "dataId": 4, "asOfDate": "2026-03-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": 226000000.0, "fmt": "226.00M" } }
+        ]
+      },
+      {
+        "meta": { "symbol": ["NBIS"], "type": ["quarterlyCapitalExpenditure"] },
+        "timestamp": [1743379200, 1751241600, 1759190400, 1767139200, 1774915200],
+        "quarterlyCapitalExpenditure": [
+          { "dataId": 5, "asOfDate": "2025-03-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": -54000000.0, "fmt": "-54.00M" } },
+          { "dataId": 5, "asOfDate": "2025-06-30", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": -51000000.0, "fmt": "-51.00M" } },
+          { "dataId": 5, "asOfDate": "2025-09-30", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": -95000000.0, "fmt": "-95.00M" } },
+          { "dataId": 5, "asOfDate": "2025-12-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": -205000000.0, "fmt": "-205.00M" } },
+          { "dataId": 5, "asOfDate": "2026-03-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": -247000000.0, "fmt": "-247.00M" } }
+        ]
+      },
+      {
+        "meta": { "symbol": ["NBIS"], "type": ["quarterlyCashAndCashEquivalents"] },
+        "timestamp": [1774915200],
+        "quarterlyCashAndCashEquivalents": [
+          { "dataId": 6, "asOfDate": "2026-03-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": 929820000.0, "fmt": "929.82M" } }
+        ]
+      },
+      {
+        "meta": { "symbol": ["NBIS"], "type": ["quarterlyCurrentAssets"] },
+        "timestamp": [1774915200],
+        "quarterlyCurrentAssets": [
+          { "dataId": 7, "asOfDate": "2026-03-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": 1200000000.0, "fmt": "1.20B" } }
+        ]
+      },
+      {
+        "meta": { "symbol": ["NBIS"], "type": ["quarterlyCurrentLiabilities"] },
+        "timestamp": [1774915200],
+        "quarterlyCurrentLiabilities": [
+          { "dataId": 8, "asOfDate": "2026-03-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": 144000000.0, "fmt": "144.00M" } }
+        ]
+      },
+      {
+        "meta": { "symbol": ["NBIS"], "type": ["quarterlyTotalDebt"] },
+        "timestamp": [1774915200],
+        "quarterlyTotalDebt": [
+          { "dataId": 9, "asOfDate": "2026-03-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": 500000000.0, "fmt": "500.00M" } }
+        ]
+      },
+      {
+        "meta": { "symbol": ["NBIS"], "type": ["quarterlyStockholdersEquity"] },
+        "timestamp": [1774915200],
+        "quarterlyStockholdersEquity": [
+          { "dataId": 10, "asOfDate": "2026-03-31", "periodType": "3M", "currencyCode": "USD", "reportedValue": { "raw": 2318600000.0, "fmt": "2.32B" } }
+        ]
+      }
+    ]
+  }
+}

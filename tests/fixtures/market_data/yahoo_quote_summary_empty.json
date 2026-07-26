@@ -1,0 +1,6 @@
+{
+  "quoteSummary": {
+    "result": [],
+    "error": { "code": "Not Found", "description": "No fundamentals data found for any of the summaryTypes=price" }
+  }
+}

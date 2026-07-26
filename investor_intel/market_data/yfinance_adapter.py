@@ -5,24 +5,13 @@ from typing import Any
 
 from investor_intel.collectors.http_client import SimpleHttpClient
 from investor_intel.market_data.provider import PriceBar, Quote
+from investor_intel.market_data.symbols import yahoo_symbol_candidates
 
 _CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
 
 
 class YahooFinanceError(Exception):
     pass
-
-
-def _is_kr_stock_code(symbol: str) -> bool:
-    """6-digit numeric codes (e.g. 005930) are KRX tickers - Yahoo Finance requires a market
-    suffix (.KS for KOSPI, .KQ for KOSDAQ) that config/dart_companies.yaml doesn't track."""
-    return symbol.isdigit() and len(symbol) == 6
-
-
-def _yahoo_symbol_candidates(symbol: str) -> list[str]:
-    if _is_kr_stock_code(symbol):
-        return [f"{symbol}.KS", f"{symbol}.KQ"]
-    return [symbol]
 
 
 class YahooFinanceAdapter:
@@ -46,7 +35,7 @@ class YahooFinanceAdapter:
         # KOSPI data for an unrelated instrument - .KS is preferred because it resolves every
         # KR ticker currently tracked in this project correctly.
         last_error: Exception | None = None
-        for candidate in _yahoo_symbol_candidates(symbol):
+        for candidate in yahoo_symbol_candidates(symbol):
             try:
                 return self._fetch_chart(candidate, query)
             except YahooFinanceError as exc:
