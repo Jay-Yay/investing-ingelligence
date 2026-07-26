@@ -39,14 +39,18 @@ uv run python -m investor_intel run-daily
 
 | 변수 | 필요한 기능 |
 |---|---|
-| `ANTHROPIC_API_KEY` | LLM 분석(`analyze`) 및 리포트 종합(`report`, `run-daily`) |
-| `ANTHROPIC_MODEL` | 사용할 Claude 모델 ID (기본값 `claude-sonnet-5`) |
-| `SEC_USER_AGENT` | SEC EDGAR 수집(13F, 미국 기업 공시) — 식별 가능한 문자열 필수 |
-| `DART_API_KEY` | OpenDART 수집(한국 기업 공시) |
+| `ANTHROPIC_API_KEY` | LLM 분석(`analyze`) 및 리포트 종합(`report`, `run-daily`) — **로컬에서만
+필요, GitHub Actions에는 등록하지 않는다** (아래 "자동 실행" 참고) |
+| `ANTHROPIC_MODEL` | 사용할 Claude 모델 ID (기본값 `claude-sonnet-5`) — 로컬 전용 |
+| `SEC_USER_AGENT` | SEC EDGAR 수집(13F, 미국 기업 공시) — 식별 가능한 문자열 필수. GitHub
+Actions Secret으로도 등록 |
+| `DART_API_KEY` | OpenDART 수집(한국 기업 공시). GitHub Actions Secret으로도 등록 |
 | `TELEGRAM_API_ID` / `TELEGRAM_API_HASH` / `TELEGRAM_SESSION` | (선택) Telethon 기반 비공개
 채널 수집(`sources.yaml`의 `type: telegram_private`) — 공개 웹 미리보기 수집에는 불필요.
-`uv sync --extra telethon` 후 `telethon-login` 명령으로 세션 생성 |
-| `DAILY_LLM_BUDGET_USD` / `MONTHLY_LLM_BUDGET_USD` | LLM 비용 상한 (기본값 1.5 / 45.0 USD) |
+`uv sync --extra telethon` 후 `telethon-login` 명령으로 세션 생성. 쓰는 경우 GitHub Actions
+Secret으로도 등록 |
+| `DAILY_LLM_BUDGET_USD` / `MONTHLY_LLM_BUDGET_USD` | LLM 비용 상한 (기본값 1.5 / 45.0 USD) —
+로컬 전용 |
 
 ## 디렉터리 구조
 
@@ -77,7 +81,9 @@ data/index.sqlite3       # vault로부터 재생성 가능한 검색 인덱스 (
 ```
 
 `vault/`와 `data/`는 `.gitignore`에 포함되어 있다 — 이 저장소는 도구(tool)이고, 실제 수집된
-데이터는 사용자의 것이므로 이 코드 저장소 히스토리에 들어가지 않는다.
+데이터는 사용자의 것이므로 `main` 브랜치 히스토리에는 들어가지 않는다. 단, GitHub Actions가
+매일 수집한 결과는 이를 로컬로 옮기기 위해 전용 `data` 브랜치에 커밋된다 — 자세한 내용은 아래
+"자동 실행"을 참고.
 
 ## 기능
 
@@ -174,7 +180,7 @@ uv run python -m investor_intel collect --backfill 365
 ### 분석 관점 (`vault/00_System/Investment_Mandate.md`)
 
 일일 리포트가 "무엇을 우선시할지"는 이 파일에 있다. 코드가 아니라 데이터이므로 직접
-편집하면 다음 `run-daily`(크론 또는 수동 실행)부터 바로 반영된다 — 재배포·재시작 불필요.
+편집하면 다음 `analyze`/`report`/`run-daily` 실행부터 바로 반영된다 — 재배포·재시작 불필요.
 현재 담긴 내용:
 
 - 최우선 목표와 판단 원칙(뉴스 어조를 그대로 신호로 번역하지 않기, 언급량이 아니라
@@ -219,11 +225,49 @@ uv run python -m investor_intel collect --backfill 365
 
 ## 자동 실행
 
-`.github/workflows/daily-collect.yml`이 매일 00:00 UTC(09:00 KST)에 `run-daily`를 실행하도록
-스케줄되어 있다. GitHub 저장소 Secrets/Variables에 위 환경변수를 등록하면 동작한다. 단,
-`vault`/`data`는 이 저장소에 커밋되지 않으므로 GitHub 호스팅 러너에서는 실행 결과가 다음 실행에
-이어지지 않는다 — 영속적인 저장이 필요하면 self-hosted 러너에 영구 디스크를 마운트하거나 별도
-저장소/스토리지로 동기화하는 단계를 추가해야 한다.
+`.github/workflows/daily-collect.yml`이 매일 00:00 UTC(09:00 KST)에 **`collect`만** 실행하도록
+스케줄되어 있다. `analyze`/`portfolio`/`report`(LLM 호출이 있는 단계)는 자동화하지 않고 로컬에서
+Claude Code로 직접 돌린다 — 무인 크론이 LLM 토큰을 검토 없이 계속 소비하는 걸 막기 위함이다.
+
+GitHub Actions는 매 실행마다 이 저장소의 전용 `data` 브랜치를 `state/`에 체크아웃하고,
+`state/vault`/`state/data`를 대상으로 `collect`를 실행한 뒤 결과를 그 브랜치에 다시 커밋한다
+(`data` 브랜치가 아직 없으면 첫 실행 때 자동으로 생성됨). GitHub 호스팅 러너는 실행이 끝나면
+파일시스템이 사라지므로, 이 브랜치가 실행 간 상태를 이어주는 유일한 영속 저장소다. 필요한
+GitHub Secrets:
+
+| Secret | 용도 |
+|---|---|
+| `SEC_USER_AGENT` | SEC EDGAR 수집 (필수 — 없으면 SEC/13F 수집이 건너뛰어짐) |
+| `DART_API_KEY` | OpenDART 한국 기업 공시 수집 (없으면 DART 수집만 건너뛰어짐) |
+| `TELEGRAM_API_ID` / `TELEGRAM_API_HASH` / `TELEGRAM_SESSION` | (선택) 텔레그램 비공개 채널
+수집을 쓰는 경우에만 |
+
+`ANTHROPIC_API_KEY`/`ANTHROPIC_MODEL`/`DAILY_LLM_BUDGET_USD`/`MONTHLY_LLM_BUDGET_USD`는 이
+워크플로에 등록할 필요가 없다 — `collect`는 LLM을 호출하지 않는다.
+
+워크플로가 `data` 브랜치에 push할 수 있어야 하므로 저장소 Settings → Actions → General →
+Workflow permissions에서 "Read and write permissions"가 켜져 있어야 한다(워크플로 파일에도
+`permissions: contents: write`가 명시되어 있음).
+
+### 로컬에서 분석 실행
+
+자동 수집분을 로컬로 가져와 분석하려면:
+
+```bash
+git fetch origin data
+git worktree add ../ii-data data   # 최초 1회. 이후엔 ../ii-data에서 git pull로 갱신
+
+uv run python -m investor_intel analyze \
+  --vault-path ../ii-data/vault --sqlite-path ../ii-data/data/index.sqlite3
+uv run python -m investor_intel portfolio --vault-path ../ii-data/vault
+uv run python -m investor_intel report --vault-path ../ii-data/vault
+```
+
+분석 결과(Claims/리포트, `llm_processed` 플래그)를 계속 보존하고 다음 실행에서 중복 분석을
+피하려면, 분석 후 `../ii-data`에서 커밋 후 `data` 브랜치로 push해둔다.
+
+self-hosted 러너로 전환하면(항상 켜져 있는 개인 서버/맥이 있는 경우) `data` 브랜치 우회 없이
+영구 디스크에 바로 읽고 쓸 수 있다 — 필요해지면 `runs-on`을 self-hosted 러너 라벨로 바꾸면 된다.
 
 ## 개발
 

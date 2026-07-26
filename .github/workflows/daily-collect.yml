@@ -1,13 +1,14 @@
-name: Daily collect and report
+name: Daily collect
 
-# Runs the collect -> analyze -> portfolio -> report pipeline on a schedule.
+# Runs only the `collect` step on a schedule. Analysis (analyze -> portfolio -> report) is run
+# locally via Claude Code, not here, since LLM calls from an unattended cron are hard to review
+# before they spend API budget.
 #
-# Scope note: `vault/` and `data/` are gitignored in this repo (the Obsidian vault and its
-# SQLite index are the user's data, not the tool's source) — this workflow does not commit or
-# push them anywhere. On GitHub-hosted runners the job's filesystem is ephemeral, so results
-# from one run are not visible to the next. For persistent storage across runs, point
-# --vault-path / --sqlite-path at a self-hosted runner's persistent disk, or add a step here to
-# sync to your own storage (a separate private repo, cloud storage, etc.) before the job ends.
+# Persistence: GitHub-hosted runners are ephemeral, so this workflow keeps `vault/` and `data/`
+# (both normally gitignored) on a dedicated `data` branch of this repo instead. Each run checks
+# out that branch into `state/`, runs `collect` against `state/vault` / `state/data`, and commits
+# the result back. Locally, pull the `data` branch (e.g. `git worktree add ../ii-data data`) and
+# point `analyze` / `portfolio` / `report` at that checkout's vault/data paths.
 
 on:
   schedule:
@@ -15,8 +16,11 @@ on:
     - cron: "0 0 * * *"
   workflow_dispatch: {}
 
+permissions:
+  contents: write
+
 jobs:
-  run-daily:
+  collect:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -31,15 +35,49 @@ jobs:
       - name: Install dependencies
         run: uv sync --extra dev
 
-      - name: Run daily pipeline
+      - name: Check out (or create) data branch into state/
+        run: |
+          git fetch origin data || true
+          if git show-ref --verify --quiet refs/remotes/origin/data; then
+            git worktree add state origin/data
+            git -C state checkout -b data
+          else
+            git worktree add --detach state
+            git -C state checkout --orphan data
+            git -C state rm -rf . > /dev/null 2>&1 || true
+            git -C state commit --allow-empty -m "init data branch"
+          fi
+          mkdir -p state/vault state/data
+
+      - name: Run collect
+        id: collect
+        continue-on-error: true
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
           TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
           TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
           TELEGRAM_SESSION: ${{ secrets.TELEGRAM_SESSION }}
-          DAILY_LLM_BUDGET_USD: ${{ vars.DAILY_LLM_BUDGET_USD }}
-          MONTHLY_LLM_BUDGET_USD: ${{ vars.MONTHLY_LLM_BUDGET_USD }}
-        run: uv run python -m investor_intel run-daily
+        run: |
+          uv run python -m investor_intel collect \
+            --vault-path state/vault \
+            --sqlite-path state/data/index.sqlite3
+
+      # Commit whatever was collected even if some sources errored above (partial collect is
+      # still worth keeping) — the job is failed explicitly in the final step instead.
+      - name: Commit and push collected data
+        run: |
+          cd state
+          git add -A
+          if git diff --cached --quiet; then
+            echo "no new data"
+          else
+            git -c user.name="github-actions[bot]" \
+                -c user.email="github-actions[bot]@users.noreply.github.com" \
+                commit -m "collect: $(date -u +%Y-%m-%d)"
+            git push origin HEAD:data
+          fi
+
+      - name: Fail job if collect had errors
+        if: steps.collect.outcome == 'failure'
+        run: exit 1
