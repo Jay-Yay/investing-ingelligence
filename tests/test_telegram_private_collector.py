@@ -10,13 +10,13 @@ from investor_intel.models.config import SourceConfig
 from investor_intel.storage.sqlite_index import connect, init_db
 
 
-def _source() -> SourceConfig:
+def _source(author: str | None = None) -> SourceConfig:
     return SourceConfig(
         id="telegram_private_allbareun",
         type="telegram_private",
         name="allbareun (비공개)",
         url="https://t.me/allbareun_private",
-        author=None,
+        author=author,
     )
 
 
@@ -58,6 +58,32 @@ def test_backfill_returns_only_in_window_messages(tmp_path) -> None:
     assert item.content_capture_mode == "full"
     assert item.document_type == "telegram_message"
     assert client.calls == [("allbareun_private", 200)]
+
+
+@freeze_time("2024-05-03")
+def test_backfill_uses_source_name_as_author_when_none_configured(tmp_path) -> None:
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    client = _FakeClient(_messages())
+    collector = TelethonPrivateChannelCollector(_source(author=None), client, CheckpointStore(conn))
+
+    result = collector.backfill(days=1)
+
+    assert result.items[0].author == "allbareun (비공개)"
+
+
+@freeze_time("2024-05-03")
+def test_backfill_prefers_configured_display_name_as_author(tmp_path) -> None:
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    client = _FakeClient(_messages())
+    collector = TelethonPrivateChannelCollector(
+        _source(author="비공개방"), client, CheckpointStore(conn)
+    )
+
+    result = collector.backfill(days=1)
+
+    assert result.items[0].author == "비공개방"
 
 
 @freeze_time("2024-05-03")

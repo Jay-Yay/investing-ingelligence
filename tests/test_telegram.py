@@ -13,13 +13,13 @@ from investor_intel.storage.sqlite_index import connect, init_db
 FIXTURES = Path(__file__).parent / "fixtures" / "telegram"
 
 
-def _source() -> SourceConfig:
+def _source(author: str | None = None) -> SourceConfig:
     return SourceConfig(
         id="telegram_allbareun",
         type="telegram",
         name="allbareun",
         url="https://t.me/s/allbareun",
-        author=None,
+        author=author,
     )
 
 
@@ -80,6 +80,38 @@ def test_collect_incremental_is_idempotent(tmp_path) -> None:
 
     assert second_result.new_count == 0
     assert second_result.items == []
+
+
+@respx.mock
+@freeze_time("2024-05-03")
+def test_collect_incremental_uses_channel_handle_as_author_when_none_configured(
+    tmp_path,
+) -> None:
+    _mock_preview()
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    client = SimpleHttpClient()
+    collector = TelegramCollector(_source(author=None), client, CheckpointStore(conn))
+
+    result = collector.collect_incremental()
+    client.close()
+
+    assert result.items[0].author == "allbareun"
+
+
+@respx.mock
+@freeze_time("2024-05-03")
+def test_collect_incremental_prefers_configured_display_name_as_author(tmp_path) -> None:
+    _mock_preview()
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    client = SimpleHttpClient()
+    collector = TelegramCollector(_source(author="자산증식 정보방"), client, CheckpointStore(conn))
+
+    result = collector.collect_incremental()
+    client.close()
+
+    assert result.items[0].author == "자산증식 정보방"
 
 
 @respx.mock

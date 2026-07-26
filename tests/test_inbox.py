@@ -117,12 +117,23 @@ def test_resolve_naver_derives_id_and_name_from_url() -> None:
     assert entry.type == "naver"
     assert entry.name == "engineerinvestor"
     assert entry.url == "https://m.blog.naver.com/engineerinvestor"
+    # no display name supplied - falls back to the URL slug so `author` is never empty
+    assert entry.author == "engineerinvestor"
+
+
+def test_resolve_naver_uses_supplied_display_name_as_author() -> None:
+    # lets a human-readable nickname (e.g. what the blogger is known as in investing
+    # communities) resolve to the right source_id/folder later, instead of only the URL slug.
+    entry = resolve_naver("https://m.blog.naver.com/tosoha1", "농구천재")
+    assert entry.author == "농구천재"
+    assert entry.name == "tosoha1"  # id/folder slug stays stable regardless of display name
 
 
 def test_resolve_telegram_derives_id_from_last_path_segment() -> None:
     entry = resolve_telegram("https://t.me/s/allbareun")
     assert entry.id == "telegram_allbareun"
     assert entry.type == "telegram"
+    assert entry.author is None
 
 
 def test_resolve_telegram_normalizes_bare_channel_url_to_public_preview() -> None:
@@ -134,10 +145,21 @@ def test_resolve_telegram_normalizes_bare_channel_url_to_public_preview() -> Non
     assert entry.url == "https://t.me/s/BRILLER_Research"
 
 
+def test_resolve_telegram_uses_supplied_display_name_as_author() -> None:
+    entry = resolve_telegram("https://t.me/s/getfeed", "자산증식 정보방")
+    assert entry.author == "자산증식 정보방"
+
+
 def test_resolve_telegram_private_uses_private_prefix() -> None:
     entry = resolve_telegram_private("https://t.me/someprivatechannel")
     assert entry.id == "telegram_private_someprivatechannel"
     assert entry.type == "telegram_private"
+    assert entry.author is None
+
+
+def test_resolve_telegram_private_uses_supplied_display_name_as_author() -> None:
+    entry = resolve_telegram_private("https://t.me/someprivatechannel", "비공개방")
+    assert entry.author == "비공개방"
 
 
 def test_resolve_ib_insights_uses_fixed_index_url_per_bank() -> None:
@@ -323,6 +345,26 @@ def test_sync_inbox_adds_naver_and_telegram_sources(tmp_path: Path) -> None:
 
     sources = load_sources_yaml(config_dir / "sources.yaml")
     assert {s.id for s in sources} == {"naver_foo", "telegram_bar"}
+
+
+def test_sync_inbox_applies_pipe_separated_display_name_to_author(tmp_path: Path) -> None:
+    config_dir = tmp_path / "config"
+    config_dir.mkdir()
+    inbox_path = tmp_path / "vault" / "00_System" / "inbox_sources.md"
+    _write_inbox(
+        inbox_path,
+        [
+            "- [ ] naver: https://m.blog.naver.com/tosoha1 | 농구천재",
+            "- [ ] telegram: https://t.me/s/getfeed | 자산증식 정보방",
+        ],
+    )
+
+    deps = InboxDeps(config_dir=config_dir)
+    sync_inbox(inbox_path, deps)
+
+    sources = {s.id: s for s in load_sources_yaml(config_dir / "sources.yaml")}
+    assert sources["naver_tosoha1"].author == "농구천재"
+    assert sources["telegram_getfeed"].author == "자산증식 정보방"
 
 
 def test_sync_inbox_skips_duplicate_and_checks_line(tmp_path: Path) -> None:

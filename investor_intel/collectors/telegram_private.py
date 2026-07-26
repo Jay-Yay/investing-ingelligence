@@ -45,7 +45,7 @@ class TelethonPrivateChannelCollector:
             source_specific_id=str(message.id),
             canonical_url=canonical_url,
             title=None,
-            author=self._source.name,
+            author=self._source.author or self._source.name,
             published_at=message.date,
             updated_at=None,
             language="ko",

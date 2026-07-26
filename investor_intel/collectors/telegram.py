@@ -68,7 +68,7 @@ class TelegramCollector:
             source_specific_id=message.message_id,
             canonical_url=message.link,
             title=None,
-            author=self._source.name,
+            author=self._source.author or self._source.name,
             published_at=message.published_at,
             updated_at=None,
             language="ko",

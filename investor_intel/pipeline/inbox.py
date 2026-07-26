@@ -103,7 +103,7 @@ def _slug_from_url(url: str) -> str:
     return url.rstrip("/").rsplit("/", 1)[-1]
 
 
-def resolve_naver(value: str) -> SourceConfig:
+def resolve_naver(value: str, display_name: str | None = None) -> SourceConfig:
     slug = _slug_from_url(value)
     return SourceConfig(
         id=f"naver_{slug}",
@@ -111,7 +111,7 @@ def resolve_naver(value: str) -> SourceConfig:
         name=slug,
         enabled=True,
         url=value,
-        author=slug,
+        author=display_name or slug,
         weight=1.0,
         collection_mode="full",
         backfill_days=365,
@@ -119,7 +119,7 @@ def resolve_naver(value: str) -> SourceConfig:
     )
 
 
-def resolve_telegram(value: str) -> SourceConfig:
+def resolve_telegram(value: str, display_name: str | None = None) -> SourceConfig:
     slug = _slug_from_url(value)
     # the public-preview collector only understands t.me/s/{channel} - normalize a bare
     # t.me/{channel} link (what users naturally copy) to that shape.
@@ -130,7 +130,7 @@ def resolve_telegram(value: str) -> SourceConfig:
         name=slug,
         enabled=True,
         url=url,
-        author=None,
+        author=display_name,
         weight=1.0,
         collection_mode="full",
         backfill_days=365,
@@ -138,7 +138,7 @@ def resolve_telegram(value: str) -> SourceConfig:
     )
 
 
-def resolve_telegram_private(value: str) -> SourceConfig:
+def resolve_telegram_private(value: str, display_name: str | None = None) -> SourceConfig:
     slug = _slug_from_url(value)
     return SourceConfig(
         id=f"telegram_private_{slug}",
@@ -146,7 +146,7 @@ def resolve_telegram_private(value: str) -> SourceConfig:
         name=slug,
         enabled=True,
         url=value,
-        author=None,
+        author=display_name,
         weight=1.0,
         collection_mode="full",
         backfill_days=365,
@@ -389,11 +389,11 @@ def _apply_source(
     line: InboxLine, value: str, sources: list[SourceConfig], dirty: dict[str, bool]
 ) -> InboxResult:
     if line.type == "naver":
-        entry = resolve_naver(value)
+        entry = resolve_naver(value, line.extra)
     elif line.type == "telegram_private":
-        entry = resolve_telegram_private(value)
+        entry = resolve_telegram_private(value, line.extra)
     elif line.type == "telegram":
-        entry = resolve_telegram(value)
+        entry = resolve_telegram(value, line.extra)
     else:
         assert line.type is not None
         entry = resolve_ib_insights(line.type, value)
