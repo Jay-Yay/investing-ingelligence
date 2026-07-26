@@ -276,3 +276,47 @@ sources:
     backfill_days: 365
     tags:
       - ib_insights
+  - id: naver_tosoha1
+    type: naver
+    name: tosoha1
+    enabled: true
+    url: https://blog.naver.com/tosoha1
+    author: tosoha1
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - blog
+  - id: naver_thingschange_
+    type: naver
+    name: thingschange_
+    enabled: true
+    url: https://m.blog.naver.com/thingschange_
+    author: thingschange_
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - blog
+  - id: naver_deskhunter
+    type: naver
+    name: deskhunter
+    enabled: true
+    url: https://blog.naver.com/deskhunter
+    author: deskhunter
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - blog
+  - id: naver_cazet1
+    type: naver
+    name: cazet1
+    enabled: true
+    url: https://blog.naver.com/cazet1
+    author: cazet1
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - blog
