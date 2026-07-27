@@ -201,6 +201,44 @@ def test_run_daily_happy_path_produces_report(tmp_path) -> None:
 
 
 @respx.mock
+def test_run_daily_scrapes_web_research_without_analyzing_it_same_day(tmp_path) -> None:
+    config_dir = tmp_path / "config"
+    config_dir.mkdir()
+    _write_sources_yaml(config_dir)
+    respx.get("https://rss.blog.naver.com/testblog.xml").mock(
+        return_value=httpx.Response(200, text=_RSS_FEED)
+    )
+    respx.get("https://blog.naver.com/PostView.naver?blogId=testblog&logNo=1").mock(
+        return_value=httpx.Response(200, text=_POST_VIEW_HTML)
+    )
+
+    vault_path = tmp_path / "vault"
+    _write_single_position_portfolio_yaml(vault_path)
+    settings = AppSettings(_env_file=None)
+    fake_sdk_client = _FakeAnthropicSDKClient()
+    anthropic_client = AnthropicClient(
+        api_key="test-key", model="claude-sonnet-5", client=fake_sdk_client
+    )
+
+    result = run_daily(
+        config_dir=config_dir,
+        vault_path=vault_path,
+        sqlite_path=tmp_path / "index.sqlite3",
+        settings=settings,
+        anthropic_client=anthropic_client,
+    )
+
+    assert result.success is True
+    web_search_files = list(
+        (vault_path / "10_Sources" / "WebSearch" / "NBIS").rglob("*.md")
+    )
+    assert len(web_search_files) == 1
+    # 오늘 스크랩된 문서는 오늘 analyze의 대상이 아니었으므로 llm_processed=false로 남아
+    # 있어야 한다 - "scrape only, 오늘은 분석하지 않음" 요구사항의 회귀 방지 검증.
+    assert "llm_processed: false" in web_search_files[0].read_text(encoding="utf-8")
+
+
+@respx.mock
 def test_run_daily_collect_failure_does_not_block_report(tmp_path) -> None:
     config_dir = tmp_path / "config"
     config_dir.mkdir()

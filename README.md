@@ -70,7 +70,7 @@ vault/                  # Obsidian Vault — 원본 데이터의 source of truth
     Runbook.md                # 운영 절차
     inbox_sources.md          # 소스/종목 추가용 체크리스트 (아래 "소스·종목 추가" 참고)
     Investment_Mandate.md     # 분석 관점(투자 원칙) — 세 LLM 단계 프롬프트에 자동으로 이어붙음
-  10_Sources/            # 소스별 원문 (Naver/Telegram/SEC/DART/13F/IB/Essays)
+  10_Sources/            # 소스별 원문 (Naver/Telegram/SEC/DART/13F/IB/Essays/WebSearch)
   30_Portfolio/
     portfolio.yaml             # 보유 종목 + 투자 가설 원장 (아래 "투자 가설 업데이트" 참고)
   40_Analysis/
@@ -100,6 +100,13 @@ data/index.sqlite3       # vault로부터 재생성 가능한 검색 인덱스 (
   토큰 사용량 기준으로 정확히 집계.
 - **포트폴리오 (`portfolio`):** YAML 기반 포트폴리오의 평가금액/비중 계산(다통화 지원)과
   가드레일(최대 종목/섹터 비중, 레버리지·공매도·옵션 금지 등) 검사. LLM 불필요.
+- **웹 검색 스크랩 (`web-research`, `run-daily` 내부):** 등록된 소스(네이버/텔레그램/공시 등)
+  만으로는 놓치는 정보(해외 헤지펀드 13F/13G 공시, 외신 보도 등)를 보완하기 위해, 보유 종목별로
+  Claude의 web_search 도구를 이용해 실시간 검색 결과를 스크랩한다. LLM 주장 추출/판단은 하지
+  않는 단계(scrape only)라 `vault/10_Sources/WebSearch/<종목>/`에 원문만 저장되고, 다음 `analyze`
+  실행부터 다른 소스와 동일하게 처리된다. `run-daily`에서는 이번 실행의 `analyze` 이후에 실행되므로
+  당일 포트폴리오 모니터 판단에는 반영되지 않고 다음 실행부터 반영된다. ANTHROPIC_API_KEY가
+  필요하므로 무인 `collect` 크론에는 포함되지 않는다.
 - **포트폴리오 모니터 (`run-daily` 내부):** 보유 종목별로 오늘 수집된 자료가 기존 투자
   가설을 얼마나 바꿨는지 판단해 강세/중립/약세(bullish/neutral/bearish 성격의
   `thesis_shift`)와 매수/보유/축소/매도 신호를 낸다. `vault/40_Analysis/Claims/<종목>.md`에

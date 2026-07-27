@@ -11,6 +11,7 @@ from investor_intel.collectors.base import CheckpointStore
 from investor_intel.collectors.dart_client import DartClient
 from investor_intel.collectors.http_client import SimpleHttpClient
 from investor_intel.collectors.sec_client import SECClient
+from investor_intel.config.loaders import load_portfolio_yaml
 from investor_intel.config.settings import AppSettings
 from investor_intel.llm.client import AnthropicClient
 from investor_intel.llm.cost_tracker import CostTracker
@@ -33,6 +34,7 @@ from investor_intel.pipeline.orchestrator import (
     run_daily,
     run_portfolio_stage,
 )
+from investor_intel.pipeline.web_research import run_web_research_for_portfolio
 from investor_intel.reports.daily_report_renderer import DailyReportContext, render_daily_report
 from investor_intel.storage.cost_ledger import init_cost_ledger
 from investor_intel.storage.sqlite_index import connect, init_db
@@ -569,6 +571,52 @@ def reindex(
         init_db(conn)
         count = reindex_vault(conn, vault_path)
         typer.echo(f"재인덱싱 완료: {count}개 문서")
+    finally:
+        conn.close()
+
+
+@app.command(name="web-research")
+def web_research_cmd(
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    sqlite_path: Annotated[Path, typer.Option(help="SQLite index path")] = Path(
+        "./data/index.sqlite3"
+    ),
+) -> None:
+    """보유 종목별로 실시간 웹 검색을 스크랩해 vault(10_Sources/WebSearch/<종목>/)에 저장한다.
+
+    vault에 저장한 소스(네이버/텔레그램/공시 등)만으로는 놓치는 정보(해외 13F/13G 공시, 외신
+    보도 등)를 보완하기 위한 단계다. LLM 주장 추출/판단은 하지 않는다(scrape only) - 저장된
+    문서는 llm_processed=false 상태로 남아 다음 `analyze` 실행에서 다른 문서와 동일하게
+    처리된다. run-daily 안에서도 자동 실행되므로, 이 명령은 그 사이에 수동으로 다시 돌리고
+    싶을 때만 쓰면 된다.
+    """
+    settings = AppSettings()
+    if not settings.anthropic_api_key:
+        typer.echo("ANTHROPIC_API_KEY 미설정 - 웹 검색 스크랩을 실행할 수 없다")
+        raise typer.Exit(code=1)
+
+    portfolio_path = vault_path / "30_Portfolio" / "portfolio.yaml"
+    if not portfolio_path.exists():
+        typer.echo("portfolio.yaml 없음 - 웹 검색 스크랩 대상 종목 없음")
+        raise typer.Exit(code=0)
+
+    conn = connect(sqlite_path)
+    try:
+        init_db(conn)
+        init_cost_ledger(conn)
+        client = AnthropicClient(
+            api_key=settings.anthropic_api_key, model=settings.anthropic_model
+        )
+        cost_tracker = CostTracker(
+            conn, settings.daily_llm_budget_usd, settings.monthly_llm_budget_usd
+        )
+        positions = load_portfolio_yaml(portfolio_path).positions
+        result = run_web_research_for_portfolio(positions, client, cost_tracker, vault_path, conn)
+
+        typer.echo(f"{result.persisted}건 저장")
+        for error in result.errors:
+            typer.echo(f"오류: {error}")
+        raise typer.Exit(code=1 if result.errors else 0)
     finally:
         conn.close()
 

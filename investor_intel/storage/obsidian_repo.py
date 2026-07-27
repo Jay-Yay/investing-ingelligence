@@ -17,6 +17,7 @@ _SOURCE_TYPE_DIR = {
     "dart": "DART",
     "essay": "Essays",
     "ib_insights": "IB",
+    "web_search": "WebSearch",
 }
 
 _FRONTMATTER_FIELD_ORDER = [

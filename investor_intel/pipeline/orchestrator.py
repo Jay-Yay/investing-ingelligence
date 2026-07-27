@@ -23,6 +23,7 @@ from investor_intel.models.analysis import PositionSignal, TenbaggerCandidate
 from investor_intel.models.portfolio import Position
 from investor_intel.pipeline.analyze import analyze_pending_documents
 from investor_intel.pipeline.collect import build_collect_entries, run_collectors
+from investor_intel.pipeline.web_research import run_web_research_for_portfolio
 from investor_intel.portfolio.calculations import compute_portfolio_metrics
 from investor_intel.portfolio.capital_allocation import rank_capital_allocation
 from investor_intel.portfolio.guardrails import (
@@ -251,6 +252,18 @@ def run_daily(
         mandate = load_investment_mandate(vault_path)
         claims_digest = analyze_result.digest if analyze_result is not None else []
         claims_summary = _build_claims_summary(claims_digest)
+
+        # 보유 종목별 웹 검색 스크랩 - analyze가 이미 끝난 뒤 실행하므로 오늘 저장된 문서는
+        # 위 claims_summary(오늘의 포트폴리오 모니터 입력)에는 포함되지 않고, 다음 analyze
+        # 실행부터 일반 문서와 동일하게 처리된다 (scrape only, 오늘은 분석하지 않음).
+        if client is not None and cost_tracker is not None and portfolio_positions:
+            if cost_tracker.is_within_budget():
+                web_research_result = run_web_research_for_portfolio(
+                    portfolio_positions, client, cost_tracker, vault_path, conn
+                )
+                analyze_errors.extend(web_research_result.errors)
+            else:
+                analyze_errors.append("LLM 예산 초과 - 웹 검색 스크랩 단계 건너뜀")
 
         position_signal_models: list[PositionSignal] = []
         if client is not None and cost_tracker is not None and portfolio_positions:

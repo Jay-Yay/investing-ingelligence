@@ -11,6 +11,7 @@ class SourceType(StrEnum):
     DART = "dart"
     ESSAY = "essay"
     IB_INSIGHTS = "ib_insights"
+    WEB_SEARCH = "web_search"
 
 
 class ContentCaptureMode(StrEnum):
