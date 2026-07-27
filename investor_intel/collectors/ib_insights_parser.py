@@ -633,7 +633,9 @@ def parse_berkshire_letters_index(
             summary=None,
             pdf_url=_absolutize(f"{year}ltr.pdf", f"{base_url}/"),
         )
-        for year in sorted({m.group(1) for m in _BERKSHIRE_LETTER_RE.finditer(html_text)}, reverse=True)
+        for year in sorted(
+            {m.group(1) for m in _BERKSHIRE_LETTER_RE.finditer(html_text)}, reverse=True
+        )
     ]
     return _dedupe_by_url(articles)
 

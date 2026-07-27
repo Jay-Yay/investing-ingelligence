@@ -178,7 +178,9 @@ def test_10q_captures_full_text_and_tags_title(tmp_path) -> None:
     _mock_submissions()
     respx.get(
         "https://www.sec.gov/Archives/edgar/data/1664703/000166470324000010/form10q.htm"
-    ).mock(return_value=httpx.Response(200, text="<html><body><p>테스트 10-Q 본문</p></body></html>"))
+    ).mock(
+        return_value=httpx.Response(200, text="<html><body><p>테스트 10-Q 본문</p></body></html>")
+    )
     conn = connect(tmp_path / "index.sqlite3")
     init_db(conn)
     client = SECClient(user_agent="Investor Intel test@example.com")

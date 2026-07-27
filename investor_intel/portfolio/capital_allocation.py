@@ -24,8 +24,12 @@ class AllocationRow(BaseModel):
     recommended_action: str
 
 
-def _existing_position_row(signal_entry: PositionSignal, position_rows: list[dict]) -> AllocationRow:
-    metrics = next((row for row in position_rows if row.get("symbol") == signal_entry.symbol), None)
+def _existing_position_row(
+    signal_entry: PositionSignal, position_rows: list[dict]
+) -> AllocationRow:
+    metrics = next(
+        (row for row in position_rows if row.get("symbol") == signal_entry.symbol), None
+    )
     upside = metrics.get("upside_to_target_pct") if metrics else None
     expected_return = f"{upside:+.1f}% (목표가 대비)" if upside is not None else "확인 불가"
     action_label = (
@@ -33,7 +37,9 @@ def _existing_position_row(signal_entry: PositionSignal, position_rows: list[dic
         if signal_entry.signal is not None
         else "판단 보류"
     )
-    downside_risk = signal_entry.counter_evidence[0] if signal_entry.counter_evidence else "확인 불가"
+    downside_risk = (
+        signal_entry.counter_evidence[0] if signal_entry.counter_evidence else "확인 불가"
+    )
     return AllocationRow(
         rank=0,
         symbol=signal_entry.symbol,

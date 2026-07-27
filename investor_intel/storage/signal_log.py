@@ -44,7 +44,9 @@ def _split_sections(content: str) -> tuple[str, list[str]]:
     return doc_header, sections
 
 
-def append_signal_log(vault_path: Path, symbol: str, as_of: date, signal_entry: PositionSignal) -> None:
+def append_signal_log(
+    vault_path: Path, symbol: str, as_of: date, signal_entry: PositionSignal
+) -> None:
     """오늘자 신호를 vault/40_Analysis/Claims/<symbol>.md에 append한다.
 
     같은 날짜 섹션이 이미 있으면(같은 날 재실행) 덮어쓴다 - 중복 섹션이 쌓이지 않도록.

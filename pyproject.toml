@@ -44,6 +44,10 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 
+[tool.ruff.lint.per-file-ignores]
+# Jinja2 markdown table rows must stay on one physical line to render correctly.
+"investor_intel/reports/daily_report_renderer.py" = ["E501"]
+
 [tool.mypy]
 python_version = "3.12"
 warn_unused_ignores = true

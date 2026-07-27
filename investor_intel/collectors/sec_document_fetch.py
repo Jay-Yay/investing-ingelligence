@@ -12,7 +12,9 @@ _TRANSCRIPT_CUE_RE = re.compile(r"\boperator\b", re.IGNORECASE)
 _QA_CUE_RE = re.compile(r"question-and-answer|question and answer|\bQ&A\b", re.IGNORECASE)
 
 
-def fetch_full_text(client: SECClient, cik: str, accession_number: str, filename: str) -> str | None:
+def fetch_full_text(
+    client: SECClient, cik: str, accession_number: str, filename: str
+) -> str | None:
     """primaryDocument HTML을 가져와 태그를 제거한 원문 텍스트를 반환한다. 실패 시 None."""
     try:
         html = client.get_text(document_url(cik, accession_number, filename))

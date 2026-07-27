@@ -1,4 +1,8 @@
-from investor_intel.collectors.filing_kind import classify_dart_report, classify_sec_form, title_prefix
+from investor_intel.collectors.filing_kind import (
+    classify_dart_report,
+    classify_sec_form,
+    title_prefix,
+)
 
 
 def test_classify_dart_report_matches_annual() -> None:

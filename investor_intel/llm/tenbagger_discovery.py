@@ -149,5 +149,6 @@ def discover_candidates(
         return TenbaggerDiscoveryOutcome(result=result, usage=usage)
 
     raise TenbaggerDiscoveryError(
-        f"failed to extract valid tenbagger candidates after {max_retries + 1} attempts: {last_error}"
+        f"failed to extract valid tenbagger candidates after "
+        f"{max_retries + 1} attempts: {last_error}"
     )

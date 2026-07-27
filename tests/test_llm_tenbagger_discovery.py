@@ -63,7 +63,7 @@ def test_raises_after_exhausting_retries_on_invalid_input() -> None:
     client = _FakeClient([_tool_use_response(invalid)] * 3)
     try:
         discover_candidates(client, digest_text="d", system_prompt="s", max_retries=2)
-        assert False, "expected TenbaggerDiscoveryError"
+        raise AssertionError("expected TenbaggerDiscoveryError")
     except TenbaggerDiscoveryError:
         pass
     assert len(client.calls) == 3
@@ -90,11 +90,22 @@ def _candidate(**score_overrides) -> TenbaggerCandidate:
 
 
 def test_finalize_candidate_tiers_by_threshold() -> None:
-    assert finalize_candidate(_candidate(market_expansion=15, earnings_inflection=20, unit_economics=15,
-                                          competitive_moat=15, attention_gap=10, valuation_path=15,
-                                          financial_survival=10)).tier == TenbaggerTier.CANDIDATE
-    assert finalize_candidate(_candidate(earnings_inflection=20, unit_economics=15,
-                                          competitive_moat=15, valuation_path=15)).tier == TenbaggerTier.WATCHLIST
+    candidate = _candidate(
+        market_expansion=15,
+        earnings_inflection=20,
+        unit_economics=15,
+        competitive_moat=15,
+        attention_gap=10,
+        valuation_path=15,
+        financial_survival=10,
+    )
+    assert finalize_candidate(candidate).tier == TenbaggerTier.CANDIDATE
+
+    watchlist_candidate = _candidate(
+        earnings_inflection=20, unit_economics=15, competitive_moat=15, valuation_path=15
+    )
+    assert finalize_candidate(watchlist_candidate).tier == TenbaggerTier.WATCHLIST
+
     assert finalize_candidate(_candidate(earnings_inflection=10)).tier == TenbaggerTier.EXCLUDED
 
 

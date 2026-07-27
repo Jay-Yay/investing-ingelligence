@@ -51,7 +51,9 @@ def test_append_signal_log_same_day_overwrites_instead_of_duplicating(tmp_path) 
 
 def test_signal_logs_are_scoped_per_symbol(tmp_path) -> None:
     append_signal_log(tmp_path, "NBIS", date(2026, 7, 26), _signal(symbol="NBIS"))
-    append_signal_log(tmp_path, "RDDT", date(2026, 7, 26), _signal(symbol="RDDT", signal_strength=10))
+    append_signal_log(
+        tmp_path, "RDDT", date(2026, 7, 26), _signal(symbol="RDDT", signal_strength=10)
+    )
 
     assert "signal_strength: 75" in read_latest_signal_text(tmp_path, "NBIS")
     assert "signal_strength: 10" in read_latest_signal_text(tmp_path, "RDDT")

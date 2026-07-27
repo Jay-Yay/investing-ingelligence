@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import UTC, date, datetime, timedelta
 
 from investor_intel.collectors.base import CheckpointStore, CollectItem, CollectResult
+from investor_intel.collectors.filing_kind import classify_sec_form, title_prefix
 from investor_intel.collectors.sec_client import SECClient
 from investor_intel.collectors.sec_companyfacts import (
     FinancialFact,
@@ -10,7 +11,6 @@ from investor_intel.collectors.sec_companyfacts import (
     extract_financial_snapshot,
     parse_companyfacts,
 )
-from investor_intel.collectors.filing_kind import classify_sec_form, title_prefix
 from investor_intel.collectors.sec_document_fetch import fetch_full_text, find_transcript_exhibit
 from investor_intel.collectors.sec_filings_document import render_sec_filing_body
 from investor_intel.collectors.sec_filings_parser import CompanyFilingRef, parse_company_filings
@@ -101,7 +101,10 @@ class SECFilingsCollector:
             tzinfo=UTC,
         )
         reporting_period_date = filing.period_of_report or filing.filing_date
-        title = f"{title_tag}{self._company.name} {filing.form} ({reporting_period_date.isoformat()})"
+        title = (
+            f"{title_tag}{self._company.name} {filing.form} "
+            f"({reporting_period_date.isoformat()})"
+        )
         mode, reason = (
             ("full", None) if full_text is not None else ("metadata_only", _CONTENT_CAPTURE_REASON)
         )

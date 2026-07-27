@@ -1,9 +1,20 @@
-from investor_intel.models.analysis import PositionSignal, TenbaggerCandidate, TenbaggerScoreBreakdown
-from investor_intel.models.common import DecisionStatus, RecommendationRating, TenbaggerTier, ThesisShift
+from investor_intel.models.analysis import (
+    PositionSignal,
+    TenbaggerCandidate,
+    TenbaggerScoreBreakdown,
+)
+from investor_intel.models.common import (
+    DecisionStatus,
+    RecommendationRating,
+    TenbaggerTier,
+    ThesisShift,
+)
 from investor_intel.portfolio.capital_allocation import rank_capital_allocation
 
 
-def _signal(symbol: str, strength: int, signal=RecommendationRating.BUY, counter_evidence=None) -> PositionSignal:
+def _signal(
+    symbol: str, strength: int, signal=RecommendationRating.BUY, counter_evidence=None
+) -> PositionSignal:
     return PositionSignal(
         symbol=symbol,
         thesis_shift=ThesisShift.STRENGTHENED,

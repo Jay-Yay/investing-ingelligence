@@ -336,10 +336,12 @@ _PSH_HTML = (
     "</span></li>"
     '<li class="materials--list--item 2026 letters-presentations">'
     '<span class="materials--list--item--date">February 18, 2026</span>'
-    '<span class="materials--list--item--description">Letter to Shareholders in the 2025 Annual Report</span>'
+    '<span class="materials--list--item--description">'
+    "Letter to Shareholders in the 2025 Annual Report</span>"
     '<span class="materials--list--item--category">Letters &amp; Presentations</span>'
     '<span class="materials--list--item--link">'
-    '<a href="https://assets.pershingsquareholdings.com/2025-annual-report.pdf#page=9" target="_blank">PDF</a>'
+    '<a href="https://assets.pershingsquareholdings.com/2025-annual-report.pdf#page=9" '
+    'target="_blank">PDF</a>'
     "</span></li>"
 )
 

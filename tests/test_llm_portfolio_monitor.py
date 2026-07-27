@@ -66,7 +66,7 @@ def test_raises_after_exhausting_retries_on_invalid_input() -> None:
         analyze_portfolio_positions(
             client, positions_context="c", digest_text="d", system_prompt="s", max_retries=2
         )
-        assert False, "expected PortfolioMonitorError"
+        raise AssertionError("expected PortfolioMonitorError")
     except PortfolioMonitorError:
         pass
     assert len(client.calls) == 3
