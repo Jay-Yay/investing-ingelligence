@@ -1,18 +1,127 @@
 companies:
   - ticker: NBIS
-    cik: "0001513845"
+    cik: 0001513845
     name: Nebius Group
-    filing_types: [20-F, 6-K]
+    filing_types:
+      - 20-F
+      - 6-K
     is_foreign_private_issuer: true
-
   - ticker: BE
-    cik: "0001664703"
+    cik: '0001664703'
     name: Bloom Energy
-    filing_types: [10-K, 10-Q, 8-K]
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
     is_foreign_private_issuer: false
-
   - ticker: RDDT
-    cik: "0001713445"
+    cik: '0001713445'
     name: Reddit
-    filing_types: [10-K, 10-Q, 8-K]
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
+    is_foreign_private_issuer: false
+  - ticker: GOOGL
+    cik: '0001652044'
+    name: Alphabet Inc.
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
+    is_foreign_private_issuer: false
+  - ticker: MSFT
+    cik: 0000789019
+    name: MICROSOFT CORP
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
+    is_foreign_private_issuer: false
+  - ticker: AMZN
+    cik: 0001018724
+    name: AMAZON COM INC
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
+    is_foreign_private_issuer: false
+  - ticker: META
+    cik: 0001326801
+    name: Meta Platforms, Inc.
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
+    is_foreign_private_issuer: false
+  - ticker: NVDA
+    cik: 0001045810
+    name: NVIDIA CORP
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
+    is_foreign_private_issuer: false
+  - ticker: AAPL
+    cik: 0000320193
+    name: Apple Inc.
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
+    is_foreign_private_issuer: false
+  - ticker: TSLA
+    cik: 0001318605
+    name: Tesla, Inc.
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
+    is_foreign_private_issuer: false
+  - ticker: MU
+    cik: '0000723125'
+    name: MICRON TECHNOLOGY INC
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
+    is_foreign_private_issuer: false
+  - ticker: AMD
+    cik: 0000002488
+    name: ADVANCED MICRO DEVICES INC
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
+    is_foreign_private_issuer: false
+  - ticker: TSM
+    cik: 0001046179
+    name: TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD
+    filing_types:
+      - 20-F
+      - 6-K
+    is_foreign_private_issuer: true
+  - ticker: VRT
+    cik: '0001674101'
+    name: Vertiv Holdings Co
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
+    is_foreign_private_issuer: false
+  - ticker: CRWV
+    cik: 0001769628
+    name: CoreWeave, Inc.
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
+    is_foreign_private_issuer: false
+  - ticker: IREN
+    cik: 0001878848
+    name: IREN Ltd
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
     is_foreign_private_issuer: false
