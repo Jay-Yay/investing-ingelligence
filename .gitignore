@@ -1,0 +1,7 @@
+# data/index.sqlite3 is a derived cache of vault/, not source of truth - it's rebuilt from
+# vault markdown via `investor_intel reindex` at the start of every collect/analyze/web-research
+# run. Committing this binary file caused unresolvable git merge conflicts whenever more than
+# one environment (GitHub Actions + multiple local machines) wrote to this branch on the same
+# day. See vault/00_System/Runbook.md "인덱스 복구".
+data/index.sqlite3
+data/sec_company_tickers.json
