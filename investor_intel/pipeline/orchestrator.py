@@ -35,6 +35,7 @@ from investor_intel.reports.daily_report_renderer import DailyReportContext, ren
 from investor_intel.storage.cost_ledger import init_cost_ledger
 from investor_intel.storage.signal_log import append_signal_log, read_latest_signal_text
 from investor_intel.storage.sqlite_index import connect, init_db
+from investor_intel.storage.sqlite_index import reindex as reindex_vault
 
 DEFAULT_ANALYZE_SYSTEM_PROMPT = (
     "역할: 투자 리서치 애널리스트. 아래 원문 데이터에서 핵심 주장(claim), 근거(evidence), "
@@ -210,6 +211,10 @@ def run_daily(
     try:
         init_db(conn)
         init_cost_ledger(conn)
+        # data/index.sqlite3 is not synced across machines/CI (it's a git-unfriendly binary) -
+        # vault/ markdown is the source of truth, so rebuild the document index from it before
+        # any dedup check runs. See vault/00_System/Runbook.md "SQLite 인덱스는 커밋하지 않는다".
+        reindex_vault(conn, vault_path)
 
         collect_errors: list[str] = []
         checkpoint_store = CheckpointStore(conn)

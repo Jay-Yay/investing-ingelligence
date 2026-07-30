@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sqlite3
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 
 from investor_intel.collectors.web_research import collect_web_research
@@ -10,12 +11,32 @@ from investor_intel.llm.cost_tracker import CostTracker
 from investor_intel.models.common import SourceType
 from investor_intel.models.portfolio import Position
 from investor_intel.pipeline.collect import persist_collect_result
+from investor_intel.storage.content_hash import compute_stable_id
+from investor_intel.storage.sqlite_index import get_document_by_id
 
 
 @dataclass
 class WebResearchRunResult:
     persisted: int = 0
     errors: list[str] = field(default_factory=list)
+
+
+def _already_scraped_today(conn: sqlite3.Connection, symbol: str) -> bool:
+    """오늘자 해당 symbol의 web_search 문서가 이미 (다른 머신에서) 저장돼 있는지 확인한다.
+
+    collect_web_research()의 source_specific_id 규칙(f"{symbol}-{today}")과 동일한 키로
+    stable_id를 재계산한다 - 이 함수를 collect_web_research 호출 "전"에 불러 이미 있으면
+    LLM 웹서치 호출 자체를 건너뛴다(비용 절감 + Mac1/Mac2가 같은 날 서로 다른 검색
+    결과를 같은 파일 경로에 덮어써 git merge 충돌을 일으키는 것도 방지).
+    """
+    today = datetime.now(UTC).date().isoformat()
+    stable_id = compute_stable_id(
+        SourceType.WEB_SEARCH.value,
+        symbol,
+        f"{symbol}-{today}",
+        f"web-search://{symbol}/{today}",
+    )
+    return get_document_by_id(conn, stable_id) is not None
 
 
 def run_web_research_for_portfolio(
@@ -38,6 +59,8 @@ def run_web_research_for_portfolio(
         if not cost_tracker.is_within_budget():
             result.errors.append("LLM 예산 초과 - 웹 검색 스크랩 중단")
             break
+        if _already_scraped_today(conn, position.symbol):
+            continue
         try:
             collect_result, input_tokens, output_tokens = collect_web_research(
                 client, position.symbol, position.name

@@ -58,6 +58,16 @@ jobs:
           fi
           mkdir -p state/vault state/data
 
+      # data/index.sqlite3 is not committed (see .gitignore on this branch) - it's a derived
+      # cache of vault/, rebuilt here from whatever vault/ content is already on the branch
+      # (which may include documents pushed by other writers - local Macs also run collect/
+      # analyze/web-research against this same branch) so dedup checks below see everything.
+      - name: Rebuild sqlite index from vault
+        run: |
+          uv run python -m investor_intel reindex \
+            --vault-path state/vault \
+            --sqlite-path state/data/index.sqlite3
+
       - name: Run collect
         id: collect
         continue-on-error: true
@@ -76,11 +86,14 @@ jobs:
       # timeout-minutes and gets cancelled mid-collect, steps without always() are skipped
       # entirely - which previously meant a timeout silently threw away everything collected
       # up to that point. With always(), whatever's on disk still gets committed.
-      - name: Commit and push collected data
+      #
+      # Only vault/ is committed - data/index.sqlite3 is gitignored on this branch (binary,
+      # unmergeable across the multiple writers that push here; rebuilt via reindex instead).
+      - name: Commit and push collected vault data
         if: always()
         run: |
           cd state
-          git add -A
+          git add vault
           if git diff --cached --quiet; then
             echo "no new data"
           else

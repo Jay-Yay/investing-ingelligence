@@ -257,6 +257,15 @@ RUNBOOK_MD = """# Runbook
 소스/문서가 실패해도 나머지는 계속 진행한다(부분 실패 허용). 종료 코드가 0이 아니면
 `collect_errors`/`analyze_errors`가 출력에 포함되어 있으니 확인한다.
 
+**여러 머신에서 동시에 실행하는 경우**: GitHub Actions(collect 전용) + 로컬 머신 여러 대가
+모두 같은 `data` 브랜치에 vault를 커밋/푸시할 수 있다. 원문 스크랩 문서(`10_Sources/*`)는
+결정적 ID(`compute_stable_id`)로 저장되므로 같은 문서를 여러 곳에서 수집해도 대부분 같은
+파일 경로로 수렴해 git merge 시 충돌 없이 합쳐진다. 다만 `web_research`(보유 종목 웹 검색
+스크랩)는 하루 단위 ID라서 같은 날 두 머신에서 각각 실행하면 같은 경로에 서로 다른 검색
+결과가 붙어 merge 충돌이 날 수 있다 — 로컬에서 `run-daily`/`web-research`를 돌리기 전에
+`git pull`(또는 `data` 브랜치 최신화)을 먼저 해서 그날 다른 머신이 이미 스크랩했는지
+반영하면(아래 "SQLite 인덱스는 커밋하지 않는다" 참고) 이 충돌과 중복 LLM 호출 둘 다 줄어든다.
+
 ## `doctor`가 문제를 보고할 때
 
 `uv run python -m investor_intel doctor` 로 환경변수/설정 파일/vault 쓰기 권한을 점검한다.
@@ -282,17 +291,30 @@ RUNBOOK_MD = """# Runbook
 테이블에 기록되며, Anthropic API 응답의 실제 토큰 사용량(`response.usage`, 재시도 포함 누적)을
 기준으로 정확히 계산된다.
 
-## 인덱스 복구
+## SQLite 인덱스는 커밋하지 않는다 (로컬 전용 캐시)
 
-SQLite 인덱스(`data/index.sqlite3`)는 vault의 재생성 가능한 캐시일 뿐이다. 손상되거나
-삭제되었다면:
+`data/index.sqlite3`는 vault의 Markdown+frontmatter로부터 재생성 가능한 캐시일 뿐이라 git으로
+추적하지 않는다(`data` 브랜치에 `.gitignore` 처리됨). 바이너리 파일이라 여러 머신이 같은
+브랜치에 커밋하면 merge가 안 되기 때문 — 예전에는 이 파일도 커밋해서 GitHub Actions와 로컬
+머신이 같은 날 둘 다 `data` 브랜치에 푸시하면 반드시 충돌이 났다.
+
+대신 `collect`/`analyze`/`web-research`/`run-daily` 실행 시작 시 vault를 기준으로 자동
+재인덱싱된다(`sqlite_index.reindex()`가 매 실행 앞단에 붙어 있음) — 그래서 방금 `git pull`로
+받아온 vault 내용이 있으면 그것까지 반영된 상태로 dedup 판단이 이뤄진다. 인덱스가 손상되거나
+비어 있어도 별도 조치 없이 다음 실행에서 자동 복구되며, 수동으로 즉시 재구축하고 싶으면:
 
 ```bash
 uv run python -m investor_intel reindex
 ```
 
-vault의 Markdown+frontmatter가 유일한 원본(source of truth)이므로 이 명령만으로 완전히
-복구된다.
+**단, `documents`/`document_assets` 테이블만 vault에서 재생성된다.** 같은 sqlite 파일 안의
+`collector_state`(수집 체크포인트), `llm_usage`/`cost_ledger`(일일/월간 LLM 예산 추적),
+`dart_corp_codes`(DART corpCode 캐시) 테이블은 vault에서 유도할 수 없는 머신별 로컬 상태라
+동기화되지 않는다 — 머신을 바꾸거나 로컬 sqlite를 지우면 이 상태는 초기화된다(체크포인트가
+없으면 그냥 최근 항목을 다시 훑고 문서 단위 dedup으로 걸러지므로 안전하고, DART corpCode
+캐시는 공개 API에서 재조회될 뿐이다). 예산 추적은 머신별로 따로 집계된다는 뜻이므로,
+여러 머신에서 같은 날 `analyze`/`web-research`를 돌리면 실제 총 지출이 `DAILY_LLM_BUDGET_USD`
+설정값보다 머신 대수만큼 더 커질 수 있다는 점은 감안한다.
 
 ## 새 소스/기업/투자자 추가
 
@@ -603,6 +625,7 @@ def web_research_cmd(
     conn = connect(sqlite_path)
     try:
         init_db(conn)
+        reindex_vault(conn, vault_path)
         init_cost_ledger(conn)
         client = AnthropicClient(
             api_key=settings.anthropic_api_key, model=settings.anthropic_model
@@ -637,6 +660,7 @@ def collect(
     conn = connect(sqlite_path)
     try:
         init_db(conn)
+        reindex_vault(conn, vault_path)
         checkpoint_store = CheckpointStore(conn)
         entries, setup_errors = build_collect_entries(config_dir, settings, checkpoint_store, conn)
 
@@ -677,6 +701,7 @@ def analyze(
     conn = connect(sqlite_path)
     try:
         init_db(conn)
+        reindex_vault(conn, vault_path)
         init_cost_ledger(conn)
         client = AnthropicClient(
             api_key=settings.anthropic_api_key, model=settings.anthropic_model

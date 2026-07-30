@@ -71,6 +71,31 @@ def test_run_web_research_for_portfolio_persists_one_document_per_symbol_folder(
     assert "NBIS 관련 검색 결과 스크랩" in body
 
 
+@freeze_time("2026-07-27T09:00:00+00:00")
+def test_run_web_research_for_portfolio_skips_symbol_already_scraped_today(tmp_path) -> None:
+    # regression: if another machine already scraped this symbol today (visible via the shared
+    # sqlite index after a reindex), don't spend another paid LLM call and don't overwrite the
+    # existing file with a second, possibly different, web-search snapshot at the same path.
+    vault_path = tmp_path / "vault"
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    init_cost_ledger(conn)
+    client = AnthropicClient(api_key="test-key", model="claude-sonnet-5", client=_FakeAnthropic())
+    cost_tracker = CostTracker(conn, daily_budget_usd=1.5, monthly_budget_usd=45.0)
+    positions = [_position("NBIS", "Nebius Group")]
+
+    first = run_web_research_for_portfolio(positions, client, cost_tracker, vault_path, conn)
+    assert first.persisted == 1
+    assert client._client.messages.calls  # sanity: the fake API was actually called once
+    call_count_after_first = len(client._client.messages.calls)
+
+    second = run_web_research_for_portfolio(positions, client, cost_tracker, vault_path, conn)
+
+    assert second.persisted == 0
+    assert second.errors == []
+    assert len(client._client.messages.calls) == call_count_after_first
+
+
 def test_run_web_research_for_portfolio_stops_when_budget_exceeded(tmp_path) -> None:
     vault_path = tmp_path / "vault"
     conn = connect(tmp_path / "index.sqlite3")
