@@ -252,6 +252,10 @@ RUNBOOK_MD = """# Runbook
 - 수동 분석만 (자동 수집분에 대해): `git fetch origin data` 후
   `uv run python -m investor_intel analyze --vault-path <data 브랜치 체크아웃>/vault
   --sqlite-path <...>/data/index.sqlite3`, 이어서 `portfolio`/`report`
+- **로컬에서 여러 머신 쓸 때 권장**: 위 명령 대신 `scripts/sync-run.sh run-daily`(또는
+  `collect`/`analyze`/`web-research` 등 아무 서브커맨드나) — pull → 실행 → commit/push를
+  하나로 묶어준다. 아래 "여러 머신에서 동시에 실행하는 경우"의 "먼저 pull, 실행 후 즉시
+  push" 원칙을 사람이 순서를 안 까먹어도 되게 자동화한 것.
 
 `run-daily`는 collect -> analyze -> portfolio -> report 순서로 실행되며, 한 단계 안에서 한
 소스/문서가 실패해도 나머지는 계속 진행한다(부분 실패 허용). 종료 코드가 0이 아니면
@@ -265,6 +269,14 @@ RUNBOOK_MD = """# Runbook
 결과가 붙어 merge 충돌이 날 수 있다 — 로컬에서 `run-daily`/`web-research`를 돌리기 전에
 `git pull`(또는 `data` 브랜치 최신화)을 먼저 해서 그날 다른 머신이 이미 스크랩했는지
 반영하면(아래 "SQLite 인덱스는 커밋하지 않는다" 참고) 이 충돌과 중복 LLM 호출 둘 다 줄어든다.
+
+`40_Analysis/Claims/<종목>.md`(포트폴리오 모니터 시그널 로그)는 날짜(`## YYYY-MM-DD`) 단위로
+append되므로 다른 날 판단은 자동으로 별도 기록이 되지만, **같은 날 두 머신이 각각
+포트폴리오 모니터를 돌리면 그날 섹션 내용이 실제로 다를 수 있어 진짜 git 충돌이 난다** —
+이건 둘 다 유효한 "그날의 판단"이라 자동 병합이 아니라 사람이 어느 쪽을 그날의 공식
+기록으로 남길지 골라야 한다. 포트폴리오 모니터는 하루 1회, 한 머신에서만 공식 실행하는
+것을 권장한다. `scripts/sync-run.sh`는 pull이 fast-forward 안 되면(= 위 같은 진짜 충돌이
+남아있으면) 실행 자체를 중단하고 수동 해결을 안내한다 — 강제 병합을 시도하지 않는다.
 
 ## `doctor`가 문제를 보고할 때
 
