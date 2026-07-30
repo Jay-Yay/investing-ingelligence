@@ -8,7 +8,9 @@ from freezegun import freeze_time
 from investor_intel.collectors.base import CheckpointStore
 from investor_intel.collectors.essay import EssayCollector
 from investor_intel.collectors.http_client import SimpleHttpClient
+from investor_intel.models.common import SourceType
 from investor_intel.models.config import InvestorConfig
+from investor_intel.pipeline.collect import persist_collect_result
 from investor_intel.storage.sqlite_index import connect, init_db
 
 FIXTURES = Path(__file__).parent / "fixtures" / "essay"
@@ -80,6 +82,41 @@ def test_published_at_is_pinned_across_runs(tmp_path) -> None:
     client.close()
 
     assert first_result.items[0].published_at == second_result.items[0].published_at
+    assert second_result.items[0].published_at.isoformat() == "2026-07-24T10:00:00+00:00"
+
+
+@respx.mock
+def test_published_at_reuses_existing_document_across_fresh_checkpoints(tmp_path) -> None:
+    # regression: two machines with independent (never-synced) local checkpoint stores each
+    # doing a first-ever collect used to each pin their own wall-clock "now" as published_at,
+    # producing the same essay document under two different date-prefixed filenames once both
+    # were pushed to the shared vault. A second "machine" (fresh checkpoint store, same conn/
+    # vault) must reuse the first machine's published_at if that document is already indexed -
+    # e.g. after a `reindex` following `git pull`.
+    _mock_essay_page()
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    vault_path = tmp_path / "vault"
+    client = SimpleHttpClient()
+
+    with freeze_time("2026-07-24T10:00:00+00:00"):
+        first_checkpoint_store = CheckpointStore(conn)
+        first_result = EssayCollector(
+            _investor(), client, first_checkpoint_store, conn
+        ).collect_incremental()
+        persist_collect_result(first_result, SourceType.ESSAY, _investor().id, vault_path, conn)
+
+    with freeze_time("2026-07-26T10:00:00+00:00"):
+        # a brand-new CheckpointStore simulates a machine that has never run this collector
+        # before (empty collector_state), but shares the same documents index (as if vault/
+        # had just been pulled and reindexed).
+        second_checkpoint_store = CheckpointStore(conn)
+        second_result = EssayCollector(
+            _investor(), client, second_checkpoint_store, conn
+        ).collect_incremental()
+
+    client.close()
+
     assert second_result.items[0].published_at.isoformat() == "2026-07-24T10:00:00+00:00"
 
 

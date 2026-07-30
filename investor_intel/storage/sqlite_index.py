@@ -130,6 +130,14 @@ def get_document_by_id(conn: sqlite3.Connection, doc_id: str) -> sqlite3.Row | N
     return conn.execute("SELECT * FROM documents WHERE id = ?", (doc_id,)).fetchone()
 
 
+def get_document_by_canonical_url(
+    conn: sqlite3.Connection, canonical_url: str
+) -> sqlite3.Row | None:
+    return conn.execute(
+        "SELECT * FROM documents WHERE canonical_url = ?", (canonical_url,)
+    ).fetchone()
+
+
 def find_duplicate(
     conn: sqlite3.Connection,
     source_type: str,

@@ -179,7 +179,9 @@ def build_collect_entries(
         if essayists:
             essay_http_client = SimpleHttpClient()
             for investor in essayists:
-                essay_collector = EssayCollector(investor, essay_http_client, checkpoint_store)
+                essay_collector = EssayCollector(
+                    investor, essay_http_client, checkpoint_store, conn
+                )
                 entries.append((essay_collector, SourceType.ESSAY, investor.id))
 
     companies_path = config_dir / "companies.yaml"
