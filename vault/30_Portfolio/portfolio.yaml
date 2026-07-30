@@ -1,0 +1,125 @@
+# key_kpis / invalidation_condition / next_catalyst / fair_value_low·high / max_position_weight는
+# 스캐폴딩만 돼 있고 비어 있다 — 포트폴리오 모니터 LLM이 "무엇이 달라졌는가"를 판단하는 기준이
+# 되므로, 직접 채워야 유효하게 동작한다. 채우는 법은 Runbook.md "투자 가설 원장 작성" 참고.
+as_of: 2026-07-26
+base_currency: KRW
+constraints:
+  horizon_max_months: 6
+  max_single_position_weight: 0.60
+  max_sector_weight: 0.60
+  leverage_allowed: false
+  short_selling_allowed: false
+  options_allowed: false
+positions:
+  - symbol: NBIS
+    name: Nebius Group
+    asset_type: us_equity
+    sector: AI Infrastructure
+    quantity: 97
+    average_cost: 205
+    cost_currency: USD
+    thesis: ""
+    target_price: 227.5
+    stop_loss_price: null
+    key_kpis: []
+    invalidation_condition: ""
+    next_catalyst: ""
+    fair_value_low: null
+    fair_value_high: null
+    max_position_weight: null
+  - symbol: BE
+    name: Bloom Energy
+    asset_type: us_equity
+    sector: Energy
+    quantity: 74
+    average_cost: 185
+    cost_currency: USD
+    thesis: ""
+    target_price: 261
+    stop_loss_price: null
+    key_kpis: []
+    invalidation_condition: ""
+    next_catalyst: ""
+    fair_value_low: null
+    fair_value_high: null
+    max_position_weight: null
+  - symbol: RDDT
+    name: Reddit
+    asset_type: us_equity
+    sector: Internet
+    quantity: 42
+    average_cost: 160
+    cost_currency: USD
+    thesis: ""
+    target_price: 275
+    stop_loss_price: null
+    key_kpis: []
+    invalidation_condition: ""
+    next_catalyst: ""
+    fair_value_low: null
+    fair_value_high: null
+    max_position_weight: null
+  - symbol: "000660"
+    name: SK하이닉스
+    asset_type: kr_equity
+    sector: Semiconductors
+    quantity: 11
+    average_cost: 1800000
+    cost_currency: KRW
+    thesis: ""
+    target_price: 3800000
+    stop_loss_price: null
+    key_kpis: []
+    invalidation_condition: ""
+    next_catalyst: ""
+    fair_value_low: null
+    fair_value_high: null
+    max_position_weight: null
+  - symbol: "005930"
+    name: 삼성전자
+    asset_type: kr_equity
+    sector: Technology
+    quantity: 76
+    average_cost: 260000
+    cost_currency: KRW
+    thesis: ""
+    target_price: 570000
+    stop_loss_price: null
+    key_kpis: []
+    invalidation_condition: ""
+    next_catalyst: ""
+    fair_value_low: null
+    fair_value_high: null
+    max_position_weight: null
+  - symbol: "483650"
+    name: 달바글로벌
+    asset_type: kr_equity
+    sector: Beauty & Personal Care
+    quantity: 83
+    average_cost: 240000
+    cost_currency: KRW
+    thesis: ""
+    target_price: 305000
+    stop_loss_price: null
+    key_kpis: []
+    invalidation_condition: ""
+    next_catalyst: ""
+    fair_value_low: null
+    fair_value_high: null
+    max_position_weight: null
+  - symbol: "278470"
+    name: 에이피알
+    asset_type: kr_equity
+    sector: Beauty & Personal Care
+    quantity: 27
+    average_cost: 360000
+    cost_currency: KRW
+    thesis: ""
+    target_price: 485000
+    stop_loss_price: null
+    key_kpis: []
+    invalidation_condition: ""
+    next_catalyst: ""
+    fair_value_low: null
+    fair_value_high: null
+    max_position_weight: null
