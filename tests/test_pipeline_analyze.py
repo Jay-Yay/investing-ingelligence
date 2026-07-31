@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
 from investor_intel.llm.cost_tracker import CostTracker, compute_cost_usd
@@ -39,17 +39,22 @@ _VALID_CLAIMS_INPUT = {
 }
 
 
-def _doc(doc_id: str) -> SourceDocument:
+def _doc(
+    doc_id: str,
+    source_type: SourceType = SourceType.NAVER,
+    source_name: str = "engineerinvestor",
+    published_at: datetime | None = None,
+) -> SourceDocument:
     return SourceDocument(
         id=doc_id,
-        source_type=SourceType.NAVER,
-        source_name="engineerinvestor",
-        author="engineerinvestor",
+        source_type=source_type,
+        source_name=source_name,
+        author=source_name,
         title="테스트 문서",
         source_url=f"https://example.com/{doc_id}",
         source_specific_id=doc_id,
-        published_at=datetime(2026, 7, 24, tzinfo=UTC),
-        collected_at=datetime(2026, 7, 24, tzinfo=UTC),
+        published_at=published_at or datetime.now(UTC),
+        collected_at=datetime.now(UTC),
         language="ko",
         content_hash="hash-" + doc_id,
         content_capture=ContentCapture(mode=ContentCaptureMode.FULL),
@@ -96,6 +101,72 @@ def test_find_unprocessed_document_paths_lists_pending_docs(tmp_path) -> None:
 
     paths = find_unprocessed_document_paths(conn)
     assert paths == [str(path)]
+
+
+def _store(vault_path, conn, doc: SourceDocument) -> str:
+    path = write_document(vault_path, doc, "본문 내용")
+    upsert_document(conn, doc, file_path=str(path), source_specific_id=doc.source_specific_id)
+    return str(path)
+
+
+def test_old_unrelated_document_excluded_from_backlog(tmp_path) -> None:
+    """포트폴리오 종목과 무관하고 최근(recent_days) 밖인 히스토리컬 백필 문서는 제외한다."""
+    vault_path, conn = _setup(tmp_path)
+    old_doc = _doc(
+        "old-1",
+        source_type=SourceType.NAVER,
+        source_name="engineerinvestor",
+        published_at=datetime.now(UTC) - timedelta(days=400),
+    )
+    _store(vault_path, conn, old_doc)
+
+    assert find_unprocessed_document_paths(conn, portfolio_tickers={"NBIS"}) == []
+
+
+def test_old_document_included_within_recent_days_regardless_of_ticker(tmp_path) -> None:
+    """티커와 무관해도 최근 recent_days 이내 문서는 일반 팔로업 창에 포함된다."""
+    vault_path, conn = _setup(tmp_path)
+    doc = _doc(
+        "recent-1",
+        source_type=SourceType.NAVER,
+        source_name="engineerinvestor",
+        published_at=datetime.now(UTC) - timedelta(days=3),
+    )
+    path = _store(vault_path, conn, doc)
+
+    assert find_unprocessed_document_paths(conn, portfolio_tickers={"NBIS"}) == [path]
+
+
+def test_ticker_document_within_followup_window_included_even_if_outside_recent_days(
+    tmp_path,
+) -> None:
+    """보유 종목(DART/SEC/웹서치, source_name=티커) 문서는 6개월 팔로업 창 안이면 포함된다."""
+    vault_path, conn = _setup(tmp_path)
+    doc = _doc(
+        "ticker-1",
+        source_type=SourceType.WEB_SEARCH,
+        source_name="NBIS",
+        published_at=datetime.now(UTC) - timedelta(days=90),
+    )
+    path = _store(vault_path, conn, doc)
+
+    assert find_unprocessed_document_paths(conn, portfolio_tickers={"NBIS"}) == [path]
+    # 그 종목이 보유 목록에 없으면(=티커 팔로업 창 미적용) recent_days 밖이라 제외된다.
+    assert find_unprocessed_document_paths(conn, portfolio_tickers={"BE"}) == []
+
+
+def test_ticker_document_outside_followup_window_excluded(tmp_path) -> None:
+    """보유 종목 문서라도 ticker_followup_days(기본 180일)를 넘으면 제외한다."""
+    vault_path, conn = _setup(tmp_path)
+    doc = _doc(
+        "ticker-old-1",
+        source_type=SourceType.DART,
+        source_name="000660",
+        published_at=datetime.now(UTC) - timedelta(days=200),
+    )
+    _store(vault_path, conn, doc)
+
+    assert find_unprocessed_document_paths(conn, portfolio_tickers={"000660"}) == []
 
 
 def test_analyze_marks_document_processed_and_records_cost(tmp_path) -> None:

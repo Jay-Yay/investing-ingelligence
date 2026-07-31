@@ -724,8 +724,15 @@ def analyze(
         analyze_prompt = load_prompt(
             config_dir, "extract_claims.md", DEFAULT_ANALYZE_SYSTEM_PROMPT
         )
+        portfolio_path = vault_path / "30_Portfolio" / "portfolio.yaml"
+        portfolio_tickers = (
+            {p.symbol for p in load_portfolio_yaml(portfolio_path).positions}
+            if portfolio_path.exists()
+            else None
+        )
         result = analyze_pending_documents(
-            conn, vault_path, client, cost_tracker, analyze_prompt
+            conn, vault_path, client, cost_tracker, analyze_prompt,
+            portfolio_tickers=portfolio_tickers,
         )
 
         typer.echo(f"{result.processed}건 분석 완료")

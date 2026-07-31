@@ -223,6 +223,12 @@ def run_daily(
         for result in run_collectors(entries, vault_path, conn):
             collect_errors.extend(result.errors)
 
+        portfolio_path = vault_path / "30_Portfolio" / "portfolio.yaml"
+        portfolio_positions = (
+            load_portfolio_yaml(portfolio_path).positions if portfolio_path.exists() else []
+        )
+        portfolio_tickers = {p.symbol for p in portfolio_positions}
+
         analyze_errors: list[str] = []
         client = anthropic_client
         if client is None and settings.anthropic_api_key:
@@ -239,7 +245,8 @@ def run_daily(
                 conn, settings.daily_llm_budget_usd, settings.monthly_llm_budget_usd
             )
             analyze_result = analyze_pending_documents(
-                conn, vault_path, client, cost_tracker, analyze_prompt
+                conn, vault_path, client, cost_tracker, analyze_prompt,
+                portfolio_tickers=portfolio_tickers,
             )
             analyze_errors.extend(analyze_result.errors)
         else:
@@ -248,11 +255,6 @@ def run_daily(
         yahoo = yahoo_adapter or YahooFinanceAdapter(SimpleHttpClient())
         coingecko = coingecko_adapter or CoinGeckoAdapter(SimpleHttpClient())
         position_rows, violations = run_portfolio_stage(vault_path, yahoo, coingecko)
-
-        portfolio_path = vault_path / "30_Portfolio" / "portfolio.yaml"
-        portfolio_positions = (
-            load_portfolio_yaml(portfolio_path).positions if portfolio_path.exists() else []
-        )
 
         mandate = load_investment_mandate(vault_path)
         claims_digest = analyze_result.digest if analyze_result is not None else []
