@@ -70,6 +70,15 @@ append되므로 다른 날 판단은 자동으로 별도 기록이 되지만, **
 테이블에 기록되며, Anthropic API 응답의 실제 토큰 사용량(`response.usage`, 재시도 포함 누적)을
 기준으로 정확히 계산된다.
 
+`analyze`는 미분석 문서 전체를 대상으로 하지 않는다 — 수십 년치 히스토리컬 백필(예: 1999년
+DART 공시)까지 매번 큐에 올리면 하루 예산이 오래된 문서 처리에 다 소진되기 때문이다
+(`find_unprocessed_document_paths`, `investor_intel/pipeline/analyze.py`). 대신 두 창(window)의
+합집합만 분석 대상이 된다: (1) 발행일이 최근 7일 이내인 모든 문서, (2) 포트폴리오 보유 종목에
+한해 — DART/SEC 공시·보유 종목 웹 검색 스크랩은 `source_name`에 티커가 그대로 담기므로 이
+셋만 해당 — 180일 이내인 문서. 이 창 밖의 오래된 백로그는 `llm_processed: false`로 영구히
+분석되지 않고 남는다(의도된 동작 — 필요하면 `analyze` 함수 인자로 `recent_days`/
+`ticker_followup_days`를 넘겨 조정).
+
 ## SQLite 인덱스는 커밋하지 않는다 (로컬 전용 캐시)
 
 `data/index.sqlite3`는 vault의 Markdown+frontmatter로부터 재생성 가능한 캐시일 뿐이라 git으로
