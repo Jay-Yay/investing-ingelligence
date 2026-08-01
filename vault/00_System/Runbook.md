@@ -107,6 +107,14 @@ DART 공시)까지 매번 큐에 올리면 하루 예산이 오래된 문서 처
 분석되지 않고 남는다(의도된 동작 — 필요하면 `analyze` 함수 인자로 `recent_days`/
 `ticker_followup_days`를 넘겨 조정).
 
+SEC 10-K/10-Q는 전문을 그대로 vault에 캡처한다(글자 제한 없음 — 정보 누락 방지가 우선).
+그 결과 문서 하나가 수십만 자에 달할 수 있어, 기본 모델(`ANTHROPIC_MODEL`)로 그대로 분석하면
+대형 문서 한두 건이 하루 예산을 통째로 소진할 수 있다. 이를 막기 위해 본문 길이가
+`LARGE_DOC_CHAR_THRESHOLD`(기본 50,000자)를 넘는 문서는 자동으로 `ANTHROPIC_LARGE_DOC_MODEL`
+(기본 `claude-haiku-4-5` — 저렴한 모델)로 라우팅된다(`analyze_pending_documents`의
+`large_doc_client` 인자, `investor_intel/pipeline/analyze.py`). vault에 저장되는 원문 자체는
+어느 모델로 분석되든 그대로이며, 분석에 쓰는 모델만 문서 크기에 따라 달라진다.
+
 ## SQLite 인덱스는 커밋하지 않는다 (로컬 전용 캐시)
 
 `data/index.sqlite3`는 vault의 Markdown+frontmatter로부터 재생성 가능한 캐시일 뿐이라 git으로
