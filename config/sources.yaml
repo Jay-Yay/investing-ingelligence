@@ -342,3 +342,111 @@ sources:
     backfill_days: 365
     tags:
       - telegram
+  - id: fed_statements
+    type: fed_statements
+    name: fed
+    enabled: true
+    url: https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm
+    author: Federal Reserve
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - central_bank
+      - macro
+  - id: fed_minutes
+    type: fed_minutes
+    name: fed
+    enabled: true
+    url: https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm
+    author: Federal Reserve
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - central_bank
+      - macro
+  - id: ecb_statements
+    type: ecb_statements
+    name: ecb
+    enabled: true
+    url: https://www.ecb.europa.eu/press/press_conference/monetary-policy-statement/html/index.en.html
+    author: European Central Bank
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - central_bank
+      - macro
+  - id: ecb_accounts
+    type: ecb_accounts
+    name: ecb
+    enabled: true
+    url: https://www.ecb.europa.eu/press/accounts/html/index.en.html
+    author: European Central Bank
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - central_bank
+      - macro
+  - id: boe_summary_minutes
+    type: boe_summary_minutes
+    name: boe
+    enabled: true
+    url: https://www.bankofengland.co.uk/monetary-policy
+    author: Bank of England
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - central_bank
+      - macro
+  - id: boj_statements
+    type: boj_statements
+    name: boj
+    enabled: true
+    url: https://www.boj.or.jp/en/mopo/mpmdeci/index.htm
+    author: Bank of Japan
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - central_bank
+      - macro
+  - id: boj_minutes
+    type: boj_minutes
+    name: boj
+    enabled: true
+    url: https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm
+    author: Bank of Japan
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - central_bank
+      - macro
+  - id: bok_statements
+    type: bok_statements
+    name: bok
+    enabled: true
+    url: https://www.bok.or.kr/portal/singl/crncyPolicyDrcMtg/listYear.do?menuNo=200755&mtgSe=A
+    author: 한국은행
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - central_bank
+      - macro
+  - id: bok_minutes
+    type: bok_minutes
+    name: bok
+    enabled: true
+    url: https://www.bok.or.kr/portal/singl/crncyPolicyDrcMtg/listYear.do?menuNo=200755&mtgSe=A
+    author: 한국은행
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - central_bank
+      - macro

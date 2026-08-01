@@ -19,6 +19,7 @@ _SOURCE_TYPE_DIR = {
     "ib_insights": "IB",
     "web_search": "WebSearch",
     "earnings_transcript": "EarningsTranscript",
+    "central_bank": "CentralBank",
 }
 
 _FRONTMATTER_FIELD_ORDER = [

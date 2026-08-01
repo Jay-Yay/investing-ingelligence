@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from investor_intel.collectors.base import CheckpointStore, CollectItem, Collector, CollectResult
+from investor_intel.collectors.central_bank import CENTRAL_BANK_SOURCES, CentralBankCollector
 from investor_intel.collectors.dart import DartCollector
 from investor_intel.collectors.dart_client import DartClient
 from investor_intel.collectors.dart_corp_code import resolve_corp_code
@@ -263,6 +264,12 @@ def build_collect_entries(
                     language=ib_source.language,
                 )
                 entries.append((ib_collector, SourceType.IB_INSIGHTS, source.name))
+            elif source.type in CENTRAL_BANK_SOURCES:
+                bank = CENTRAL_BANK_SOURCES[source.type]
+                central_bank_collector = CentralBankCollector(
+                    source, http_client, checkpoint_store, bank
+                )
+                entries.append((central_bank_collector, SourceType.CENTRAL_BANK, source.name))
             elif source.type == "telegram_private":
                 if settings.telegram_api_id and settings.telegram_api_hash and (
                     settings.telegram_session

@@ -23,6 +23,7 @@ from investor_intel.market_data.yfinance_adapter import YahooFinanceAdapter
 from investor_intel.models.analysis import PositionSignal, TenbaggerCandidate
 from investor_intel.models.portfolio import Position
 from investor_intel.pipeline.analyze import analyze_pending_documents
+from investor_intel.pipeline.central_bank_pboc import run_pboc_mpc_collection
 from investor_intel.pipeline.collect import build_collect_entries, run_collectors
 from investor_intel.pipeline.earnings_transcript import run_earnings_transcript_collection
 from investor_intel.pipeline.web_research import run_web_research_for_portfolio
@@ -293,6 +294,19 @@ def run_daily(
                     analyze_errors.extend(earnings_transcript_result.errors)
                 else:
                     analyze_errors.append("LLM 예산 초과 - 컨퍼런스콜 웹서치 단계 건너뜀")
+
+        # PBOC(중국인민은행)는 robots.txt로 직접 스크래핑이 막혀 있어(central_bank_pboc_web.py
+        # 참고) 나머지 5개국 중앙은행(collect 단계, 무료)과 달리 web_search 기반으로 여기서
+        # 처리한다 - 위 web_research/earnings_transcript 단계와 같은 이유로 analyze 이후에
+        # 실행(scrape only), 오늘 저장된 문서는 다음 analyze 실행부터 처리된다.
+        if client is not None and cost_tracker is not None:
+            if cost_tracker.is_within_budget():
+                pboc_result = run_pboc_mpc_collection(
+                    client, cost_tracker, checkpoint_store, vault_path, conn
+                )
+                analyze_errors.extend(pboc_result.errors)
+            else:
+                analyze_errors.append("LLM 예산 초과 - PBOC 통화정책위 웹서치 단계 건너뜀")
 
         position_signal_models: list[PositionSignal] = []
         if client is not None and cost_tracker is not None and portfolio_positions:
