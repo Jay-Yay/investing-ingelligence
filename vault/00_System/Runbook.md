@@ -57,6 +57,24 @@ append되므로 다른 날 판단은 자동으로 별도 기록이 되지만, **
   적용되지 않는다. 필요하면 종목별로 회사 IR 페이지를 개별 소스로 수동 추가하는 방법을 고려할
   수 있다(아직 구현 안 됨).
 
+## 중앙은행 금리결정문/의사록
+
+미/일/한/EU/영 5개국은 `config/sources.yaml`의 `fed_*`/`ecb_*`/`boe_*`/`boj_*`/`bok_*` 소스로
+각 은행 공식 사이트를 직접 스크래핑한다(LLM 비용 없음 - 무인 collect 크론에도 포함).
+`10_Sources/CentralBank/<은행>/`에 저장되며 제목에 `[은행 성명서]`/`[은행 의사록]`이 붙는다.
+성명서/의사록은 은행마다 공개 시차가 있어(Fed 3주, BOJ ~1개월, BOK ~2주, ECB accounts 4주)
+별도 소스로 각자 수집한다 - 단 BOE는 결정 당일 하나의 문서(Monetary Policy Summary and
+minutes)로 묶어 내므로 소스 하나(`boe_summary_minutes`)뿐이다. `published_at`은 실제 회의일이
+아니라 수집 시각으로 기록한다(회의록이 회의일로부터 몇 주 뒤 공개되므로, 회의일을 쓰면 위
+"LLM 비용 예산"의 "최근 7일" analyze 창에 안 걸려 조용히 누락된다) - 실제 회의일은
+`reporting_period` 프런트매터를 참고한다.
+
+중국(PBOC)은 서구식 회의록 자체를 공개하지 않고(분기 통화정책위 공보만 있음) `pbc.gov.cn`
+robots.txt가 크롤러를 차단해 직접 스크래핑도 불가능하다 - 나머지 5개국과 달리 `web_search`
+기반으로 `run-daily` 안에서 analyze 이후 자동 실행된다(LLM 토큰 비용 발생, 무인 크론에는
+미포함, earnings-transcript-web과 동일한 이유). 분기(3개월)에 한 번만 시도하며, 전문 대신
+구조적 요약만 캡처한다.
+
 ## `doctor`가 문제를 보고할 때
 
 `uv run python -m investor_intel doctor` 로 환경변수/설정 파일/vault 쓰기 권한을 점검한다.
