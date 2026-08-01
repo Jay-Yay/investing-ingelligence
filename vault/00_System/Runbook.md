@@ -153,6 +153,18 @@ filing_types를 국내 상장사 기본값(10-K/10-Q/8-K)으로 채우므로, Ne
 추가 후 `uv run python -m investor_intel collect --backfill 365` 로 신규 소스를 과거 데이터까지
 백필할 수 있다(생략 시 증분 수집만 수행).
 
+**티커(SEC/DART) 추가일 때는 `--sources sec_filing,dart`로 범위를 제한할 것.** `collect`는
+기본적으로 config에 설정된 모든 소스를 함께 돈다 - 티커 하나 추가하려고 무제한 `collect
+--backfill 365`를 돌리면 companies.yaml/dart_companies.yaml뿐 아니라 Naver 블로그·Telegram
+채널처럼 티커와 무관한 고정 구독 소스까지 1년치 전부 재수집하게 되어 시간이 크게 늘고(수십
+분~시간 단위) 중간에 끊길 위험도 커진다. 예:
+
+```
+uv run python -m investor_intel collect --backfill 365 --sources sec_filing,dart
+```
+
+Naver/Telegram 등 다른 소스를 새로 추가했을 때만 전체 범위 백필이 필요하다.
+
 ## 분석 관점(투자 원칙) 커스터마이징
 
 일일 리포트가 "무엇을 우선시할지"는 `vault/00_System/Investment_Mandate.md`에 있다. 이

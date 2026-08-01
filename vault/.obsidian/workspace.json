@@ -1,0 +1,226 @@
+{
+  "main": {
+    "id": "9f2e01cb3448ca5d",
+    "type": "split",
+    "children": [
+      {
+        "id": "1c90390b66bd2c00",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "009251780a79215d",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "10_Sources/SEC/AMZN/2026/2026-07-31-f5b2b4201436e8a4.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "2026-07-31-f5b2b4201436e8a4"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "b2c7dee7a308f4e8",
+    "type": "split",
+    "children": [
+      {
+        "id": "dfaf7390e9680bd2",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "aaa575ab685de011",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "dd2f9146fef7fa3a",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "d6a4b915ef7bae0b",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "de219fa9c7bc4ef3",
+    "type": "split",
+    "children": [
+      {
+        "id": "8afb2f60ffad17eb",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "6adae81794e68bc4",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "10_Sources/SEC/AMZN/2026/2026-07-31-f5b2b4201436e8a4.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for 2026-07-31-f5b2b4201436e8a4"
+            }
+          },
+          {
+            "id": "2565458ae8effc8d",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "10_Sources/SEC/AMZN/2026/2026-07-31-f5b2b4201436e8a4.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from 2026-07-31-f5b2b4201436e8a4"
+            }
+          },
+          {
+            "id": "d2fd4045eed6fc8a",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "c10ab56344b93765",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "899a53fee1cac88d",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "10_Sources/SEC/AMZN/2026/2026-07-31-f5b2b4201436e8a4.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of 2026-07-31-f5b2b4201436e8a4"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "009251780a79215d",
+  "lastOpenFiles": [
+    "10_Sources/SEC/AMZN/2026/2026-07-30-ec1c3ff07ca5bbc6.md",
+    "10_Sources/SEC/AMZN/2026/2026-07-31-f5b2b4201436e8a4.md",
+    "10_Sources/SEC/AMD/2026/2026-07-01-a24fa31aa50e6f95.md",
+    "10_Sources/SEC/AMD/2017/2017-11-02-7e24ee22a954c677.md",
+    "50_Reports/Brief/brief_portfolio_2026-07-31.md",
+    "10_Sources/Telegram/Samsung_Global_AI_SW/2026/2026-08-01-0d186e85ace66bfe.md",
+    "10_Sources/Telegram/Samsung_Global_AI_SW/2026/2026-08-01-084fe5ee988dba00.md",
+    "10_Sources/Telegram/dolbikong/2026/2026-08-01-a02ba452ef221a78.md",
+    "10_Sources/Telegram/getfeed/2026/2026-08-01-1d19f55ac35ebfd6.md",
+    "10_Sources/Telegram/getfeed/2026/2026-08-01-3e4b90aaa093567c.md",
+    "10_Sources/Telegram/getfeed/2026/2026-08-01-00942b03a7bd85cc.md",
+    "10_Sources/Telegram/getfeed/2026/2026-08-01-19aa36b5211c4460.md",
+    "10_Sources/Telegram/getfeed/2026/2026-08-01-d4daafafed9f0900.md",
+    "10_Sources/Telegram/getfeed/2026/2026-08-01-90e1958562e6b85a.md",
+    "10_Sources/Telegram/getfeed/2026/2026-08-01-8e90ef919ec5555d.md",
+    "10_Sources/Telegram/getfeed/2026/2026-08-01-b210410e366f2fc9.md",
+    "10_Sources/Telegram/getfeed/2026/2026-08-01-d299a5199bc4679e.md",
+    "10_Sources/Telegram/getfeed/2026/2026-08-01-8ee3387d9e48f8be.md",
+    "10_Sources/Telegram/getfeed/2026/2026-08-01-7991250d114fb22b.md",
+    "10_Sources/Telegram/getfeed/2026/2026-08-01-58045816caa354e2.md",
+    "10_Sources/Telegram/getfeed/2026/2026-08-01-12b33d469c3f2567.md",
+    "10_Sources/Telegram/getfeed/2026/2026-08-01-ef8836f7bf3f9126.md",
+    "10_Sources/Telegram/getfeed/2026/2026-08-01-7f6433d180728838.md",
+    "10_Sources/Telegram/getfeed/2026/2026-08-01-d4f28742217f67fc.md",
+    "10_Sources/Telegram/getfeed/2026/2026-08-01-ef9879dcaa6cecf5.md",
+    "10_Sources/Telegram/getfeed/2026/2026-08-01-4c71ccdc2dd6a259.md",
+    "10_Sources/CentralBank/bok/2026",
+    "10_Sources/CentralBank/bok",
+    "10_Sources/CentralBank/boj/2026",
+    "10_Sources/CentralBank/boj",
+    "10_Sources/CentralBank/boe/2026",
+    "10_Sources/CentralBank/boe",
+    "10_Sources/CentralBank/ecb/2026",
+    "10_Sources/CentralBank/ecb",
+    "10_Sources/CentralBank/fed/2026",
+    "10_Sources/CentralBank/fed",
+    "Untitled.canvas"
+  ]
+}
