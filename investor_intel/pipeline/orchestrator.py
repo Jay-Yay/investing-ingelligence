@@ -7,7 +7,8 @@ from pydantic import BaseModel
 
 from investor_intel.collectors.base import CheckpointStore
 from investor_intel.collectors.http_client import SimpleHttpClient
-from investor_intel.config.loaders import load_portfolio_yaml
+from investor_intel.collectors.sec_client import SECClient
+from investor_intel.config.loaders import load_companies_yaml, load_portfolio_yaml
 from investor_intel.config.settings import AppSettings
 from investor_intel.llm.client import AnthropicClient
 from investor_intel.llm.cost_tracker import CostTracker
@@ -23,6 +24,7 @@ from investor_intel.models.analysis import PositionSignal, TenbaggerCandidate
 from investor_intel.models.portfolio import Position
 from investor_intel.pipeline.analyze import analyze_pending_documents
 from investor_intel.pipeline.collect import build_collect_entries, run_collectors
+from investor_intel.pipeline.earnings_transcript import run_earnings_transcript_collection
 from investor_intel.pipeline.web_research import run_web_research_for_portfolio
 from investor_intel.portfolio.calculations import compute_portfolio_metrics
 from investor_intel.portfolio.capital_allocation import rank_capital_allocation
@@ -271,6 +273,26 @@ def run_daily(
                 analyze_errors.extend(web_research_result.errors)
             else:
                 analyze_errors.append("LLM 예산 초과 - 웹 검색 스크랩 단계 건너뜀")
+
+        # SEC 8-K exhibit 스캔이 놓치는 실적발표 컨퍼런스콜 갭을 웹서치로 보완 - 위
+        # web_research 단계와 같은 이유로 analyze 이후에 실행하고(scrape only), 오늘 저장된
+        # 문서는 다음 analyze 실행부터 처리된다.
+        if client is not None and cost_tracker is not None and settings.sec_user_agent:
+            companies_path = config_dir / "companies.yaml"
+            if companies_path.exists():
+                if cost_tracker.is_within_budget():
+                    earnings_transcript_result = run_earnings_transcript_collection(
+                        load_companies_yaml(companies_path),
+                        SECClient(user_agent=settings.sec_user_agent),
+                        client,
+                        cost_tracker,
+                        checkpoint_store,
+                        vault_path,
+                        conn,
+                    )
+                    analyze_errors.extend(earnings_transcript_result.errors)
+                else:
+                    analyze_errors.append("LLM 예산 초과 - 컨퍼런스콜 웹서치 단계 건너뜀")
 
         position_signal_models: list[PositionSignal] = []
         if client is not None and cost_tracker is not None and portfolio_positions:

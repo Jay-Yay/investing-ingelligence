@@ -21,6 +21,8 @@ CREATE TABLE IF NOT EXISTS documents (
     document_type TEXT NOT NULL,
     filing_type TEXT,
     accession_number TEXT,
+    reporting_period TEXT,
+    is_transcript INTEGER NOT NULL DEFAULT 0,
     llm_processed INTEGER NOT NULL DEFAULT 0,
     file_path TEXT NOT NULL
 );
@@ -65,9 +67,45 @@ def connect(db_path: Path) -> sqlite3.Connection:
     return conn
 
 
+def _migrate_documents_columns(conn: sqlite3.Connection) -> None:
+    """data/index.sqlite3는 vault에서 재생성 가능한 로컬 캐시라 커밋되지 않는다(Runbook.md 참고) -
+    그래서 스키마를 바꿔도 데이터 마이그레이션은 필요 없지만, 이미 만들어진 옛 스키마의 sqlite
+    파일이 로컬에 남아있는 머신에서는 `CREATE TABLE IF NOT EXISTS`가 컬럼을 추가해주지 않으므로
+    ALTER TABLE로 보강한다. 새 컬럼을 참조하는 인덱스는 컬럼이 실제로 존재한 뒤에만 만들 수
+    있어 이 함수 안에서 함께 처리한다(스키마 문자열의 CREATE INDEX보다 먼저 실행하면 옛 DB에서
+    "no such column" 오류가 난다).
+    """
+    existing = {row["name"] for row in conn.execute("PRAGMA table_info(documents)")}
+    if "reporting_period" not in existing:
+        conn.execute("ALTER TABLE documents ADD COLUMN reporting_period TEXT")
+    if "is_transcript" not in existing:
+        conn.execute("ALTER TABLE documents ADD COLUMN is_transcript INTEGER NOT NULL DEFAULT 0")
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_documents_transcript "
+        "ON documents(source_name, reporting_period, is_transcript)"
+    )
+
+
 def init_db(conn: sqlite3.Connection) -> None:
     conn.executescript(_SCHEMA)
+    _migrate_documents_columns(conn)
     conn.commit()
+
+
+def _is_transcript(document_type: str, filing_type: str | None, title: str | None) -> bool:
+    """이 문서가 실적발표 컨퍼런스콜 녹취록(원문)인지 판별한다.
+
+    두 경로가 있다: (1) 이 새 웹서치 수집기가 만든 문서(document_type이 그 자체로 표시),
+    (2) 기존 SECFilingsCollector가 8-K exhibit에서 찾은 녹취록(sec_filings.py가 제목에
+    "[컨퍼런스콜] " 접두어를 붙이는 것으로만 표시 - 별도 document_type 없음). 두 경로 모두
+    잡아야 dedup 쿼리(has_transcript_for_period)가 "SEC 쪽에서 이미 찾았으니 웹서치 건너뛰기"를
+    판단할 수 있다.
+    """
+    if document_type == "earnings_call_transcript":
+        return True
+    if document_type == "sec_filing" and filing_type == "8-K" and title is not None:
+        return title.startswith("[컨퍼런스콜]")
+    return False
 
 
 def upsert_document(
@@ -76,13 +114,15 @@ def upsert_document(
     file_path: str,
     source_specific_id: str | None = None,
 ) -> None:
+    is_transcript = _is_transcript(doc.document_type, doc.filing_type, doc.title)
     conn.execute(
         """
         INSERT INTO documents (
             id, source_type, source_name, source_specific_id, canonical_url,
             title, author, published_at, collected_at, content_hash,
-            document_type, filing_type, accession_number, llm_processed, file_path
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            document_type, filing_type, accession_number, reporting_period,
+            is_transcript, llm_processed, file_path
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
             source_type=excluded.source_type,
             source_name=excluded.source_name,
@@ -96,6 +136,8 @@ def upsert_document(
             document_type=excluded.document_type,
             filing_type=excluded.filing_type,
             accession_number=excluded.accession_number,
+            reporting_period=excluded.reporting_period,
+            is_transcript=excluded.is_transcript,
             llm_processed=excluded.llm_processed,
             file_path=excluded.file_path
         """,
@@ -113,6 +155,8 @@ def upsert_document(
             doc.document_type,
             doc.filing_type,
             doc.accession_number,
+            doc.reporting_period,
+            int(is_transcript),
             int(doc.llm_processed),
             file_path,
         ),
@@ -128,6 +172,24 @@ def upsert_document(
 
 def get_document_by_id(conn: sqlite3.Connection, doc_id: str) -> sqlite3.Row | None:
     return conn.execute("SELECT * FROM documents WHERE id = ?", (doc_id,)).fetchone()
+
+
+def has_transcript_for_period(
+    conn: sqlite3.Connection, ticker: str, reporting_period: str
+) -> bool:
+    """이 티커의 이 분기(reporting_period, ISO 날짜)에 대한 실적발표 컨퍼런스콜 녹취록이
+    (SEC 8-K exhibit 경로든, 이 웹서치 컬렉터 경로든) 이미 확보돼 있는지 확인한다.
+
+    earnings_transcript_web 파이프라인이 LLM 웹서치를 호출하기 "전"에 이 함수로 먼저 확인해,
+    SECFilingsCollector가 이미 같은 분기의 진짜 녹취록을 8-K exhibit에서 찾아둔 경우 중복
+    LLM 호출(비용)을 피한다.
+    """
+    row = conn.execute(
+        "SELECT 1 FROM documents WHERE source_name = ? AND reporting_period = ? "
+        "AND is_transcript = 1 LIMIT 1",
+        (ticker, reporting_period),
+    ).fetchone()
+    return row is not None
 
 
 def get_document_by_canonical_url(

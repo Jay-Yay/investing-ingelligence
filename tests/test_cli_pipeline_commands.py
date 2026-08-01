@@ -41,6 +41,54 @@ def test_report_generates_file_without_api_key(tmp_path: Path, monkeypatch) -> N
     assert len(report_files) == 1
 
 
+def test_earnings_transcript_fails_without_api_key(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.chdir(tmp_path)
+
+    result = runner.invoke(
+        app,
+        ["earnings-transcript", "--vault-path", str(tmp_path / "vault")],
+    )
+    assert result.exit_code == 1
+    assert "ANTHROPIC_API_KEY" in result.output
+
+
+def test_earnings_transcript_fails_without_sec_user_agent(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    monkeypatch.delenv("SEC_USER_AGENT", raising=False)
+    monkeypatch.chdir(tmp_path)
+
+    result = runner.invoke(
+        app,
+        ["earnings-transcript", "--vault-path", str(tmp_path / "vault")],
+    )
+    assert result.exit_code == 1
+    assert "SEC_USER_AGENT" in result.output
+
+
+def test_earnings_transcript_reports_no_companies_file(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    monkeypatch.setenv("SEC_USER_AGENT", "Investor Intel test@example.com")
+    monkeypatch.chdir(tmp_path)
+    config_dir = tmp_path / "config"
+    config_dir.mkdir()
+
+    result = runner.invoke(
+        app,
+        [
+            "earnings-transcript",
+            "--config-dir",
+            str(config_dir),
+            "--vault-path",
+            str(tmp_path / "vault"),
+            "--sqlite-path",
+            str(tmp_path / "index.sqlite3"),
+        ],
+    )
+    assert result.exit_code == 0
+    assert "companies.yaml 없음" in result.output
+
+
 def test_run_daily_with_empty_config_still_succeeds(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     monkeypatch.chdir(tmp_path)

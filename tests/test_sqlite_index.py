@@ -12,6 +12,7 @@ from investor_intel.storage.sqlite_index import (
     find_duplicate,
     get_collector_state,
     get_document_by_id,
+    has_transcript_for_period,
     init_db,
     is_dart_corp_code_cache_populated,
     reindex,
@@ -258,3 +259,131 @@ def test_find_dart_company_by_stock_code_returns_code_and_name(tmp_path: Path) -
 
     assert find_dart_company_by_stock_code(conn, "005930") == ("00126380", "삼성전자")
     assert find_dart_company_by_stock_code(conn, "000000") is None
+
+
+def _make_sec_filing_doc(
+    ticker: str,
+    title: str,
+    filing_type: str = "8-K",
+    reporting_period: str | None = "2026-06-30",
+    source_specific_id: str = "0001-24-000001",
+) -> SourceDocument:
+    now = datetime(2026, 7, 24, 9, 0, tzinfo=UTC)
+    return SourceDocument(
+        id=compute_stable_id("sec_filing", ticker, source_specific_id, f"https://sec.gov/{ticker}"),
+        source_type=SourceType.SEC_FILING,
+        source_name=ticker,
+        source_url=f"https://sec.gov/{ticker}",
+        source_specific_id=source_specific_id,
+        title=title,
+        published_at=now,
+        collected_at=now,
+        language="en",
+        content_hash=compute_content_hash(title),
+        content_capture=ContentCapture(mode=ContentCaptureMode.FULL),
+        document_type="sec_filing",
+        filing_type=filing_type,
+        reporting_period=reporting_period,
+        accession_number=source_specific_id,
+    )
+
+
+def test_upsert_document_marks_is_transcript_for_8k_with_transcript_title(
+    tmp_path: Path,
+) -> None:
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    doc = _make_sec_filing_doc("BE", "[컨퍼런스콜] Bloom Energy 8-K (2026-06-30)")
+    upsert_document(conn, doc, "path.md")
+    row = get_document_by_id(conn, doc.id)
+    assert row["is_transcript"] == 1
+    assert row["reporting_period"] == "2026-06-30"
+
+
+def test_upsert_document_does_not_mark_is_transcript_for_plain_8k(tmp_path: Path) -> None:
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    doc = _make_sec_filing_doc("BE", "Bloom Energy 8-K (2026-06-30)")
+    upsert_document(conn, doc, "path.md")
+    row = get_document_by_id(conn, doc.id)
+    assert row["is_transcript"] == 0
+
+
+def test_upsert_document_marks_is_transcript_for_earnings_call_transcript_type(
+    tmp_path: Path,
+) -> None:
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    doc = _make_sec_filing_doc("BE", "[컨퍼런스콜-웹서치] Bloom Energy 2026-06-30 실적발표")
+    doc = doc.model_copy(update={"document_type": "earnings_call_transcript", "filing_type": None})
+    upsert_document(conn, doc, "path.md")
+    row = get_document_by_id(conn, doc.id)
+    assert row["is_transcript"] == 1
+
+
+def test_has_transcript_for_period_true_when_indexed(tmp_path: Path) -> None:
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    doc = _make_sec_filing_doc("BE", "[컨퍼런스콜] Bloom Energy 8-K (2026-06-30)")
+    upsert_document(conn, doc, "path.md")
+    assert has_transcript_for_period(conn, "BE", "2026-06-30") is True
+
+
+def test_has_transcript_for_period_false_for_different_period_or_ticker(
+    tmp_path: Path,
+) -> None:
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    doc = _make_sec_filing_doc("BE", "[컨퍼런스콜] Bloom Energy 8-K (2026-06-30)")
+    upsert_document(conn, doc, "path.md")
+    assert has_transcript_for_period(conn, "BE", "2026-03-31") is False
+    assert has_transcript_for_period(conn, "RDDT", "2026-06-30") is False
+
+
+def test_has_transcript_for_period_false_when_only_metadata_only_8k_present(
+    tmp_path: Path,
+) -> None:
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    doc = _make_sec_filing_doc("BE", "Bloom Energy 8-K (2026-06-30)")
+    upsert_document(conn, doc, "path.md")
+    assert has_transcript_for_period(conn, "BE", "2026-06-30") is False
+
+
+def test_init_db_migrates_legacy_documents_table_missing_new_columns(tmp_path: Path) -> None:
+    # regression: a sqlite file created before reporting_period/is_transcript existed shouldn't
+    # break on the next init_db() - `CREATE TABLE IF NOT EXISTS` is a no-op on an existing table,
+    # so the new columns must be added via ALTER TABLE instead.
+    conn = connect(tmp_path / "index.sqlite3")
+    conn.execute(
+        """
+        CREATE TABLE documents (
+            id TEXT PRIMARY KEY,
+            source_type TEXT NOT NULL,
+            source_name TEXT NOT NULL,
+            source_specific_id TEXT,
+            canonical_url TEXT NOT NULL,
+            title TEXT,
+            author TEXT,
+            published_at TEXT NOT NULL,
+            collected_at TEXT NOT NULL,
+            content_hash TEXT NOT NULL,
+            document_type TEXT NOT NULL,
+            filing_type TEXT,
+            accession_number TEXT,
+            llm_processed INTEGER NOT NULL DEFAULT 0,
+            file_path TEXT NOT NULL
+        )
+        """
+    )
+    conn.commit()
+
+    init_db(conn)
+
+    columns = {row["name"] for row in conn.execute("PRAGMA table_info(documents)")}
+    assert "reporting_period" in columns
+    assert "is_transcript" in columns
+
+    doc = _make_doc("본문")
+    upsert_document(conn, doc, "path.md", source_specific_id="1")
+    assert get_document_by_id(conn, doc.id) is not None

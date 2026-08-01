@@ -18,6 +18,7 @@ _SOURCE_TYPE_DIR = {
     "essay": "Essays",
     "ib_insights": "IB",
     "web_search": "WebSearch",
+    "earnings_transcript": "EarningsTranscript",
 }
 
 _FRONTMATTER_FIELD_ORDER = [

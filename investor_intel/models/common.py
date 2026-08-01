@@ -12,6 +12,7 @@ class SourceType(StrEnum):
     ESSAY = "essay"
     IB_INSIGHTS = "ib_insights"
     WEB_SEARCH = "web_search"
+    EARNINGS_TRANSCRIPT = "earnings_transcript"
 
 
 class ContentCaptureMode(StrEnum):

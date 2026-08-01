@@ -11,7 +11,7 @@ from investor_intel.collectors.base import CheckpointStore
 from investor_intel.collectors.dart_client import DartClient
 from investor_intel.collectors.http_client import SimpleHttpClient
 from investor_intel.collectors.sec_client import SECClient
-from investor_intel.config.loaders import load_portfolio_yaml
+from investor_intel.config.loaders import load_companies_yaml, load_portfolio_yaml
 from investor_intel.config.settings import AppSettings
 from investor_intel.llm.client import AnthropicClient
 from investor_intel.llm.cost_tracker import CostTracker
@@ -25,6 +25,7 @@ from investor_intel.market_data.yfinance_adapter import YahooFinanceAdapter
 from investor_intel.models.analysis import TenbaggerVerification
 from investor_intel.pipeline.analyze import analyze_pending_documents
 from investor_intel.pipeline.collect import build_collect_entries, run_collectors
+from investor_intel.pipeline.earnings_transcript import run_earnings_transcript_collection
 from investor_intel.pipeline.inbox import InboxDeps, sync_inbox
 from investor_intel.pipeline.orchestrator import (
     DEFAULT_ANALYZE_SYSTEM_PROMPT,
@@ -647,6 +648,68 @@ def web_research_cmd(
         )
         positions = load_portfolio_yaml(portfolio_path).positions
         result = run_web_research_for_portfolio(positions, client, cost_tracker, vault_path, conn)
+
+        typer.echo(f"{result.persisted}건 저장")
+        for error in result.errors:
+            typer.echo(f"오류: {error}")
+        raise typer.Exit(code=1 if result.errors else 0)
+    finally:
+        conn.close()
+
+
+@app.command(name="earnings-transcript")
+def earnings_transcript_cmd(
+    config_dir: Annotated[Path, typer.Option(help="Config directory")] = Path("./config"),
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    sqlite_path: Annotated[Path, typer.Option(help="SQLite index path")] = Path(
+        "./data/index.sqlite3"
+    ),
+) -> None:
+    """SEC 8-K exhibit 스캔이 놓치는 실적발표 컨퍼런스콜 갭을 회사별 웹서치로 보완해
+    vault(10_Sources/EarningsTranscript/<티커>/)에 저장한다.
+
+    config/companies.yaml에 등록된 전체 티커(FPI 포함)를 대상으로, 이미 SEC 쪽에서 진짜
+    녹취록을 찾은 분기는 건너뛴다. 전문 대신 저작권 안전한 구조적 요약만 캡처한다
+    (collectors/earnings_transcript_web.py 참고). LLM 웹서치 비용이 들어 무인 collect
+    크론에는 포함되지 않는다 - run-daily 안에서도 자동 실행되므로, 이 명령은 그 사이에
+    수동으로 다시 돌리고 싶을 때만 쓰면 된다.
+    """
+    settings = AppSettings()
+    if not settings.anthropic_api_key:
+        typer.echo("ANTHROPIC_API_KEY 미설정 - 컨퍼런스콜 웹서치를 실행할 수 없다")
+        raise typer.Exit(code=1)
+    if not settings.sec_user_agent:
+        typer.echo("SEC_USER_AGENT 미설정 - 컨퍼런스콜 웹서치를 실행할 수 없다")
+        raise typer.Exit(code=1)
+
+    companies_path = config_dir / "companies.yaml"
+    if not companies_path.exists():
+        typer.echo("companies.yaml 없음 - 컨퍼런스콜 웹서치 대상 종목 없음")
+        raise typer.Exit(code=0)
+
+    conn = connect(sqlite_path)
+    try:
+        init_db(conn)
+        reindex_vault(conn, vault_path)
+        init_cost_ledger(conn)
+        sec_client = SECClient(user_agent=settings.sec_user_agent)
+        anthropic_client = AnthropicClient(
+            api_key=settings.anthropic_api_key, model=settings.anthropic_model
+        )
+        cost_tracker = CostTracker(
+            conn, settings.daily_llm_budget_usd, settings.monthly_llm_budget_usd
+        )
+        checkpoint_store = CheckpointStore(conn)
+        companies = load_companies_yaml(companies_path)
+        result = run_earnings_transcript_collection(
+            companies,
+            sec_client,
+            anthropic_client,
+            cost_tracker,
+            checkpoint_store,
+            vault_path,
+            conn,
+        )
 
         typer.echo(f"{result.persisted}건 저장")
         for error in result.errors:
