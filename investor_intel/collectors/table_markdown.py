@@ -135,29 +135,23 @@ def _positioned_texts(rows: list[_Row]) -> list[dict[int, str]]:
     return positioned
 
 
-def _merge_header_rows(thead_rows: list[_Row]) -> tuple[list[str], list[str]]:
-    """thead 행들을 캡션(단일 셀짜리 행)과 실제 헤더 그리드로 나눠, 그리드는 컬럼별로 합친다."""
-    captions: list[str] = []
+def _split_off_captions(rows: list[_Row], captions: list[str]) -> list[_Row]:
+    """1개 이하의 비어있지 않은 셀을 가진 행을 걸러낸다.
+
+    셀이 0개면(SEC iXBRL의 컬럼폭 정의용 "고스트 행" - 모든 <td>가 빈 self-closing 태그) 그냥
+    버린다. 정확히 1개면 캡션/섹션제목 행(예: DART "(단위: 백만원)", XBRL "Abstract" 그룹 라벨)
+    으로 보고 captions에 담아 표 위에 굵게 붙인다. 2개 이상이면 실제 그리드(헤더 또는 데이터)
+    행이므로 그대로 반환 목록에 남긴다.
+    """
     grid_rows: list[_Row] = []
-    for row in thead_rows:
+    for row in rows:
         non_empty = [c.text for c in row.cells if c.text.strip()]
         if len(non_empty) <= 1:
             if non_empty:
                 captions.append(non_empty[0])
             continue
         grid_rows.append(row)
-
-    if not grid_rows:
-        return captions, []
-
-    positioned = _positioned_texts(grid_rows)
-    max_col = max((max(r.keys(), default=-1) for r in positioned), default=-1) + 1
-    header: list[str] = []
-    for col in range(max_col):
-        parts = [r[col] for r in positioned if col in r and r[col].strip()]
-        deduped = list(dict.fromkeys(parts))  # rowspan 반영으로 같은 텍스트가 중복되는 것 방지
-        header.append(" ".join(deduped))
-    return captions, header
+    return grid_rows
 
 
 def _table_to_markdown(table_html: str) -> str | None:
@@ -172,34 +166,55 @@ def _table_to_markdown(table_html: str) -> str | None:
     body_rows = [r for r in parser.rows if r.section != "thead"]
 
     captions: list[str] = []
-    header: list[str] = []
     if thead_rows:
-        captions, header = _merge_header_rows(thead_rows)
+        header_rows = _split_off_captions(thead_rows, captions)
+        data_rows_src = _split_off_captions(body_rows, captions)
+    else:
+        # thead가 없는 SEC 스타일 표: 셀이 2개 이상인 첫 행을 헤더로 쓰고 나머지를 데이터로 본다.
+        grid_rows = _split_off_captions(body_rows, captions)
+        if not grid_rows:
+            return None
+        header_rows, data_rows_src = grid_rows[:1], grid_rows[1:]
 
-    if not header:
-        # thead가 없거나(SEC) 그리드를 못 만든 경우: 셀이 2개 이상인 첫 행을 헤더로 쓴다
-        for i, row in enumerate(body_rows):
-            non_empty = [c.text for c in row.cells if c.text.strip()]
-            if len(non_empty) >= 2:
-                header = non_empty
-                body_rows = body_rows[i + 1 :]
-                break
-
-    if not header:
+    if not header_rows:
         return None
 
-    data_rows: list[list[str]] = []
-    for row in body_rows:
-        non_empty = [c.text for c in row.cells if c.text.strip()]
-        if non_empty:
-            data_rows.append(non_empty)
+    # 헤더와 데이터 행 전체를 한 좌표계에서 colspan/rowspan 기준으로 컬럼 위치를 매긴다. SEC
+    # iXBRL 재무제표 표는 행마다 "$" 기호·숫자·순수 여백을 별도 <td>로 쪼개고 그 개수가 행마다
+    # 다른 경우가 흔한데, 예전 방식(행별로 빈 셀만 걸러내고 남은 셀을 왼쪽부터 채움)은 그 결과
+    # 같은 의미의 값이 행마다 다른 컬럼으로 밀려 표가 뒤섞이거나(가장 폭이 넓은 행 기준으로
+    # 나머지 행을 오른쪽 빈칸으로 채우면서) 컬럼 수십 개짜리 표가 되어 대부분 비어 렌더링이
+    # 깨졌다(AMZN 10-Q "Effect of Foreign Exchange Rates" 표 실사례 - 세로로 한 글자씩 쌓여
+    # 보이는 버그로 나타남). colspan 기준 위치 매핑은 행마다 셀 개수가 달라도 실제 컬럼 폭
+    # 배수 관계(예: 9=3x3)만 맞으면 값이 올바른 컬럼에 정렬된다.
+    positioned = _positioned_texts(header_rows + data_rows_src)
+    header_positioned = positioned[: len(header_rows)]
+    data_positioned = positioned[len(header_rows) :]
 
+    max_col = max((max(r.keys(), default=-1) for r in positioned), default=-1) + 1
+    active_cols = [
+        col for col in range(max_col) if any(r.get(col, "").strip() for r in positioned)
+    ]
+    if not active_cols:
+        return None
+
+    def _row_texts(row_map: dict[int, str]) -> list[str]:
+        return [row_map.get(col, "") for col in active_cols]
+
+    if len(header_positioned) == 1:
+        header = _row_texts(header_positioned[0])
+    else:
+        header = []
+        for col in active_cols:
+            parts = [r[col] for r in header_positioned if col in r and r[col].strip()]
+            deduped = list(dict.fromkeys(parts))  # rowspan 반영으로 같은 텍스트 중복 방지
+            header.append(" ".join(deduped))
+
+    data_rows = [row for row in (_row_texts(r) for r in data_positioned) if any(c.strip() for c in row)]
     if not data_rows:
         return None
 
-    col_count = max(len(header), max(len(r) for r in data_rows))
-    header = header + [""] * (col_count - len(header))
-
+    col_count = len(active_cols)
     lines = [f"**{_escape_cell(c)}**" for c in captions]
     if captions:
         # 캡션과 표 사이에 빈 줄이 없으면 Obsidian/CommonMark가 표를 표로 인식하지 못하고
@@ -208,8 +223,7 @@ def _table_to_markdown(table_html: str) -> str | None:
     lines.append("| " + " | ".join(_escape_cell(c) for c in header) + " |")
     lines.append("| " + " | ".join(["---"] * col_count) + " |")
     for row_cells in data_rows:
-        padded = row_cells + [""] * (col_count - len(row_cells))
-        lines.append("| " + " | ".join(_escape_cell(c) for c in padded) + " |")
+        lines.append("| " + " | ".join(_escape_cell(c) for c in row_cells) + " |")
 
     return "\n".join(lines)
 

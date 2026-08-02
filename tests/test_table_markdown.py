@@ -184,6 +184,54 @@ def test_table_with_no_usable_row_structure_is_left_untouched() -> None:
     assert result == html
 
 
+_SEC_SPARSE_SPACER_TABLE = (
+    "<table>"
+    # ghost width-definition row: every <td> is empty, used only to fix column widths in the
+    # rendered HTML - must not become a degenerate all-blank data row.
+    '<tr><td style="width:1%"/><td style="width:38%"/><td style="width:1%"/>'
+    '<td style="width:13%"/><td style="width:1%"/><td style="width:13%"/></tr>'
+    # header row: colspan=3 label wraps a 6-column grid; label sits every 3rd column start.
+    '<tr><td colspan="3"/><td colspan="3">Q2 2025</td><td colspan="3"/>'
+    '<td colspan="3">Q2 2026</td></tr>'
+    # data row: uses a *different* colspan granularity (colspan=1 spacer + colspan=1 "$" +
+    # colspan=1 number) - real SEC filings split "$" and the number into separate <td>s.
+    '<tr><td colspan="3">Operating lease cost</td>'
+    '<td colspan="1"/><td colspan="1">$</td><td colspan="1">1,234</td>'
+    '<td colspan="1"/><td colspan="1">$</td><td colspan="1">2,345</td></tr>'
+    "</table>"
+)
+
+
+def test_sec_table_with_sparse_spacer_columns_collapses_to_active_columns_only() -> None:
+    """실사례 회귀: AMZN 10-Q의 "Effect of Foreign Exchange Rates" 표는 실제 값이 담긴 컬럼이
+    몇 개뿐인데도 순수 여백용 <td>가 수십 개 섞여 있었다. 예전 로직(행마다 독립적으로 빈 셀만
+    걸러내고 남은 값을 왼쪽부터 채움)은 이 여백 개수가 행마다 다르면 서로 다른 의미의 값이
+    같은 컬럼에 밀려 들어가거나, 표 전체가 수십 컬럼짜리 표가 되어 대부분 빈 칸으로 렌더링이
+    깨졌다(Obsidian에서 세로로 한 글자씩 쌓여 보이는 버그로 나타남). colspan 기준 위치 매핑
+    으로 고쳐서, 실제로 값이 있는 컬럼만 남고 여백 컬럼은 모두 제거되며 헤더-데이터 간 정렬이
+    깨지지 않아야 한다.
+    """
+    result = convert_tables_to_markdown(_SEC_SPARSE_SPACER_TABLE)
+
+    lines = [line for line in result.splitlines() if line.startswith("|")]
+    assert len(lines) == 3  # header + separator + one data row, no leftover ghost row
+
+    header_cols = lines[0].split("|")
+    data_cols = lines[2].split("|")
+    assert len(header_cols) == len(data_cols)  # same column count, properly aligned
+    # the old bug produced a column for *every* raw <td> including pure spacer cells (13 here,
+    # would be dozens on a real filing) - collapsing to genuinely-used columns keeps this small.
+    assert len(header_cols) <= 9
+
+    assert "Q2 2025" in lines[0]
+    assert "Q2 2026" in lines[0]
+    # both dollar figures land under their correct period (2025's "$1,234" appears before
+    # 2026's "$2,345" in row order, not scrambled or duplicated across columns)
+    assert result.index("1,234") < result.index("2,345")
+    assert "Operating lease cost" in lines[2]
+    assert "$" in lines[2] and "1,234" in lines[2] and "2,345" in lines[2]
+
+
 def test_non_table_content_is_unaffected() -> None:
     html = "<div><p>본문 내용</p></div>"
     assert convert_tables_to_markdown(html) == html

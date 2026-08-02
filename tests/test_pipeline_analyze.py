@@ -202,6 +202,65 @@ def test_analyze_marks_document_processed_and_records_cost(tmp_path) -> None:
     assert updated_doc.content_hash == compute_content_hash(updated_body)
 
 
+def test_analyze_routes_large_document_to_large_doc_client(tmp_path) -> None:
+    """SEC 10-K/10-Q 전문 캡처(글자 제한 제거) 이후 대형 문서가 기본(비싼) 모델로 돌아가면
+    문서 1건이 하루 LLM 예산을 통째로 잡아먹을 수 있다 - large_doc_char_threshold를 넘는
+    문서는 large_doc_client(보통 더 저렴한 모델)로 라우팅돼야 한다.
+    """
+    vault_path, conn = _setup(tmp_path)
+    large_body = "## 원문\n\n" + ("실적 발표 본문 " * 10_000) + "\n\n## 핵심 주장\n\n"
+    doc = _doc("doc-large")
+    path = write_document(vault_path, doc, large_body)
+    upsert_document(conn, doc, file_path=str(path), source_specific_id=doc.source_specific_id)
+
+    default_client = _FakeAnthropicClient(_tool_use_response())
+    default_client.model = "claude-sonnet-5"
+    large_doc_client = _FakeAnthropicClient(_tool_use_response())
+    large_doc_client.model = "claude-haiku-4-5"
+    cost_tracker = CostTracker(conn, daily_budget_usd=10.0, monthly_budget_usd=100.0)
+
+    result = analyze_pending_documents(
+        conn,
+        vault_path,
+        default_client,
+        cost_tracker,
+        system_prompt="시스템 프롬프트",
+        large_doc_client=large_doc_client,
+        large_doc_char_threshold=1_000,
+    )
+
+    assert result.processed == 1
+    updated_doc, _ = read_document(path)
+    assert updated_doc.llm_model == "claude-haiku-4-5"
+
+
+def test_analyze_keeps_small_document_on_default_client(tmp_path) -> None:
+    vault_path, conn = _setup(tmp_path)
+    doc = _doc("doc-small")
+    path = write_document(vault_path, doc, _BODY_WITH_SECTIONS)
+    upsert_document(conn, doc, file_path=str(path), source_specific_id=doc.source_specific_id)
+
+    default_client = _FakeAnthropicClient(_tool_use_response())
+    default_client.model = "claude-sonnet-5"
+    large_doc_client = _FakeAnthropicClient(_tool_use_response())
+    large_doc_client.model = "claude-haiku-4-5"
+    cost_tracker = CostTracker(conn, daily_budget_usd=10.0, monthly_budget_usd=100.0)
+
+    result = analyze_pending_documents(
+        conn,
+        vault_path,
+        default_client,
+        cost_tracker,
+        system_prompt="시스템 프롬프트",
+        large_doc_client=large_doc_client,
+        large_doc_char_threshold=1_000_000,
+    )
+
+    assert result.processed == 1
+    updated_doc, _ = read_document(path)
+    assert updated_doc.llm_model == "claude-sonnet-5"
+
+
 def test_analyze_stops_when_budget_exhausted(tmp_path) -> None:
     vault_path, conn = _setup(tmp_path)
     doc1 = _doc("doc-1")

@@ -11,7 +11,7 @@ from investor_intel.collectors.sec_companyfacts import (
     extract_financial_snapshot,
     parse_companyfacts,
 )
-from investor_intel.collectors.sec_document_fetch import fetch_full_text, find_transcript_exhibit
+from investor_intel.collectors.sec_document_fetch import fetch_full_text, find_earnings_exhibit
 from investor_intel.collectors.sec_filings_document import render_sec_filing_body
 from investor_intel.collectors.sec_filings_parser import CompanyFilingRef, parse_company_filings
 from investor_intel.collectors.sec_urls import companyfacts_url, filing_index_page_url
@@ -71,19 +71,26 @@ class SECFilingsCollector:
         report_kind = classify_sec_form(filing.form)
         title_tag = title_prefix(report_kind)
         full_text: str | None = None
-        is_transcript = False
+        capture_kind: str | None = None
 
         if report_kind is not None:
             full_text = fetch_full_text(
                 self._client, self._company.cik, filing.accession_number, filing.primary_document
             )
-        elif filing.form == "8-K":
-            full_text = find_transcript_exhibit(
-                self._client, self._company.cik, filing.accession_number
-            )
             if full_text is not None:
-                is_transcript = True
-                title_tag = "[컨퍼런스콜] "
+                capture_kind = "primary_document"
+        elif filing.form == "8-K":
+            exhibit = find_earnings_exhibit(
+                self._client, self._company.cik, filing.accession_number, filing.items
+            )
+            if exhibit is not None:
+                full_text = exhibit.text
+                if exhibit.is_transcript:
+                    capture_kind = "transcript"
+                    title_tag = "[컨퍼런스콜] "
+                else:
+                    capture_kind = "press_release"
+                    title_tag = "[실적발표 보도자료] "
 
         body = render_sec_filing_body(
             filing,
@@ -91,7 +98,7 @@ class SECFilingsCollector:
             canonical_url,
             snapshot=snapshot,
             full_text=full_text,
-            is_transcript=is_transcript,
+            capture_kind=capture_kind,
         )
 
         published_at = datetime(

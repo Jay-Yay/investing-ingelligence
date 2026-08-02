@@ -116,3 +116,66 @@ def test_collect_persists_naver_source_end_to_end(tmp_path: Path, monkeypatch) -
     assert "naver_testblog" in result.output
     assert "총 1건 저장" in result.output
     assert list(vault_path.rglob("*.md"))
+
+
+@respx.mock
+def test_collect_sources_filter_excludes_unmatched_source_types(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    config_dir = tmp_path / "config"
+    config_dir.mkdir()
+    (config_dir / "sources.yaml").write_text(
+        """sources:
+  - id: naver_testblog
+    type: naver
+    name: testblog
+    enabled: true
+    url: https://m.blog.naver.com/testblog
+    author: testblog
+""",
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "collect",
+            "--config-dir",
+            str(config_dir),
+            "--vault-path",
+            str(tmp_path / "vault"),
+            "--sqlite-path",
+            str(tmp_path / "index.sqlite3"),
+            "--sources",
+            "sec_filing,dart",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "naver_testblog" not in result.output
+    assert "총 0건 저장" in result.output
+
+
+def test_collect_sources_filter_rejects_unknown_value(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    config_dir = tmp_path / "config"
+    config_dir.mkdir()
+
+    result = runner.invoke(
+        app,
+        [
+            "collect",
+            "--config-dir",
+            str(config_dir),
+            "--vault-path",
+            str(tmp_path / "vault"),
+            "--sqlite-path",
+            str(tmp_path / "index.sqlite3"),
+            "--sources",
+            "not_a_real_source",
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "not_a_real_source" in result.output

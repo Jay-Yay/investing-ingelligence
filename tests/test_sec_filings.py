@@ -257,3 +257,46 @@ def test_8k_stays_metadata_only_when_no_transcript_exhibit(tmp_path) -> None:
     eightk = next(item for item in result.items if item.filing_type == "8-K")
     assert eightk.content_capture_mode == "metadata_only"
     assert not eightk.title.startswith("[컨퍼런스콜]")
+
+
+@respx.mock
+@freeze_time("2024-06-01")
+def test_8k_captures_press_release_when_results_item_present_but_no_transcript_cues(
+    tmp_path,
+) -> None:
+    """실사례(AMZN)에서 발견된 회귀: 8-K 항목 2.02(실적/재무상태 결과)가 있는데 exhibit이
+    Operator/Q&A 패턴에 맞지 않으면(순수 보도자료) 이전 로직은 아무것도 캡처하지 않고
+    metadata_only로 남겨 실적 디테일을 통째로 놓쳤다. 이제는 그 보도자료 원문을 캡처해야 한다.
+    """
+    _mock_submissions()
+    archive = "https://www.sec.gov/Archives/edgar/data/1664703/000166470324000005"
+    respx.get(f"{archive}/index.json").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "directory": {
+                    "item": [
+                        {"name": "form8k.htm", "type": "text.gif"},
+                        {"name": "ex991pressrelease.htm", "type": "text.gif"},
+                    ]
+                }
+            },
+        )
+    )
+    respx.get(f"{archive}/ex991pressrelease.htm").mock(
+        return_value=httpx.Response(
+            200, text="<html><body>2분기 매출 5억 달러, 순이익 4천만 달러 발표</body></html>"
+        )
+    )
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    client = SECClient(user_agent="Investor Intel test@example.com")
+    collector = SECFilingsCollector(_company(), client, CheckpointStore(conn))
+
+    result = collector.collect_incremental()
+    client.close()
+
+    eightk = next(item for item in result.items if item.filing_type == "8-K")
+    assert eightk.title.startswith("[실적발표 보도자료] ")
+    assert eightk.content_capture_mode == "full"
+    assert "매출" in eightk.body_text

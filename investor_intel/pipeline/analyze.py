@@ -101,7 +101,16 @@ def analyze_pending_documents(
     cost_tracker: CostTracker,
     system_prompt: str,
     portfolio_tickers: set[str] | None = None,
+    large_doc_client: AnthropicClient | None = None,
+    large_doc_char_threshold: int = 50_000,
 ) -> AnalyzeResult:
+    """미분석 문서에 LLM 핵심 주장 추출을 실행한다.
+
+    large_doc_client가 주어지면, 본문 길이가 large_doc_char_threshold를 넘는 문서는 그
+    (보통 더 저렴한) 모델로 돌린다 - SEC 10-K/10-Q 전문 캡처(글자 제한 제거) 이후 대형
+    문서 하나가 하루 LLM 예산을 통째로 잡아먹는 것을 막기 위함이다. 지정하지 않으면 모든
+    문서를 기본 client로 처리한다(기존 동작과 동일).
+    """
     processed = 0
     errors: list[str] = []
     extractions: dict[str, ExtractionResult] = {}
@@ -113,18 +122,25 @@ def analyze_pending_documents(
 
         try:
             doc, body = read_document(Path(file_path))
-            outcome = extract_claims(client, document_body=body, system_prompt=system_prompt)
+            active_client = (
+                large_doc_client
+                if large_doc_client is not None and len(body) > large_doc_char_threshold
+                else client
+            )
+            outcome = extract_claims(
+                active_client, document_body=body, system_prompt=system_prompt
+            )
             extraction = outcome.result
 
             cost_tracker.record_usage(
-                client.model, outcome.usage.input_tokens, outcome.usage.output_tokens
+                active_client.model, outcome.usage.input_tokens, outcome.usage.output_tokens
             )
 
             spliced_body = splice_claims_into_body(body, extraction)
             updated_doc = doc.model_copy(
                 update={
                     "llm_processed": True,
-                    "llm_model": client.model,
+                    "llm_model": active_client.model,
                     "content_hash": compute_content_hash(spliced_body),
                 }
             )
