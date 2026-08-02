@@ -1,8 +1,9 @@
 name: Daily collect
 
-# Runs only the `collect` step on a schedule. Analysis (analyze -> portfolio -> report) is run
-# locally via Claude Code, not here, since LLM calls from an unattended cron are hard to review
-# before they spend API budget.
+# Runs the `collect` and `regime run-daily` steps on a schedule - neither uses an LLM, so both
+# are safe unattended. Analysis (analyze -> portfolio -> report) is run locally via Claude Code,
+# not here, since LLM calls from an unattended cron are hard to review before they spend API
+# budget.
 #
 # Persistence: GitHub-hosted runners are ephemeral, so this workflow keeps `vault/` and `data/`
 # (both normally gitignored) on a dedicated `data` branch of this repo instead. Each run checks
@@ -81,6 +82,20 @@ jobs:
           uv run python -m investor_intel collect \
             --vault-path state/vault \
             --sqlite-path state/data/index.sqlite3
+
+      # 시장 국면 추적(regime)은 LLM을 쓰지 않는 순수 수치 지표라 무인 실행이 안전하다. 위
+      # collect와 별개 단계로 두고 실패해도 job 전체를 실패시키지 않는다(continue-on-error) -
+      # FRED_API_KEY가 아직 Secrets에 없으면 해당 지표만 unavailable로 남고 나머지는 계속
+      # 수집된다. vault/60_MarketRegime, vault/50_Reports/MarketRegime에 저장되므로 아래
+      # "git add vault"가 그대로 커밋해준다.
+      - name: Run regime run-daily
+        id: regime
+        continue-on-error: true
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: |
+          uv run python -m investor_intel regime run-daily \
+            --vault-path state/vault
 
       # `if: always()` matters here, not just `continue-on-error` above: if the job hits
       # timeout-minutes and gets cancelled mid-collect, steps without always() are skipped

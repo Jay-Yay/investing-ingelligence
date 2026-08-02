@@ -23,6 +23,7 @@ from investor_intel.market_data.yahoo_fundamentals_adapter import (
 )
 from investor_intel.market_data.yfinance_adapter import YahooFinanceAdapter
 from investor_intel.models.analysis import TenbaggerVerification
+from investor_intel.models.common import SourceType
 from investor_intel.pipeline.analyze import analyze_pending_documents
 from investor_intel.pipeline.collect import build_collect_entries, run_collectors
 from investor_intel.pipeline.earnings_transcript import run_earnings_transcript_collection
@@ -35,6 +36,14 @@ from investor_intel.pipeline.orchestrator import (
     run_daily,
     run_portfolio_stage,
 )
+from investor_intel.pipeline.regime import (
+    load_current_observations,
+    load_snapshot,
+    run_regime_collect,
+    run_regime_daily,
+    run_regime_report,
+    run_regime_score,
+)
 from investor_intel.pipeline.web_research import run_web_research_for_portfolio
 from investor_intel.reports.daily_report_renderer import DailyReportContext, render_daily_report
 from investor_intel.storage.cost_ledger import init_cost_ledger
@@ -42,6 +51,10 @@ from investor_intel.storage.sqlite_index import connect, init_db
 from investor_intel.storage.sqlite_index import reindex as reindex_vault
 
 app = typer.Typer(help="Investor Intelligence CLI")
+regime_app = typer.Typer(
+    help="시장 국면 추적 (Phase 1: 무료 지표 기반 cooling/overheating/ai_cycle 점수)"
+)
+app.add_typer(regime_app, name="regime")
 
 
 @app.callback()
@@ -66,6 +79,9 @@ VAULT_DIRS = [
     "40_Analysis/Contradictions",
     "40_Analysis/Events",
     "50_Reports/Daily",
+    "50_Reports/MarketRegime",
+    "60_MarketRegime/history",
+    "60_MarketRegime/processed",
     "90_Templates",
 ]
 
@@ -407,6 +423,7 @@ ENV_EXAMPLE = """ANTHROPIC_API_KEY=
 ANTHROPIC_MODEL=claude-sonnet-5
 SEC_USER_AGENT="Investor Intel contact@example.com"
 DART_API_KEY=
+FRED_API_KEY=
 TELEGRAM_API_ID=
 TELEGRAM_API_HASH=
 TELEGRAM_SESSION=
@@ -515,6 +532,12 @@ def doctor(
             "SEC EDGAR 수집(13F, 기업공시)에 필요",
         ),
         ("DART_API_KEY", settings.dart_api_key is not None, "DART 수집에 필요"),
+        (
+            "FRED_API_KEY",
+            settings.fred_api_key is not None,
+            "시장 국면 추적(regime collect)의 FRED 기반 지표(신용스프레드/ANFCI/금리차/고용)에 "
+            "필요 - 없어도 나머지 지표는 수집된다",
+        ),
         (
             "TELEGRAM_API_ID/HASH/SESSION",
             bool(
@@ -729,8 +752,20 @@ def collect(
     backfill: Annotated[
         int | None, typer.Option(help="지정 시 최근 N일 백필, 미지정 시 증분 수집")
     ] = None,
+    sources: Annotated[
+        str | None,
+        typer.Option(
+            help=(
+                "쉼표로 구분된 SourceType 값으로 소스를 제한한다 (예: sec_filing,dart). "
+                "미지정 시 config에 설정된 모든 소스(Naver/Telegram/IB 등 포함)를 수집한다. "
+                "종목 추가처럼 티커 단위 작업만 필요할 때는 'sec_filing,dart'로 제한해 "
+                "무관한 고정 구독 소스(Naver 블로그/Telegram 채널 등)까지 함께 도는 것을 "
+                "피할 수 있다."
+            )
+        ),
+    ] = None,
 ) -> None:
-    """설정된 모든 소스에서 수집하여 vault와 인덱스에 반영한다."""
+    """설정된 소스에서 수집하여 vault와 인덱스에 반영한다."""
     settings = AppSettings()
     conn = connect(sqlite_path)
     try:
@@ -741,6 +776,14 @@ def collect(
 
         for message in setup_errors:
             typer.echo(f"[설정] {message}")
+
+        if sources is not None:
+            wanted = {s.strip() for s in sources.split(",") if s.strip()}
+            unknown = wanted - {member.value for member in SourceType}
+            if unknown:
+                typer.echo(f"알 수 없는 --sources 값: {', '.join(sorted(unknown))}")
+                raise typer.Exit(code=1)
+            entries = [e for e in entries if e[1].value in wanted]
 
         results = run_collectors(entries, vault_path, conn, backfill_days=backfill)
 
@@ -781,6 +824,9 @@ def analyze(
         client = AnthropicClient(
             api_key=settings.anthropic_api_key, model=settings.anthropic_model
         )
+        large_doc_client = AnthropicClient(
+            api_key=settings.anthropic_api_key, model=settings.anthropic_large_doc_model
+        )
         cost_tracker = CostTracker(
             conn, settings.daily_llm_budget_usd, settings.monthly_llm_budget_usd
         )
@@ -796,6 +842,8 @@ def analyze(
         result = analyze_pending_documents(
             conn, vault_path, client, cost_tracker, analyze_prompt,
             portfolio_tickers=portfolio_tickers,
+            large_doc_client=large_doc_client,
+            large_doc_char_threshold=settings.large_doc_char_threshold,
         )
 
         typer.echo(f"{result.processed}건 분석 완료")
@@ -1063,3 +1111,72 @@ def sync_inbox_cmd(
     typer.echo(f"총 {added}건 추가, {skipped}건 스킵(중복), {failed}건 실패")
 
     raise typer.Exit(code=1 if had_failure else 0)
+
+
+@regime_app.command(name="collect")
+def regime_collect_cmd(
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+) -> None:
+    """Phase 1 무료 지표 7개(신용스프레드/ANFCI/금리차/고용/VIX 기간구조/시장 폭/레버리지·
+    포지셔닝)를 수집해 vault/60_MarketRegime/history/에 append한다. LLM을 쓰지 않는다."""
+    settings = AppSettings()
+    result = run_regime_collect(vault_path, settings)
+    for indicator_id, obs in result.observations.items():
+        typer.echo(f"[{indicator_id.value}] status={obs.status.value} value={obs.value}")
+    for error in result.errors:
+        typer.echo(f"오류: {error}")
+    raise typer.Exit(code=1 if result.errors else 0)
+
+
+@regime_app.command(name="score")
+def regime_score_cmd(
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    as_of: Annotated[
+        str | None, typer.Option("--date", help="기준일 YYYY-MM-DD (기본: 오늘)")
+    ] = None,
+) -> None:
+    """history에 저장된 지표들로 점수/국면을 계산해 vault/60_MarketRegime/processed/에
+    저장한다 (collect와 분리 실행 가능 - analyze가 collect와 분리된 것과 동일한 패턴)."""
+    resolved_date = date.fromisoformat(as_of) if as_of else date.today()
+    observations = load_current_observations(vault_path)
+    if not observations:
+        typer.echo("history 데이터가 없다 - 먼저 `regime collect`를 실행하라")
+        raise typer.Exit(code=1)
+    report = run_regime_score(vault_path, observations, resolved_date)
+    typer.echo(
+        f"market_regime={report.market_regime.value} ai_regime={report.ai_regime.value} "
+        f"cooling_risk={report.scores.cooling_risk} "
+        f"overheating_risk={report.scores.overheating_risk} "
+        f"ai_cycle={report.scores.ai_cycle} confidence={report.confidence_level.value}"
+    )
+
+
+@regime_app.command(name="report")
+def regime_report_cmd(
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    as_of: Annotated[
+        str | None, typer.Option("--date", help="기준일 YYYY-MM-DD (기본: 오늘)")
+    ] = None,
+) -> None:
+    """processed/<date>.json을 기준으로 사람이 읽는 리포트를 렌더링한다."""
+    resolved_date = date.fromisoformat(as_of) if as_of else date.today()
+    snapshot = load_snapshot(vault_path, resolved_date)
+    if snapshot is None:
+        typer.echo(f"{resolved_date} 스냅샷이 없다 - 먼저 `regime score`를 실행하라")
+        raise typer.Exit(code=1)
+    path = run_regime_report(vault_path, snapshot.report, snapshot.observations)
+    typer.echo(f"리포트 생성 완료: {path}")
+
+
+@regime_app.command(name="run-daily")
+def regime_run_daily_cmd(
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+) -> None:
+    """collect -> score -> report 전체를 실행한다. LLM을 쓰지 않으므로 무인 실행 가능하다."""
+    settings = AppSettings()
+    result = run_regime_daily(vault_path, settings)
+    for error in result.errors:
+        typer.echo(f"[collect 오류] {error}")
+    if result.report_path:
+        typer.echo(f"리포트 생성 완료: {result.report_path}")
+    raise typer.Exit(code=0 if result.report_path else 1)

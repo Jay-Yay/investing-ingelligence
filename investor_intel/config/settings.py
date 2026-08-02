@@ -11,8 +11,11 @@ class AppSettings(BaseSettings):
 
     anthropic_api_key: str | None = None
     anthropic_model: str = "claude-sonnet-5"
+    anthropic_large_doc_model: str = "claude-haiku-4-5"
+    large_doc_char_threshold: int = 50_000
     sec_user_agent: str | None = None
     dart_api_key: str | None = None
+    fred_api_key: str | None = None
     telegram_api_id: str | None = None
     telegram_api_hash: str | None = None
     telegram_session: str | None = None
@@ -27,6 +30,7 @@ class AppSettings(BaseSettings):
         "anthropic_api_key",
         "sec_user_agent",
         "dart_api_key",
+        "fred_api_key",
         "telegram_api_id",
         "telegram_api_hash",
         "telegram_session",

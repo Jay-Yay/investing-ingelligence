@@ -45,6 +45,9 @@ uv run python -m investor_intel run-daily
 | `SEC_USER_AGENT` | SEC EDGAR 수집(13F, 미국 기업 공시) — 식별 가능한 문자열 필수. GitHub
 Actions Secret으로도 등록 |
 | `DART_API_KEY` | OpenDART 수집(한국 기업 공시). GitHub Actions Secret으로도 등록 |
+| `FRED_API_KEY` | 시장 국면 추적(`regime collect`)의 FRED 기반 지표(신용스프레드/ANFCI/
+금리차/고용) — [무료 발급](https://fred.stlouisfed.org/docs/api/api_key.html). 없어도 나머지
+지표(VIX 기간구조/시장 폭/레버리지·포지셔닝)는 수집된다. GitHub Actions Secret으로도 등록 |
 | `TELEGRAM_API_ID` / `TELEGRAM_API_HASH` / `TELEGRAM_SESSION` | (선택) Telethon 기반 비공개
 채널 수집(`sources.yaml`의 `type: telegram_private`) — 공개 웹 미리보기 수집에는 불필요.
 `uv sync --extra telethon` 후 `telethon-login` 명령으로 세션 생성. 쓰는 경우 GitHub Actions
@@ -75,7 +78,12 @@ vault/                  # Obsidian Vault — 원본 데이터의 source of truth
     portfolio.yaml             # 보유 종목 + 투자 가설 원장 (아래 "투자 가설 업데이트" 참고)
   40_Analysis/
     Claims/<종목>.md          # 포트폴리오 모니터가 매일 append하는 종목별 신호 로그
-  50_Reports/Daily/       # 일일 리포트
+  50_Reports/
+    Daily/                     # 일일 리포트
+    MarketRegime/<날짜>.{md,json}  # 시장 국면 추적 일일 리포트 (아래 "시장 국면 추적" 참고)
+  60_MarketRegime/
+    history/<indicator_id>.jsonl   # 지표별 일별 관측치 append-only 로그 (개정 이력 보존)
+    processed/<날짜>.json          # 그날의 점수/국면/원본 관측치 스냅샷
 
 data/index.sqlite3       # vault로부터 재생성 가능한 검색 인덱스 (git 커밋 안 함)
 ```
@@ -115,6 +123,10 @@ data/index.sqlite3       # vault로부터 재생성 가능한 검색 인덱스 (
   역산 가능성 기준으로 스크리닝(100점 만점, 7개 항목).
 - **자본배분 순위 (`run-daily` 내부):** 보유 종목 신호와 신규 후보를 하나의 순위표로 통합.
 - **리포트:** 위 결과를 종합한 한국어 일일 리포트 자동 생성.
+- **시장 국면 추적 (`regime` 명령군):** 미국 매크로/신용/변동성/포지셔닝 지표를 매일 수집해
+  `cooling_risk`/`overheating_risk`/`ai_cycle`/`data_confidence` 4개 점수와 시장 국면
+  (HEALTHY_RISK_ON/OVERHEATED/STRESS 등)을 규칙 기반으로 계산한다. LLM을 쓰지 않아 무인 실행
+  가능. 자세한 내용은 아래 "시장 국면 추적" 절 참고.
 
 자세한 사용법은 아래 "소스·종목 추가", "투자 가설 업데이트", "가능한 분석" 절과
 `vault/00_System/Runbook.md`를 참고한다.
@@ -223,6 +235,52 @@ uv run python -m investor_intel collect --backfill 365
 `ANTHROPIC_API_KEY`가 없으면 두 명령 모두 LLM 단계를 조용히 건너뛴다(억지 판단을 지어내지
 않음).
 
+## 시장 국면 추적 (Market Regime Tracker)
+
+투자 추천 시스템이 아니라 시장 국면(과열/냉각/AI 사이클) 판단 시스템이다. 매수/매도 신호나
+목표가는 만들지 않는다. **Phase 1(현재 구현)은 무료로 접근 가능한 지표만 다룬다** — EPS
+컨센서스 수정 폭(I/B/E/S 등 유료 데이터 필요)과 AI 산업 지표(하이퍼스케일러 Capex/AI 매출
+효율, 반도체 실수요)는 `unavailable` 상태로 스텁만 있고, Phase 2에서 기존 SEC 공시 수집 +
+LLM 추출 파이프라인을 재사용해 채울 예정이다. 그 결과 `ai_cycle_score`/`ai_regime`은 현재
+항상 `INDETERMINATE`다 — 버그가 아니라 의도된 상태다.
+
+### 지표 (Phase 1: 7개, 전부 무료)
+
+| 지표 | 출처 | 비고 |
+|---|---|---|
+| 하이일드 신용스프레드 | FRED `BAMLH0A0HYM2` | |
+| Chicago Fed ANFCI | FRED `ANFCI` | |
+| 10Y-3M 금리차 | FRED `T10Y3M` | |
+| 고용 냉각 복합지표 | FRED `ICSA`/`IC4WSA`/`CCSA`/`SAHMREALTIME` | |
+| VIX 기간구조 | Yahoo Finance `^VIX`/`^VIX3M` | |
+| 시장 폭 | 위키피디아 S&P500 구성종목 표 + Yahoo Finance 가격 이력 | S&P500 공식 무료 API가
+없어 위키피디아 구성종목 표로 대체(iShares IVV 보유종목 CSV를 우선 시도했으나 라이브
+확인 결과 봇 차단으로 접근 불가) |
+| 레버리지·포지셔닝 | CFTC "Traders in Financial Futures" | 선물(및 옵션) 시장 대형
+트레이더 포지션의 일부일 뿐 시장 전체 롱/숏 비중이 아님. FINRA 마진통계는 봇 차단(HTTP 403,
+라이브 확인)으로 자동 수집 불가 — 개인 레버리지 축은 제외 |
+
+### 사용법
+
+```bash
+uv run python -m investor_intel regime collect --vault-path ./vault      # 지표 수집 (history/ append)
+uv run python -m investor_intel regime score --vault-path ./vault        # 점수/국면 계산 (processed/ 저장)
+uv run python -m investor_intel regime report --vault-path ./vault       # 리포트 렌더링 (50_Reports/MarketRegime/)
+uv run python -m investor_intel regime run-daily --vault-path ./vault    # 위 세 단계를 한 번에
+```
+
+`collect`/`score`/`report`는 `--date YYYY-MM-DD`로 특정일을 지정할 수 있다(생략 시 오늘).
+LLM을 쓰지 않으므로 `.github/workflows/daily-collect.yml`에서 `collect`와 함께 매일 무인
+실행된다(아래 "자동 실행" 참고).
+
+### 점수/국면
+
+`cooling_risk_score`/`overheating_risk_score`/`ai_cycle_score`/`data_confidence_score`
+4개(0~100)와 `market_regime`/`ai_regime` 국면을 계산한다. 지표가 누락되면 0점 처리하지 않고
+가용 지표의 가중치를 비례 재조정하며, 커버리지가 70% 미만이면 `confidence_level`이 낮아지고
+50% 미만이면 해당 국면이 `INDETERMINATE`가 된다 — 정확한 가중치·판정 규칙은
+`investor_intel/regime/scoring.py`, `investor_intel/regime/regime_classifier.py`를 참고한다.
+
 ## 아키텍처와 로드맵
 
 전체 설계는 [`docs/superpowers/specs/2026-07-24-investor-intelligence-design.md`](docs/superpowers/specs/2026-07-24-investor-intelligence-design.md),
@@ -232,9 +290,12 @@ uv run python -m investor_intel collect --backfill 365
 
 ## 자동 실행
 
-`.github/workflows/daily-collect.yml`이 매일 00:00 UTC(09:00 KST)에 **`collect`만** 실행하도록
-스케줄되어 있다. `analyze`/`portfolio`/`report`(LLM 호출이 있는 단계)는 자동화하지 않고 로컬에서
-Claude Code로 직접 돌린다 — 무인 크론이 LLM 토큰을 검토 없이 계속 소비하는 걸 막기 위함이다.
+`.github/workflows/daily-collect.yml`이 매일 00:00 UTC(09:00 KST)에 **`collect`와 `regime
+run-daily`만** 실행하도록 스케줄되어 있다 — 둘 다 LLM을 쓰지 않아 무인 실행이 안전하다.
+`analyze`/`portfolio`/`report`(LLM 호출이 있는 단계)는 자동화하지 않고 로컬에서 Claude Code로
+직접 돌린다 — 무인 크론이 LLM 토큰을 검토 없이 계속 소비하는 걸 막기 위함이다. `regime
+run-daily`는 `continue-on-error`로 실행되어, 실패해도(예: `FRED_API_KEY` 미등록) `collect`
+job 전체를 실패시키지 않는다.
 
 GitHub Actions는 매 실행마다 이 저장소의 전용 `data` 브랜치를 `state/`에 체크아웃하고,
 `state/vault`/`state/data`를 대상으로 `collect`를 실행한 뒤 결과를 그 브랜치에 다시 커밋한다
