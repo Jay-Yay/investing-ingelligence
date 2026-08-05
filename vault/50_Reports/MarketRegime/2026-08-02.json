@@ -1,0 +1,126 @@
+{
+  "as_of": "2026-08-02",
+  "market_regime": "HEALTHY_RISK_ON",
+  "ai_regime": "INDETERMINATE",
+  "scores": {
+    "cooling_risk": 20.3,
+    "overheating_risk": 16.6,
+    "ai_cycle": null,
+    "data_confidence": 70.0
+  },
+  "confidence_level": "medium",
+  "signals": [
+    {
+      "indicator_id": "credit_spread_hy_oas",
+      "status": "normal",
+      "direction": "neutral",
+      "severity": 0,
+      "reason": "정상 범위",
+      "observation_date": "2026-07-30",
+      "data_age_days": 3
+    },
+    {
+      "indicator_id": "chicago_fed_anfci",
+      "status": "watch",
+      "direction": "improving",
+      "severity": 40,
+      "reason": "easing_signal",
+      "observation_date": "2026-07-24",
+      "data_age_days": 9
+    },
+    {
+      "indicator_id": "yield_curve_10y3m",
+      "status": "normal",
+      "direction": "neutral",
+      "severity": 0,
+      "reason": "정상 범위",
+      "observation_date": "2026-07-31",
+      "data_age_days": 2
+    },
+    {
+      "indicator_id": "employment_cooling",
+      "status": "normal",
+      "direction": "neutral",
+      "severity": 0,
+      "reason": "정상 범위",
+      "observation_date": "2026-07-25",
+      "data_age_days": 8
+    },
+    {
+      "indicator_id": "vix_term_structure",
+      "status": "normal",
+      "direction": "neutral",
+      "severity": 0,
+      "reason": "정상 범위",
+      "observation_date": "2026-07-31",
+      "data_age_days": 2
+    },
+    {
+      "indicator_id": "market_breadth",
+      "status": "normal",
+      "direction": "neutral",
+      "severity": 0,
+      "reason": "정상 범위",
+      "observation_date": "2026-08-02",
+      "data_age_days": 0
+    },
+    {
+      "indicator_id": "leverage_positioning",
+      "status": "normal",
+      "direction": "neutral",
+      "severity": 0,
+      "reason": "정상 범위",
+      "observation_date": "2026-07-28",
+      "data_age_days": 5
+    },
+    {
+      "indicator_id": "eps_revision_breadth",
+      "status": "unavailable",
+      "direction": "neutral",
+      "severity": 0,
+      "reason": "무료 API 없음 - I/B/E/S/Refinitiv 등 유료 컨센서스 데이터 필요 (Phase 2 대상 아님, 유료 데이터 소스 확보 시 재검토)",
+      "observation_date": null,
+      "data_age_days": null
+    },
+    {
+      "indicator_id": "ai_hyperscaler_capex_efficiency",
+      "status": "unavailable",
+      "direction": "neutral",
+      "severity": 0,
+      "reason": "Phase 2에서 기존 SEC 공시 수집 + LLM 추출 파이프라인(investor_intel.llm.extraction)을 재사용해 구현 예정 - 이번 Phase 1에는 미포함",
+      "observation_date": null,
+      "data_age_days": null
+    },
+    {
+      "indicator_id": "ai_semiconductor_demand",
+      "status": "unavailable",
+      "direction": "neutral",
+      "severity": 0,
+      "reason": "WSTS Americas 반도체 매출은 유료 구독 필요. TSMC/NVIDIA/Broadcom 실적 기반 대체 지표는 Phase 2에서 SEC/실적발표 수집 파이프라인 재사용으로 구현 예정",
+      "observation_date": null,
+      "data_age_days": null
+    }
+  ],
+  "new_releases": [
+    "ICE BofA US High Yield OAS: N/A -> 2.84 (기준일 2026-07-30)",
+    "Chicago Fed Adjusted National Financial Conditions Index: N/A -> -0.56 (기준일 2026-07-24)",
+    "10년물-3개월물 금리차: N/A -> 0.92 (기준일 2026-07-31)",
+    "고용 냉각 복합지표: N/A -> -8.5 (기준일 2026-07-25)",
+    "VIX 기간구조: N/A -> 0.778 (기준일 2026-07-31)",
+    "시장 폭(Market Breadth): N/A -> 66.3 (기준일 2026-08-02)",
+    "레버리지 및 포지셔닝: N/A -> -17.55 (기준일 2026-07-28)"
+  ],
+  "warnings": [
+    "AI 산업 지표(하이퍼스케일러 Capex/AI 매출, 반도체 실수요)는 Phase 1에 미구현 - ai_cycle_score/ai_regime은 항상 indeterminate"
+  ],
+  "data_quality": {
+    "coverage_ratio": 0.7,
+    "stale_indicators": [],
+    "unavailable_indicators": [
+      "S&P 500 EPS 전망치 수정 폭",
+      "하이퍼스케일러 AI 투자 효율",
+      "AI 반도체 실수요"
+    ],
+    "errors": []
+  }
+}
