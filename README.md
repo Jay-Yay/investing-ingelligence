@@ -1,32 +1,35 @@
 # Investor Intelligence
 
-## 할 수 있는 것
+명령은 크게 둘로 나뉜다: **원문을 모으는 Collect**, **모은 원문으로 판단을 만드는 Analyze**.
+옵션과 세부 동작은 각 절 또는 `uv run python -m investor_intel <명령> --help` 참고.
 
-| 할 수 있는 것 | 관련 명령 | 호출 방법 |
-|---|---|---|
-| 처음 설정: vault/config 디렉터리와 예제 파일 생성 | `init` | `uv run python -m investor_intel init` |
-| 환경변수·설정 파일·vault 쓰기 권한 점검 | `doctor` | `uv run python -m investor_intel doctor` |
-| 등록된 모든 소스(SEC/DART/네이버/텔레그램/IB 등)에서 새 문서 수집 | `collect` | `uv run python -m investor_intel collect` |
-| 신규 소스를 과거 데이터까지 백필 | `collect --backfill` | `uv run python -m investor_intel collect --backfill 365` |
-| `inbox_sources.md`에 적어둔 소스·종목을 자동으로 config에 추가 | `sync-inbox` | `uv run python -m investor_intel sync-inbox` |
-| 수집된 미처리 문서에서 핵심 주장/근거/반대 근거 LLM 추출 | `analyze` | `uv run python -m investor_intel analyze` |
-| 포트폴리오 평가금액·비중·가드레일 위반 계산 (LLM 불필요) | `portfolio` | `uv run python -m investor_intel portfolio` |
-| 보유 종목별 실시간 웹 검색으로 등록 소스가 놓친 정보 보완 | `web-research` | `uv run python -m investor_intel web-research` |
-| SEC 8-K가 못 찾은 실적발표 컨퍼런스콜을 웹서치로 보완 | `earnings-transcript` | `uv run python -m investor_intel earnings-transcript` |
-| 현재 상태로 일일 리포트만 생성 (가벼운 버전) | `report` | `uv run python -m investor_intel report` |
-| 수집→분석→포트폴리오 모니터→텐베거 발굴→자본배분→리포트 전체 파이프라인 | `run-daily` | `uv run python -m investor_intel run-daily` |
-| vault 원문 기준으로 SQLite 검색 인덱스 재구축 | `reindex` | `uv run python -m investor_intel reindex` |
-| 미보유 종목의 텐베거(10배) 가설 중 정량 계산 가능한 부분만 검증 | `verify-tenbagger` | `uv run python -m investor_intel verify-tenbagger NBIS 005930` |
-| 텔레그램 비공개 채널 수집용 로그인 세션 생성 | `telethon-login` | `uv run python -m investor_intel telethon-login --api-id … --api-hash …` |
-| 매크로·신용·변동성 지표로 시장 국면(과열/냉각/AI 사이클) 점수 계산 | `regime run-daily` | `uv run python -m investor_intel regime run-daily` |
-| 클라우드/AI 세그먼트 매출 등 시장 국면 세부 필드를 LLM으로 보강 | `regime analyze-ai` | `uv run python -m investor_intel regime analyze-ai` |
-| 개별 종목 정량 스코어링 (가격/거래량/재무제표만, LLM 불필요, 일간용) | `score compute` | `uv run python -m investor_intel score compute 000660.KS` |
-| 실적 발표 등 이벤트에 맞춰 종목 스코어링을 심층 LLM 리서치까지 포함해 갱신 | `score run-weekly` | `uv run python -m investor_intel score run-weekly 000660.KS` |
-| 저장된 종목 스코어링 스냅샷으로 12개 섹션 리포트 렌더링 | `score report` | `uv run python -m investor_intel score report 000660.KS` |
-| 테스트·린트·타입체크 전체 실행 | pytest/ruff/mypy | `uv run pytest && uv run ruff check . && uv run mypy investor_intel` |
+## Collect
 
-각 명령의 옵션(`--vault-path`, `--config-dir` 등)과 세부 동작은 아래 각 절 또는
-`uv run python -m investor_intel <명령> --help`를 참고한다.
+| 명령 | 하는 일 |
+|---|---|
+| `collect` | 등록된 소스(SEC·DART·네이버·텔레그램·IB 등) 전체에서 새 글 수집 |
+| `collect --backfill 365` | 새로 등록한 소스를 과거 N일치까지 소급 수집 |
+| `web-research` | 보유 종목별 실시간 웹검색으로 등록 소스가 놓친 뉴스 보완 |
+| `earnings-transcript` | SEC 8-K에 없는 실적발표 컨퍼런스콜을 웹서치로 보완 |
+| `regime collect` | 시장 매크로 지표(신용스프레드·VIX·고용 등) 수집 |
+
+## Analyze
+
+| 명령 | 하는 일 |
+|---|---|
+| `analyze` | 수집된 문서에서 핵심 주장·근거·반대 근거 추출 |
+| `portfolio` | 포트폴리오 평가금액·비중·가드레일 위반 계산 |
+| `report` | 지금까지 쌓인 결과로 일일 리포트만 생성 |
+| `run-daily` | collect → analyze → 포트폴리오 모니터 → 텐베거 발굴 → 리포트 전체 실행 |
+| `verify-tenbagger NBIS 005930` | 텐베거(10배) 가설 중 정량 계산 가능한 부분만 검증 |
+| `regime run-daily` | 시장 국면(과열·냉각·AI 사이클) 점수와 리포트 산출 |
+| `regime analyze-ai` | 클라우드·AI 세그먼트 매출 등 국면 세부 항목을 LLM으로 보강 |
+| `score compute 000660.KS` | 가격·재무제표만으로 종목 정량 점수 갱신 (일간) |
+| `score run-weekly 000660.KS` | 실적 발표 등 이벤트에 맞춰 LLM 리서치까지 포함해 점수 갱신 |
+| `score report 000660.KS` | 저장된 스냅샷으로 종목 리포트 렌더링 |
+
+둘 중 어디에도 안 들어가는 최초 설정(`init`, `doctor`, `sync-inbox`)은 바로 아래 "빠른 시작"과
+"소스·종목 추가"에 있다.
 
 ## 개요
 
