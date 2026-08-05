@@ -450,3 +450,80 @@ sources:
     tags:
       - central_bank
       - macro
+  - id: telegram_akacommodity
+    type: telegram
+    name: akacommodity
+    enabled: true
+    url: https://t.me/s/akacommodity
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - telegram
+  - id: telegram_quantum_ALGO
+    type: telegram
+    name: quantum_ALGO
+    enabled: true
+    url: https://t.me/s/quantum_ALGO
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - telegram
+  - id: telegram_merITz_tech
+    type: telegram
+    name: merITz_tech
+    enabled: true
+    url: https://t.me/s/merITz_tech
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - telegram
+  - id: telegram_shStrategy
+    type: telegram
+    name: shStrategy
+    enabled: true
+    url: https://t.me/s/shStrategy
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - telegram
+  - id: telegram_china_kis
+    type: telegram
+    name: china_kis
+    enabled: true
+    url: https://t.me/s/china_kis
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - telegram
+  - id: telegram_miraeoillee
+    type: telegram
+    name: miraeoillee
+    enabled: true
+    url: https://t.me/s/miraeoillee
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - telegram
+  - id: telegram_KISemicon
+    type: telegram
+    name: KISemicon
+    enabled: true
+    url: https://t.me/s/KISemicon
+    author: null
+    weight: 1.0
+    collection_mode: full
+    backfill_days: 365
+    tags:
+      - telegram
