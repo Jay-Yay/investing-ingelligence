@@ -1,0 +1,163 @@
+# 메모리 반도체 섹터 오버레이 (SK하이닉스/삼성전자 기본 적용 - 섹션 8).
+#
+# universe.yaml에서 sector: memory인 티커는 global_scoring.yaml 대신 이 파일의
+# category_weights/features/metric_specs를 적용받는다(부분 오버레이가 아니라 전체 대체).
+model_version: "1.0.0"
+sector: memory
+
+category_weights:
+  macro_liquidity: 10
+  memory_supply_demand_pricing: 25
+  company_fundamentals_hbm_competitiveness: 25
+  earnings_outlook: 15
+  normalized_valuation: 10
+  price_supply_demand: 10
+  oversupply_and_other_risk: 5
+
+# 이 섹터에서만 발동하는 추가 하드 게이트 (global_scoring.yaml의 공통 목록에 추가된다).
+extra_hard_gates:
+  - id: hbm_customer_qualification_failed
+    description: 주요 HBM 고객 인증 실패
+  - id: hbm4_mass_production_delay
+    description: HBM4 양산의 중대한 지연
+  - id: dram_price_decline_with_inventory_buildup
+    description: DRAM 가격 하락과 재고 증가 동시 발생
+
+# 카테고리별 필수 Feature 목록 (섹션 8). 여기 나열된 metric 문자열이 metric_specs에도
+# 정의돼 있어야 정규화가 가능하다 - 없으면 categories.py가 "정의되지 않은 metric"으로 건너뛰고
+# missing_critical_data에 기록한다.
+features:
+  memory_supply_demand_pricing:
+    - dram_contract_price_qoq
+    - dram_spot_price_qoq
+    - nand_contract_price_qoq
+    - hbm_price_qoq
+    - dram_bit_shipment_growth
+    - dram_bit_demand_growth
+    - dram_bit_supply_growth
+    - hbm_shipment_growth
+    - hbm_revenue_growth
+    - hbm_content_per_gpu_growth
+    - hbm_market_share
+    - hbm3e_qualification_status
+    - hbm4_qualification_status
+    - hbm4e_qualification_status
+    - hbm_yield_trend
+    - advanced_packaging_capacity_growth
+    - server_dram_demand_growth
+    - essd_demand_growth
+    - supplier_inventory_months
+    - customer_inventory_months
+    - long_term_agreement_coverage_pct
+    - prepayment_ratio_pct
+    - contract_cancellation_or_repricing_risk
+
+  company_fundamentals_hbm_competitiveness:
+    - capex_growth
+    - new_capacity_bit_supply_conversion_timing_months
+    - depreciation_growth
+    - operating_cash_flow_growth
+    - free_cash_flow_growth
+    - net_cash_or_net_debt_trend
+    - forward_12m_eps_revision_1m
+
+  earnings_outlook: []  # earnings_revision.py가 별도 계산해 이 카테고리 점수로 직접 대입한다
+
+  normalized_valuation: []  # valuation_scenarios.py가 별도 계산 (bear/base/bull, peak/current/normalized EPS)
+
+  price_supply_demand: []  # price_supply_demand.py가 별도 계산 (이동평균/상대강도/가격-재료 패턴)
+
+  oversupply_and_other_risk:
+    - supplier_inventory_months
+    - dram_bit_supply_growth
+    - new_capacity_bit_supply_conversion_timing_months
+
+# metric별 정규화 규칙 (섹션 2 "정규화/Feature 생성" 계층). regime/scoring.py와 동일한 철학 -
+# "일반화된 공식이 아니라 지표별 규칙"이지만, 여기서는 매번 새 Python 함수를 추가하지 않고
+# YAML에서 몇 가지 정규화 kind 중 하나를 선택하는 방식으로 설정 파일만으로 확장 가능하게 한다
+# (investor_intel/scoring/metric_normalizers.py 참고).
+#
+# kind 종류:
+#   growth_rate_pct   - 0%를 50점 중심으로, bad~good 사이를 선형으로 0~100에 매핑
+#   percent_passthrough - 이미 0~100(또는 0~1) 범위인 값을 그대로(또는 100배해서) 사용
+#   boolean           - 1.0/true는 100점, 0.0/false는 0점
+#   inverse_months    - 개월수 등 "낮을수록 좋음" 지표. good(낮은값)~bad(높은값) 구간을 반전 선형 매핑
+#   qualitative_trend - value가 아니라 details.trend 문자열("개선"/"악화"/"횡보")로 점수 결정
+metric_specs:
+  dram_contract_price_qoq: { kind: growth_rate_pct, bad: -15, good: 15 }
+  dram_spot_price_qoq: { kind: growth_rate_pct, bad: -20, good: 20 }
+  nand_contract_price_qoq: { kind: growth_rate_pct, bad: -15, good: 15 }
+  hbm_price_qoq: { kind: growth_rate_pct, bad: -10, good: 20 }
+  dram_bit_shipment_growth: { kind: growth_rate_pct, bad: -10, good: 20 }
+  dram_bit_demand_growth: { kind: growth_rate_pct, bad: -10, good: 20 }
+  dram_bit_supply_growth: { kind: inverse_growth_rate_pct, bad: 25, good: 5 }  # 공급 증가율이 낮을수록(수급 타이트) 긍정적
+  hbm_shipment_growth: { kind: growth_rate_pct, bad: -10, good: 40 }
+  hbm_revenue_growth: { kind: growth_rate_pct, bad: -10, good: 40 }
+  hbm_content_per_gpu_growth: { kind: growth_rate_pct, bad: -5, good: 20 }
+  hbm_market_share: { kind: percent_passthrough }
+  hbm3e_qualification_status: { kind: boolean }
+  hbm4_qualification_status: { kind: boolean }
+  hbm4e_qualification_status: { kind: boolean }
+  hbm_yield_trend: { kind: qualitative_trend }
+  advanced_packaging_capacity_growth: { kind: growth_rate_pct, bad: -5, good: 30 }
+  server_dram_demand_growth: { kind: growth_rate_pct, bad: -10, good: 25 }
+  essd_demand_growth: { kind: growth_rate_pct, bad: -10, good: 25 }
+  supplier_inventory_months: { kind: inverse_months, good: 1.0, bad: 6.0 }
+  customer_inventory_months: { kind: inverse_months, good: 1.0, bad: 6.0 }
+  long_term_agreement_coverage_pct: { kind: percent_passthrough }
+  prepayment_ratio_pct: { kind: percent_passthrough }
+  contract_cancellation_or_repricing_risk: { kind: qualitative_trend }
+  capex_growth: { kind: growth_rate_pct, bad: -10, good: 30 }
+  new_capacity_bit_supply_conversion_timing_months: { kind: inverse_months, good: 12.0, bad: 3.0 }  # 전환까지 오래 걸릴수록(공급 지연) 긍정적
+  depreciation_growth: { kind: inverse_growth_rate_pct, bad: 30, good: 5 }
+  operating_cash_flow_growth: { kind: growth_rate_pct, bad: -10, good: 40 }
+  free_cash_flow_growth: { kind: growth_rate_pct, bad: -20, good: 40 }
+  net_cash_or_net_debt_trend: { kind: qualitative_trend }
+  forward_12m_eps_revision_1m: { kind: growth_rate_pct, bad: -10, good: 10 }
+  # 종목별 추가 feature(아래 tickers.*.extra_features)는 전부 정성적 등급 판정이라
+  # qualitative_trend로 정규화한다 - IB 리포트/뉴스에서 개선/악화/횡보 판단만 뽑아내면 되므로.
+  hbm_market_leadership_retained: { kind: qualitative_trend }
+  joint_development_with_key_customer: { kind: qualitative_trend }
+  hbm4_mass_production_stability: { kind: qualitative_trend }
+  hbm_customer_concentration: { kind: qualitative_trend }
+  hbm_dependency_ratio: { kind: qualitative_trend }
+  yield_and_packaging_edge_vs_competitor: { kind: qualitative_trend }
+  long_term_contract_quality: { kind: qualitative_trend }
+  post_capex_expansion_supply_risk_12m: { kind: qualitative_trend }
+  hbm4_customer_qualification: { kind: boolean }
+  hbm_share_recovery_speed: { kind: qualitative_trend }
+  yield_gap_vs_skhynix: { kind: qualitative_trend }
+  commodity_dram_price_upside_beneficiary: { kind: qualitative_trend }
+  hbm_revenue_share: { kind: percent_passthrough }
+  foundry_performance: { kind: qualitative_trend }
+  mobile_non_memory_impact: { kind: qualitative_trend }
+  diversification_downside_protection: { kind: qualitative_trend }
+  share_recovery_price_war_risk: { kind: qualitative_trend }
+
+tickers:
+  "000660.KS":
+    name: SK하이닉스
+    extra_features:
+      - hbm_market_leadership_retained
+      - joint_development_with_key_customer
+      - hbm4_mass_production_stability
+      - hbm_customer_concentration
+      - hbm_dependency_ratio
+      - yield_and_packaging_edge_vs_competitor
+      - long_term_contract_quality
+      - post_capex_expansion_supply_risk_12m
+    benchmarks: [KOSPI, KRX_SEMICONDUCTOR]
+
+  "005930.KS":
+    name: 삼성전자
+    extra_features:
+      - hbm4_customer_qualification
+      - hbm_share_recovery_speed
+      - yield_gap_vs_skhynix
+      - commodity_dram_price_upside_beneficiary
+      - hbm_revenue_share
+      - foundry_performance
+      - mobile_non_memory_impact
+      - diversification_downside_protection
+      - share_recovery_price_war_risk
+    benchmarks: [KOSPI, KRX_SEMICONDUCTOR]

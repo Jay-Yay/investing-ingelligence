@@ -192,6 +192,27 @@ def has_transcript_for_period(
     return row is not None
 
 
+def latest_filing_for_ticker(
+    conn: sqlite3.Connection, ticker: str, filing_types: tuple[str, ...]
+) -> sqlite3.Row | None:
+    """이 티커의 SEC 공시(source_type='sec_filing') 중 filing_types에 속하는 가장 최근
+    문서(published_at 기준) 하나를 반환한다. `regime analyze-ai`가 하이퍼스케일러/반도체
+    종목의 최신 10-Q/10-K 본문을 찾아 LLM 추출 입력으로 쓰는 데 사용한다."""
+    placeholders = ",".join("?" for _ in filing_types)
+    row = conn.execute(
+        f"""
+        SELECT d.* FROM documents d
+        JOIN document_assets da ON d.id = da.document_id
+        WHERE da.ticker = ? AND d.source_type = 'sec_filing'
+        AND d.filing_type IN ({placeholders})
+        ORDER BY d.published_at DESC
+        LIMIT 1
+        """,
+        (ticker, *filing_types),
+    ).fetchone()
+    return row
+
+
 def get_document_by_canonical_url(
     conn: sqlite3.Connection, canonical_url: str
 ) -> sqlite3.Row | None:

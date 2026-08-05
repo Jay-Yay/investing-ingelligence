@@ -5,6 +5,8 @@ from investor_intel.config.settings import AppSettings
 from investor_intel.pipeline import regime as pipeline_regime
 from investor_intel.regime import history_store
 from investor_intel.regime.collectors import (
+    ai_hyperscaler_capex,
+    ai_semiconductor_demand,
     leverage_positioning,
     market_breadth,
     vix_term_structure,
@@ -59,6 +61,16 @@ def _patch_network_collectors(monkeypatch) -> None:
         leverage_positioning,
         "collect",
         lambda client, fetched_at: _fake_obs(IndicatorId.LEVERAGE_POSITIONING, 5.0),
+    )
+    monkeypatch.setattr(
+        ai_hyperscaler_capex,
+        "collect",
+        lambda adapter, fetched_at: _fake_obs(IndicatorId.AI_HYPERSCALER_CAPEX_EFFICIENCY, 0.3),
+    )
+    monkeypatch.setattr(
+        ai_semiconductor_demand,
+        "collect",
+        lambda adapter, fetched_at: _fake_obs(IndicatorId.AI_SEMICONDUCTOR_DEMAND, 20.0),
     )
 
 

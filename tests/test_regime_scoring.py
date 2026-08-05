@@ -7,7 +7,7 @@ from investor_intel.regime.models import (
     IndicatorObservation,
     IndicatorStatus,
 )
-from investor_intel.regime.scoring import compute_scores
+from investor_intel.regime.scoring import build_cooling_risk_rationale, compute_scores
 
 _NOW = datetime(2026, 1, 1, 9, tzinfo=UTC)
 
@@ -92,6 +92,20 @@ def test_missing_indicators_reweight_proportionally_not_zero_fill() -> None:
     assert partial_result.cooling_risk is not None
 
 
+def test_cooling_rationale_ranks_by_weight_and_caps_at_five_lines() -> None:
+    rationale, citations = build_cooling_risk_rationale(_full_cooling_observations())
+    assert rationale.index(IndicatorId.CREDIT_SPREAD_HY_OAS.value) < rationale.index(
+        IndicatorId.MARKET_BREADTH.value
+    )
+    assert IndicatorId.LEVERAGE_POSITIONING.value not in rationale  # lowest weight, cut at 5 lines
+    assert citations == [("test", "https://example.com")]  # deduped - all fixtures share one url
+
+
+def test_cooling_rationale_skips_indicators_without_a_contribution() -> None:
+    rationale, _ = build_cooling_risk_rationale({})
+    assert rationale == ""
+
+
 def test_confidence_level_thresholds() -> None:
     high_coverage = compute_scores(_full_cooling_observations())
     assert high_coverage.confidence_level in (ConfidenceLevel.MEDIUM, ConfidenceLevel.HIGH)
@@ -120,6 +134,70 @@ def test_unavailable_status_indicator_excluded_from_score() -> None:
     # coverage should drop by exactly the credit spread weight share (0.20) relative to full
     full_result = compute_scores(_full_cooling_observations())
     assert result.cooling_coverage < full_result.cooling_coverage
+
+
+def test_ai_cycle_uses_phase_2a_free_fields_without_cloud_revenue() -> None:
+    """cloud_ai_revenue_growth_yoy(Phase 2b, LLM)가 없어도 capex_growth_yoy/
+    capex_intensity_percentile_avg/revenue_growth_yoy_percentile_avg(Phase 2a, 무료)만으로
+    3개 가중치 줄 중 2개(하이퍼스케일러)+1개(반도체) = 60%가 커버되어야 한다."""
+    observations = {
+        IndicatorId.AI_HYPERSCALER_CAPEX_EFFICIENCY: _obs(
+            IndicatorId.AI_HYPERSCALER_CAPEX_EFFICIENCY,
+            0.3,
+            {
+                "capex_growth_yoy": 40.0,
+                "capex_intensity_percentile_avg": 70.0,
+                "cloud_ai_revenue_growth_yoy": None,
+            },
+        ),
+        IndicatorId.AI_SEMICONDUCTOR_DEMAND: _obs(
+            IndicatorId.AI_SEMICONDUCTOR_DEMAND,
+            25.0,
+            {"revenue_growth_yoy_percentile_avg": 80.0},
+        ),
+    }
+    result = compute_scores(observations)
+
+    assert result.ai_cycle is not None
+    assert result.ai_coverage == 0.6
+
+
+def test_ai_cycle_reaches_full_hyperscaler_coverage_once_cloud_revenue_present() -> None:
+    """Phase 2b(LLM)가 cloud_ai_revenue_growth_yoy를 채우면 하이퍼스케일러 3개 줄이 모두
+    커버되어 ai_coverage가 0.6에서 0.85로 올라가야 한다(EPS 줄만 계속 제외)."""
+    observations = {
+        IndicatorId.AI_HYPERSCALER_CAPEX_EFFICIENCY: _obs(
+            IndicatorId.AI_HYPERSCALER_CAPEX_EFFICIENCY,
+            0.3,
+            {
+                "capex_growth_yoy": 40.0,
+                "capex_intensity_percentile_avg": 70.0,
+                "cloud_ai_revenue_growth_yoy": 35.0,
+            },
+        ),
+        IndicatorId.AI_SEMICONDUCTOR_DEMAND: _obs(
+            IndicatorId.AI_SEMICONDUCTOR_DEMAND,
+            25.0,
+            {"revenue_growth_yoy_percentile_avg": 80.0},
+        ),
+    }
+    result = compute_scores(observations)
+
+    assert result.ai_coverage == 0.85
+
+
+def test_ai_cycle_ignores_unavailable_hyperscaler_indicator() -> None:
+    observations = {
+        IndicatorId.AI_HYPERSCALER_CAPEX_EFFICIENCY: _obs(
+            IndicatorId.AI_HYPERSCALER_CAPEX_EFFICIENCY,
+            None,
+            {},
+            status=IndicatorStatus.UNAVAILABLE,
+        ),
+    }
+    result = compute_scores(observations)
+    assert result.ai_cycle is None
+    assert result.ai_coverage == 0.0
 
 
 def test_stale_indicators_reduce_data_confidence() -> None:

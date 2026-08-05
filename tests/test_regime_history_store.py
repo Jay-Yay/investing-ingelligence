@@ -54,6 +54,31 @@ def test_same_day_rerun_with_identical_value_is_idempotent(tmp_path: Path) -> No
     assert len(read_history(vault, IndicatorId.CREDIT_SPREAD_HY_OAS)) == 1
 
 
+def test_same_day_rerun_with_changed_details_is_not_deduped(tmp_path: Path) -> None:
+    """regime analyze-ai(Phase 2b)가 같은 날짜의 headline value/status는 그대로 두고
+    details만 채워 넣는 시나리오 - value/status만 비교하면 이 갱신이 조용히 버려진다."""
+    vault = tmp_path / "vault"
+    first = _obs(3.2, date(2026, 1, 1), datetime(2026, 1, 1, 9, tzinfo=UTC))
+    append_observations(vault, IndicatorId.CREDIT_SPREAD_HY_OAS, [first])
+
+    enriched = first.model_copy(
+        update={
+            "fetched_at": datetime(2026, 1, 1, 15, tzinfo=UTC),
+            "details": {"cloud_ai_revenue_growth_yoy": 35.0},
+        }
+    )
+    written = append_observations(vault, IndicatorId.CREDIT_SPREAD_HY_OAS, [enriched])
+
+    assert written == 1
+    history = read_history(vault, IndicatorId.CREDIT_SPREAD_HY_OAS)
+    assert len(history) == 2
+    latest = latest_observation(history)
+    assert latest is not None
+    assert latest.details == {"cloud_ai_revenue_growth_yoy": 35.0}
+    # value가 그대로이므로 is_revised는 False여야 한다 - details 변경은 개정이 아니다
+    assert latest.is_revised is False
+
+
 def test_revised_value_for_same_date_is_appended_and_flagged(tmp_path: Path) -> None:
     vault = tmp_path / "vault"
     first = _obs(3.2, date(2026, 1, 1), datetime(2026, 1, 1, 9, tzinfo=UTC))

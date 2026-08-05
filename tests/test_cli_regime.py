@@ -7,6 +7,8 @@ from investor_intel.cli import app
 from investor_intel.pipeline import regime as pipeline_regime
 from investor_intel.regime import history_store
 from investor_intel.regime.collectors import (
+    ai_hyperscaler_capex,
+    ai_semiconductor_demand,
     anfci,
     credit_spread,
     employment,
@@ -73,6 +75,16 @@ def _patch_all_collectors(monkeypatch) -> None:
         "collect",
         lambda client, fetched_at: _fake_obs(IndicatorId.LEVERAGE_POSITIONING),
     )
+    monkeypatch.setattr(
+        ai_hyperscaler_capex,
+        "collect",
+        lambda adapter, fetched_at: _fake_obs(IndicatorId.AI_HYPERSCALER_CAPEX_EFFICIENCY),
+    )
+    monkeypatch.setattr(
+        ai_semiconductor_demand,
+        "collect",
+        lambda adapter, fetched_at: _fake_obs(IndicatorId.AI_SEMICONDUCTOR_DEMAND),
+    )
 
 
 def test_regime_collect_command_writes_history(tmp_path: Path, monkeypatch) -> None:
@@ -112,3 +124,27 @@ def test_regime_score_without_prior_collect_fails_cleanly(tmp_path: Path) -> Non
     vault = tmp_path / "vault"
     result = runner.invoke(app, ["regime", "score", "--vault-path", str(vault)])
     assert result.exit_code == 1
+
+
+def test_regime_analyze_ai_requires_anthropic_api_key(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.chdir(tmp_path)
+    vault = tmp_path / "vault"
+    sqlite_path = tmp_path / "data" / "index.sqlite3"
+
+    result = runner.invoke(
+        app,
+        [
+            "regime",
+            "analyze-ai",
+            "--vault-path",
+            str(vault),
+            "--sqlite-path",
+            str(sqlite_path),
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "ANTHROPIC_API_KEY" in result.output

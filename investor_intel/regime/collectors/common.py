@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
+from investor_intel.market_data.provider import FundamentalPoint
 from investor_intel.regime.models import (
     IndicatorFrequency,
     IndicatorId,
@@ -86,3 +87,28 @@ def unavailable_observation(
         status=IndicatorStatus.UNAVAILABLE,
         details={"error_reason": reason},
     )
+
+
+def ttm_series(points: list[FundamentalPoint]) -> list[tuple[date, float]]:
+    """분기 시계열(YahooFundamentalsAdapter.get_quarterly_fundamentals 결과)에서 각 분기말
+    기준 최근 4개 분기 합(trailing twelve months) 시계열을 만든다. points는 정렬 순서를
+    가정하지 않고 as_of_date 기준으로 다시 정렬한다. 4분기 미만인 앞부분은 계산하지 않는다
+    (추정하지 않는다)."""
+    sorted_points = sorted(points, key=lambda p: p.as_of_date)
+    return [
+        (sorted_points[i].as_of_date, sum(p.value for p in sorted_points[i - 3 : i + 1]))
+        for i in range(3, len(sorted_points))
+    ]
+
+
+def yoy_growth_series(series: list[tuple[date, float]]) -> list[tuple[date, float]]:
+    """TTM 시계열(ttm_series 결과 등, 날짜 오름차순 가정)에서 4분기 전 대비 변화율(%)
+    시계열을 계산한다 - AI 하이퍼스케일러 Capex/반도체 매출 등 "YoY 성장률"이 필요한
+    지표에서 공통으로 쓴다."""
+    result: list[tuple[date, float]] = []
+    for i in range(4, len(series)):
+        prior = series[i - 4][1]
+        if prior == 0:
+            continue
+        result.append((series[i][0], (series[i][1] - prior) / prior * 100))
+    return result

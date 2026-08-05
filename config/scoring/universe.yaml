@@ -1,0 +1,36 @@
+# 스코어링 대상 종목 레지스트리.
+#
+# vault/30_Portfolio/portfolio.yaml(실제 보유 현황 - quantity/average_cost/비중)과 의도적으로
+# 분리한다. 기업의 투자 매력도 점수는 "내가 얼마에 샀는지"와 무관해야 하기 때문에, 이 파일에는
+# average_cost/quantity 같은 필드가 존재하지 않는다 - 스코어링 엔진은 이 파일만 읽고
+# portfolio.yaml을 참조하지 않는다(포지션 사이징·비중 확대/축소 판단 단계에서만 별도로
+# portfolio.yaml과 결합한다). 아직 매수하지 않은 관심종목도 여기 등록해 스코어링만 먼저 돌릴
+# 수 있다 - 종목 목록이 코드가 아니라 이 파일에서 결정된다.
+model_version: "1.0.0"
+timezone: Asia/Seoul
+base_currency: KRW
+
+# 투자기간(개월) - 여러 기간에 걸친 판단을 지원한다.
+horizons_months: [6, 12, 24]
+# 단기 성과 측정 윈도우(거래일)
+short_term_windows_days: [5, 20]
+# 중기 성과 측정 윈도우(거래일)
+mid_term_windows_days: [60, 120]
+
+# 국내 종목 기본 벤치마크
+default_benchmarks: [KOSPI, KRX_SEMICONDUCTOR]
+# 해외 종목 추가 시 기본 벤치마크
+foreign_benchmarks: [SP500, NASDAQ100, PHLX_SEMICONDUCTOR]
+
+tickers:
+  - ticker: "000660.KS"
+    name: SK하이닉스
+    sector: memory
+    country: KR
+    benchmarks: [KOSPI, KRX_SEMICONDUCTOR]
+
+  - ticker: "005930.KS"
+    name: 삼성전자
+    sector: memory
+    country: KR
+    benchmarks: [KOSPI, KRX_SEMICONDUCTOR]

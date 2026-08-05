@@ -1,0 +1,78 @@
+# 공통 스코어링 기준 (섹터 오버레이가 없는 종목, 또는 섹터 오버레이의 기본값).
+#
+# 여기 있는 숫자를 바꾸는 것 자체가 "모델 변경"이다 - model_version을 올리지 않고 이 파일만
+# 조용히 고치면 과거 스냅샷과 비교가 깨진다. 가중치/임계값을 바꿀 때는 반드시
+# model_registry/challengers/에 새 버전을 만들어 백테스트로 검증한 뒤 사람이 승인해서
+# champion.yaml을 갱신하는 절차(README "모델 버전 변경 방법" 참고)를 따른다 - 이 파일을 직접
+# 편집해 즉시 프로덕션에 반영하지 않는다.
+model_version: "1.0.0"
+
+# 대분류 가중치 (합 100). 섹터 오버레이 파일(sector_*.yaml)이 있으면 그 파일의
+# category_weights가 이 값을 완전히 대체한다(부분 오버레이 아님).
+category_weights:
+  macro_liquidity: 15
+  end_demand_industry: 20
+  company_fundamentals: 25
+  earnings_outlook: 15
+  valuation: 10
+  price_supply_demand: 10
+  risk: 5
+
+# 총점 구간 (섹션 14) - 참고용 라벨일 뿐, 실제 매매 판단은 hysteresis 임계값을 따른다.
+score_bands:
+  strong_buy_candidate: 80
+  accumulate_candidate: 70
+  hold_watch: 55
+  reduce_review: 40
+  # 40 미만: sell_review
+
+# 히스테리시스 (섹션 15) - 점수가 경계선 근처에서 반복적으로 오가며 신호가 계속 바뀌는 것을
+# 막는다. entry_new_buy는 "신규 매수 진입"에만 적용되고, 기존 보유는 maintain_buy까지
+# 하락해야 신호가 바뀐다(같은 점수라도 신규 진입과 기존 유지의 기준이 다르다).
+hysteresis:
+  entry_new_buy: 72
+  maintain_buy: 62
+  reduce_review: 55
+  sell_review: 45
+  cooldown_trading_days: 5
+
+# 신규 매수 신호가 성립하려면 이 조건을 전부 충족해야 한다 (섹션 14).
+new_buy_requirements:
+  min_total_score: 70
+  min_confidence: 0.70
+  min_consecutive_score_increases: 2
+  min_secondary_confirmations: 2  # 아래 secondary_confirmation_signals 중 최소 이 개수 이상
+
+# "추가로 다음 중 최소 2개 이상 충족" 목록 (섹션 14) - stock_scoring 파이프라인이 카테고리
+# 세부 지표에서 이 조건들을 판정한다. 문자열 자체는 evaluation/report에서 사람이 읽는 근거로도
+# 쓰인다.
+secondary_confirmation_signals:
+  - relative_strength_vs_sector_improving
+  - forward_12m_eps_revision_up
+  - company_guidance_raised
+  - industry_pricing_or_orders_improving
+  - price_resilient_despite_negative_news
+  - post_earnings_rally_with_volume
+
+# 하드 게이트 (섹션 13) - 하나라도 발동하면 총점과 무관하게 신규 매수 신호를 차단한다.
+# 종목/섹터별 추가 하드 게이트는 sector_*.yaml의 extra_hard_gates에 정의한다.
+hard_gates:
+  - id: guidance_cut_two_consecutive_quarters
+    description: 2개 분기 연속 회사 가이던스 하향
+  - id: eps_consensus_cut_two_consecutive_quarters
+    description: 2개 분기 연속 EPS 컨센서스 하향
+  - id: key_customer_lost
+    description: 핵심 고객 상실
+  - id: liquidity_or_accounting_risk
+    description: 심각한 유동성 또는 회계 위험
+  - id: export_ban_core_product
+    description: 핵심 제품에 대한 수출 금지
+  - id: stale_critical_data
+    description: 데이터 신선도 기준 미달 (핵심 카테고리 데이터가 max_age_days 초과)
+
+# 신뢰도 계산(섹션 12) 관련 기본값.
+confidence:
+  low_threshold: 0.50
+  high_threshold: 0.80
+  stale_penalty_per_feature: 0.03
+  rumor_or_social_source_cap: 0.40  # 소셜미디어/루머만으로 뒷받침된 feature는 confidence가 이 값을 넘지 않는다

@@ -1,0 +1,13 @@
+# 현재 프로덕션에서 실제 매매 판단에 쓰이는 모델 버전.
+#
+# 이 파일은 `investor_intel score`가 참조하지 않는다(설정값은 config/scoring/*.yaml의
+# model_version 필드가 실제 소스 오브 트루스다) - champion.yaml은 "지금 어떤 버전이 프로덕션에
+# 승인되어 있는지"를 사람이 추적하기 위한 기록용 문서다. config/scoring/*.yaml을 직접 고치기
+# 전에는 반드시 이 파일과 changelog.md를 함께 갱신한다(README "모델 버전 변경 방법" 참고).
+global_scoring_model_version: "1.0.0"
+sector_memory_model_version: "1.0.0"
+approved_at: "2026-08-02"
+approved_by: "jerryhong (직접 승인 - 초기 버전이라 별도 백테스트 없이 시작)"
+notes: >
+  초기 버전. 스냅샷이 아직 누적되지 않아 evaluation.py의 워크포워드 비교는 표본 부족으로
+  실행할 수 없는 상태다 - 스냅샷이 몇 개월 쌓인 뒤 첫 challenger 비교를 시도한다.

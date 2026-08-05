@@ -10,7 +10,7 @@ from investor_intel.regime.models import (
     MarketRegime,
 )
 from investor_intel.regime.regime_classifier import classify_ai_regime, classify_market_regime
-from investor_intel.regime.scoring import ScoringResult
+from investor_intel.regime.scoring import ScoringResult, compute_scores
 
 _NOW = datetime(2026, 1, 1, 9, tzinfo=UTC)
 
@@ -117,3 +117,27 @@ def test_ai_regime_is_indeterminate_when_ai_coverage_below_50_percent() -> None:
 def test_ai_regime_expansion_when_coverage_and_score_high() -> None:
     scores = _scores(20.0, 20.0, ai_cycle=75.0, ai_coverage=0.8)
     assert classify_ai_regime(scores, {}) == AiRegime.AI_EXPANSION
+
+
+def test_ai_regime_reaches_expansion_via_real_phase_2a_scoring() -> None:
+    """compute_scores를 실제로 거쳐(합성 ScoringResult가 아니라) Phase 2a 무료 지표만으로
+    AI_EXPANSION까지 도달 가능함을 확인한다 - Phase 1에서는 ai_coverage가 항상 0이라
+    구조적으로 도달 불가능했던 상태였다."""
+    observations = {
+        IndicatorId.AI_HYPERSCALER_CAPEX_EFFICIENCY: _obs(
+            IndicatorId.AI_HYPERSCALER_CAPEX_EFFICIENCY,
+            {
+                "capex_growth_yoy": 55.0,
+                "capex_intensity_percentile_avg": 95.0,
+                "cloud_ai_revenue_growth_yoy": None,
+            },
+        ),
+        IndicatorId.AI_SEMICONDUCTOR_DEMAND: _obs(
+            IndicatorId.AI_SEMICONDUCTOR_DEMAND,
+            {"revenue_growth_yoy_percentile_avg": 95.0},
+        ),
+    }
+    scores = compute_scores(observations)
+    assert scores.ai_coverage == 0.6
+    assert scores.ai_cycle is not None and scores.ai_cycle >= 70
+    assert classify_ai_regime(scores, observations) == AiRegime.AI_EXPANSION

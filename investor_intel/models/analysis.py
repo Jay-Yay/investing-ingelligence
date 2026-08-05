@@ -11,6 +11,7 @@ from investor_intel.models.common import (
     TenbaggerTier,
     ThesisShift,
 )
+from investor_intel.scoring.models import DriverNote
 
 
 class Claim(BaseModel):
@@ -136,6 +137,48 @@ class TenbaggerSurvival(BaseModel):
     cash: float | None
     runway_quarters: float | None
     verdict: str
+
+
+class FundamentalAnalystAssessment(BaseModel):
+    """`llm/fundamental_analyst.py`의 출력. thesis_shift 판단만 하고 점수는 매기지 않는다 -
+    총점은 scoring/pipeline.py가 Feature 기반으로 별도 계산한다."""
+
+    ticker: str
+    thesis_shift: ThesisShift
+    impacted_categories: list[str] = []
+    causal_chain: str
+    consensus_comparison: str
+    new_positive_drivers: list[DriverNote] = []
+    new_negative_drivers: list[DriverNote] = []
+    next_catalysts: list[str] = []
+
+
+class BearCaseCritique(BaseModel):
+    """`llm/bear_case_critic.py`의 출력. Fundamental Analyst의 판단을 그대로 승인하지 않고
+    반대 논리·누락 리스크·낙관 편향 여부를 전담해서 검토한다."""
+
+    ticker: str
+    counter_arguments: list[str] = []
+    missing_risks: list[str] = []
+    optimism_bias_detected: bool = False
+    conflated_growth_with_price: bool = False
+    conflated_correlation_with_causation: bool = False
+    priced_in_assessment: str
+    revised_invalidation_conditions: list[str] = []
+
+
+class ModelChangeProposal(BaseModel):
+    """`llm/model_reviewer.py`의 출력. 섹션 19 형식 그대로 - status는 항상
+    pending_human_approval로 시작하고, 이 값을 코드가 자동으로 champion으로 승격하지 않는다."""
+
+    proposal: str
+    current_rule: str
+    proposed_rule: str
+    evidence: list[str] = []
+    backtest_plan: str
+    expected_benefit: str
+    possible_side_effect: str
+    status: str = "pending_human_approval"
 
 
 class TenbaggerVerification(BaseModel):

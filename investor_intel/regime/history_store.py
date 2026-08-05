@@ -52,10 +52,13 @@ def append_observations(
 ) -> int:
     """새 관측치를 append한다.
 
-    같은 observation_date에 대해 마지막으로 저장된 값과 동일하면(개정 없음, 같은 날 재실행
-    등) 중복 저장하지 않는다 - "동일 날짜 재실행 시 중복 저장되지 않아야 한다"는 idempotent
-    요구사항. 값이 실제로 달라졌으면(진짜 개정) is_revised=True로 새 줄을 추가하고 기존 줄은
-    지우지 않는다 - 개정 이력 자체를 보존하기 위함(원본 지침 #4).
+    같은 observation_date에 대해 마지막으로 저장된 값·상태·details가 전부 동일하면(변경
+    없음, 같은 날 재실행 등) 중복 저장하지 않는다 - "동일 날짜 재실행 시 중복 저장되지
+    않아야 한다"는 idempotent 요구사항. details까지 비교하는 이유: `regime analyze-ai`
+    (Phase 2b)는 같은 날짜의 headline value/status는 그대로 두고 details만 채워 넣는데,
+    value/status만 비교하면 이 갱신이 조용히 버려진다. 값이 실제로 달라졌으면(진짜 개정)
+    is_revised=True로 새 줄을 추가하고 기존 줄은 지우지 않는다 - 개정 이력 자체를 보존하기
+    위함(원본 지침 #4). is_revised는 details가 아니라 headline value 변경 여부만 본다.
     """
     if not observations:
         return 0
@@ -66,7 +69,12 @@ def append_observations(
     to_write: list[IndicatorObservation] = []
     for obs in observations:
         prior = latest.get(obs.observation_date)
-        if prior is not None and prior.value == obs.value and prior.status == obs.status:
+        if (
+            prior is not None
+            and prior.value == obs.value
+            and prior.status == obs.status
+            and prior.details == obs.details
+        ):
             continue
         is_revised = None if prior is None else prior.value != obs.value
         to_write.append(obs.model_copy(update={"is_revised": is_revised}))

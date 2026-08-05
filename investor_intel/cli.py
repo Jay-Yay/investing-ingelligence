@@ -39,13 +39,20 @@ from investor_intel.pipeline.orchestrator import (
 from investor_intel.pipeline.regime import (
     load_current_observations,
     load_snapshot,
+    run_regime_analyze_ai,
     run_regime_collect,
     run_regime_daily,
     run_regime_report,
     run_regime_score,
 )
+from investor_intel.pipeline.stock_score import (
+    run_score_compute,
+    run_score_weekly,
+)
 from investor_intel.pipeline.web_research import run_web_research_for_portfolio
 from investor_intel.reports.daily_report_renderer import DailyReportContext, render_daily_report
+from investor_intel.reports.stock_score_renderer import render_stock_score_report
+from investor_intel.scoring.snapshot import load_snapshot as load_stock_score_snapshot
 from investor_intel.storage.cost_ledger import init_cost_ledger
 from investor_intel.storage.sqlite_index import connect, init_db
 from investor_intel.storage.sqlite_index import reindex as reindex_vault
@@ -55,6 +62,13 @@ regime_app = typer.Typer(
     help="시장 국면 추적 (Phase 1: 무료 지표 기반 cooling/overheating/ai_cycle 점수)"
 )
 app.add_typer(regime_app, name="regime")
+score_app = typer.Typer(
+    help=(
+        "종목별 정량 스코어링 (설정 파일 기반 결정론적 점수 + 주간/이벤트 LLM 정성분석). "
+        "config/scoring/*.yaml로 종목/섹터/기준을 관리한다."
+    )
+)
+app.add_typer(score_app, name="score")
 
 
 @app.callback()
@@ -80,8 +94,10 @@ VAULT_DIRS = [
     "40_Analysis/Events",
     "50_Reports/Daily",
     "50_Reports/MarketRegime",
+    "50_Reports/StockScore",
     "60_MarketRegime/history",
     "60_MarketRegime/processed",
+    "60_StockScore/processed",
     "90_Templates",
 ]
 
@@ -1180,3 +1196,174 @@ def regime_run_daily_cmd(
     if result.report_path:
         typer.echo(f"리포트 생성 완료: {result.report_path}")
     raise typer.Exit(code=0 if result.report_path else 1)
+
+
+DEFAULT_REGIME_AI_METRICS_PROMPT = (
+    "역할: 재무 애널리스트. 아래 원문 SEC 공시(10-Q/10-K)에서 클라우드/AI 관련 세그먼트 매출과 "
+    "그 YoY 성장률, CapEx/AI 투자 가이던스 방향을 추출하라. 원문에 명시적으로 없는 값은 "
+    "추정하지 말고 비워 둬라. 근거 문장(source_quote/guidance_quote)을 항상 원문 그대로 "
+    "인용하라."
+)
+
+
+@regime_app.command(name="analyze-ai")
+def regime_analyze_ai_cmd(
+    config_dir: Annotated[Path, typer.Option(help="Config directory")] = Path("./config"),
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    sqlite_path: Annotated[Path, typer.Option(help="SQLite index path")] = Path(
+        "./data/index.sqlite3"
+    ),
+) -> None:
+    """MSFT/GOOGL/AMZN/META/ORCL + NVDA/AVGO의 최신 10-Q/10-K에서 클라우드/AI 매출 성장률과
+    CapEx 가이던스 방향을 LLM으로 추출해 ai_hyperscaler_capex_efficiency/
+    ai_semiconductor_demand 관측치의 details를 보강한다(Phase 2b).
+
+    ANTHROPIC_API_KEY와 LLM 예산이 필요해 `regime collect`/`run-daily`(무인 크론 포함)와
+    분리된 수동 명령이다. `regime collect` -> `regime analyze-ai` -> `regime score` ->
+    `regime report` 순서로 실행해야 오늘 리포트에 반영된다. 대상 종목의 최신 10-Q/10-K가
+    이미 vault에 수집돼 있어야 한다(`collect`가 SEC 필링 수집을 담당).
+    """
+    settings = AppSettings()
+    if not settings.anthropic_api_key:
+        typer.echo("ANTHROPIC_API_KEY 미설정 - AI 지표 LLM 추출을 실행할 수 없다")
+        raise typer.Exit(code=1)
+
+    conn = connect(sqlite_path)
+    try:
+        init_db(conn)
+        reindex_vault(conn, vault_path)
+        init_cost_ledger(conn)
+        client = AnthropicClient(
+            api_key=settings.anthropic_api_key, model=settings.anthropic_model
+        )
+        cost_tracker = CostTracker(
+            conn, settings.daily_llm_budget_usd, settings.monthly_llm_budget_usd
+        )
+        prompt = load_prompt(
+            config_dir, "regime_ai_metrics.md", DEFAULT_REGIME_AI_METRICS_PROMPT
+        )
+        result = run_regime_analyze_ai(vault_path, sqlite_path, client, cost_tracker, prompt)
+    finally:
+        conn.close()
+
+    typer.echo(f"{result.processed}개 종목 추출 완료")
+    for error in result.errors:
+        typer.echo(f"오류: {error}")
+    raise typer.Exit(code=1 if result.errors else 0)
+
+
+@score_app.command(name="compute")
+def score_compute_cmd(
+    ticker: Annotated[
+        str, typer.Argument(help="config/scoring/universe.yaml에 등록된 티커 (예: 000660.KS)")
+    ],
+    config_dir: Annotated[Path, typer.Option(help="Config directory")] = Path("./config"),
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    currently_held: Annotated[
+        bool, typer.Option(help="포트폴리오에 이미 보유 중인지 (신규 진입/유지 임계값이 다름)")
+    ] = False,
+) -> None:
+    """LLM 없이 결정론적 점수만 재계산한다 (가격/거래량/재무제표 성장률 갱신). 밸류에이션
+    시나리오·EPS 수정치는 가장 최근 `score run-weekly` 결과를 그대로 이어받는다 - 무인 실행
+    가능(regime run-daily와 동일한 성격)."""
+    outcome = run_score_compute(ticker, vault_path, config_dir, currently_held=currently_held)
+    r = outcome.result
+    typer.echo(
+        f"{r.ticker}: total_score={r.total_score} confidence={r.confidence:.2f} "
+        f"signal={r.signal.value if r.signal else 'N/A'} thesis_status={r.thesis_status.value}"
+    )
+    for warning in outcome.warnings:
+        typer.echo(f"[경고] {warning}")
+    typer.echo(f"스냅샷 저장: {outcome.snapshot_path}")
+
+
+@score_app.command(name="run-weekly")
+def score_run_weekly_cmd(
+    ticker: Annotated[str, typer.Argument(help="config/scoring/universe.yaml에 등록된 티커")],
+    config_dir: Annotated[Path, typer.Option(help="Config directory")] = Path("./config"),
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    sqlite_path: Annotated[Path, typer.Option(help="SQLite index path")] = Path(
+        "./data/index.sqlite3"
+    ),
+    currently_held: Annotated[bool, typer.Option(help="포트폴리오에 이미 보유 중인지")] = False,
+    since_days: Annotated[
+        int, typer.Option(help="이 종목이 언급된 문서를 며칠 전까지 훑을지")
+    ] = 14,
+) -> None:
+    """주간/이벤트 실행 - Evidence Collector/Fundamental Analyst/Bear Case Critic을 이 종목의
+    최근 문서에 대해 실행한 뒤 결정론적 점수를 재계산한다. 하루 LLM 예산과 충돌하지 않도록 이
+    명령은 무인 daily 크론에 배선하지 않는다 - 주 1회 또는 실적 발표 등 이벤트 발생 시에만 수동
+    실행한다."""
+    settings = AppSettings()
+    if not settings.anthropic_api_key:
+        typer.echo("ANTHROPIC_API_KEY 미설정 - run-weekly를 실행할 수 없다")
+        raise typer.Exit(code=1)
+
+    conn = connect(sqlite_path)
+    try:
+        init_db(conn)
+        reindex_vault(conn, vault_path)
+        init_cost_ledger(conn)
+        client = AnthropicClient(api_key=settings.anthropic_api_key, model=settings.anthropic_model)
+        cost_tracker = CostTracker(
+            conn, settings.daily_llm_budget_usd, settings.monthly_llm_budget_usd
+        )
+        evidence_prompt = load_prompt(config_dir, "evidence_collector.md", "")
+        fundamental_prompt = load_prompt(config_dir, "fundamental_analyst.md", "")
+        bear_case_prompt = load_prompt(config_dir, "bear_case_critic.md", "")
+        mandate = load_investment_mandate(vault_path)
+        if mandate:
+            fundamental_prompt = f"{fundamental_prompt}\n\n---\n\n{mandate}"
+            bear_case_prompt = f"{bear_case_prompt}\n\n---\n\n{mandate}"
+
+        outcome = run_score_weekly(
+            ticker,
+            vault_path,
+            config_dir,
+            conn,
+            client,
+            cost_tracker,
+            evidence_prompt,
+            fundamental_prompt,
+            bear_case_prompt,
+            currently_held=currently_held,
+            since_days=since_days,
+        )
+        r = outcome.result
+        signal_text = r.signal.value if r.signal else "N/A"
+        thesis_shift_text = outcome.thesis_shift.value if outcome.thesis_shift else "N/A"
+        typer.echo(
+            f"{r.ticker}: total_score={r.total_score} signal={signal_text} "
+            f"thesis_shift={thesis_shift_text} (문서 {outcome.documents_used}건 사용)"
+        )
+        for warning in outcome.warnings:
+            typer.echo(f"[경고] {warning}")
+        typer.echo(f"스냅샷 저장: {outcome.snapshot_path}")
+    finally:
+        conn.close()
+
+
+@score_app.command(name="report")
+def score_report_cmd(
+    ticker: Annotated[str, typer.Argument(help="config/scoring/universe.yaml에 등록된 티커")],
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    as_of: Annotated[
+        str | None, typer.Option("--date", help="기준일 YYYY-MM-DD (기본: 오늘)")
+    ] = None,
+) -> None:
+    """저장된 스냅샷을 기준으로 12개 섹션 리포트를 렌더링한다 (`score compute`/`run-weekly`를
+    먼저 실행해야 한다)."""
+    resolved_date = date.fromisoformat(as_of) if as_of else date.today()
+    snapshot = load_stock_score_snapshot(vault_path, ticker, resolved_date)
+    if snapshot is None:
+        typer.echo(f"{ticker} {resolved_date} 스냅샷이 없다 - 먼저 `score compute`를 실행하라")
+        raise typer.Exit(code=1)
+
+    body = render_stock_score_report(
+        snapshot.result, snapshot.hysteresis, snapshot.valuation_scenarios
+    )
+    report_dir = vault_path / "50_Reports" / "StockScore" / ticker.replace("/", "_")
+    report_dir.mkdir(parents=True, exist_ok=True)
+    report_path = report_dir / f"{resolved_date.isoformat()}.md"
+    report_path.write_text(body, encoding="utf-8")
+    typer.echo(f"리포트 생성 완료: {report_path}")

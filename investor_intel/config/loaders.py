@@ -8,8 +8,11 @@ import yaml
 from investor_intel.models.config import (
     AppSettingsYaml,
     CompanyConfig,
+    GlobalScoringConfig,
     InvestorConfig,
     KoreanCompanyConfig,
+    ScoringUniverseConfig,
+    SectorScoringConfig,
     SourceConfig,
 )
 from investor_intel.models.portfolio import Portfolio
@@ -47,3 +50,15 @@ def load_dart_companies_yaml(path: Path) -> list[KoreanCompanyConfig]:
 
 def load_portfolio_yaml(path: Path) -> Portfolio:
     return Portfolio.model_validate(_load_yaml(path))
+
+
+def load_scoring_universe_yaml(path: Path) -> ScoringUniverseConfig:
+    return ScoringUniverseConfig.model_validate(_load_yaml(path))
+
+
+def load_global_scoring_yaml(path: Path) -> GlobalScoringConfig:
+    return GlobalScoringConfig.model_validate(_load_yaml(path))
+
+
+def load_sector_scoring_yaml(path: Path) -> SectorScoringConfig:
+    return SectorScoringConfig.model_validate(_load_yaml(path))

@@ -238,13 +238,14 @@ uv run python -m investor_intel collect --backfill 365
 ## 시장 국면 추적 (Market Regime Tracker)
 
 투자 추천 시스템이 아니라 시장 국면(과열/냉각/AI 사이클) 판단 시스템이다. 매수/매도 신호나
-목표가는 만들지 않는다. **Phase 1(현재 구현)은 무료로 접근 가능한 지표만 다룬다** — EPS
-컨센서스 수정 폭(I/B/E/S 등 유료 데이터 필요)과 AI 산업 지표(하이퍼스케일러 Capex/AI 매출
-효율, 반도체 실수요)는 `unavailable` 상태로 스텁만 있고, Phase 2에서 기존 SEC 공시 수집 +
-LLM 추출 파이프라인을 재사용해 채울 예정이다. 그 결과 `ai_cycle_score`/`ai_regime`은 현재
-항상 `INDETERMINATE`다 — 버그가 아니라 의도된 상태다.
+목표가는 만들지 않는다. **EPS 컨센서스 수정 폭만 여전히 스텁이다**(I/B/E/S 등 유료 데이터
+필요, 무료 대체가 없어 계속 `unavailable`). 그 외 9개 지표는 전부 무료 데이터로 실제 계산된다
+- 하이퍼스케일러 CapEx 효율/AI 반도체 실수요는 Yahoo Finance 분기 재무제표만으로 헤드라인
+값을 계산하고(`regime collect`/`run-daily`, LLM 불필요), 클라우드/AI 세그먼트 매출처럼 필딩
+구조화 데이터로 안 잡히는 세부 필드는 `regime analyze-ai`(LLM, 수동)가 있으면 보강한다 - 없어도
+헤드라인 점수는 계산된다.
 
-### 지표 (Phase 1: 7개, 전부 무료)
+### 지표 (10개 중 9개 실제 계산, EPS만 스텁)
 
 | 지표 | 출처 | 비고 |
 |---|---|---|
@@ -259,19 +260,31 @@ LLM 추출 파이프라인을 재사용해 채울 예정이다. 그 결과 `ai_c
 | 레버리지·포지셔닝 | CFTC "Traders in Financial Futures" | 선물(및 옵션) 시장 대형
 트레이더 포지션의 일부일 뿐 시장 전체 롱/숏 비중이 아님. FINRA 마진통계는 봇 차단(HTTP 403,
 라이브 확인)으로 자동 수집 불가 — 개인 레버리지 축은 제외 |
+| 하이퍼스케일러 AI 투자 효율 | Yahoo Finance 분기 재무제표(CapEx/영업현금흐름) | value=TTM
+CapEx/TTM 영업현금흐름(MSFT/GOOGL/AMZN/META/ORCL 중앙값). 클라우드/AI 세그먼트 매출 성장률·
+CapEx 가이던스 방향은 `regime analyze-ai`(LLM)가 채운다 |
+| AI 반도체 실수요 | Yahoo Finance 분기 재무제표(매출) | TSM/NVDA/AVGO/MU 매출 YoY 성장률
+중앙값 - 스펙 원문의 TSMC "월간" 매출 요구사항은 분기 성장률로 근사(TSM은 20-F 발행사라 SEC에
+월간 데이터가 없음). NVIDIA/Broadcom 데이터센터 세그먼트 성장률은 `regime analyze-ai`가 채운다 |
+| S&P 500 EPS 전망치 수정 폭 | — | 무료 API 없음(I/B/E/S/Refinitiv 등 유료 필요) - 항상
+`unavailable` |
 
 ### 사용법
 
 ```bash
-uv run python -m investor_intel regime collect --vault-path ./vault      # 지표 수집 (history/ append)
+uv run python -m investor_intel regime collect --vault-path ./vault      # 지표 수집 (history/ append, LLM 불필요)
+uv run python -m investor_intel regime analyze-ai --vault-path ./vault   # 클라우드/AI 매출·가이던스 LLM 보강 (선택, 수동)
 uv run python -m investor_intel regime score --vault-path ./vault        # 점수/국면 계산 (processed/ 저장)
 uv run python -m investor_intel regime report --vault-path ./vault       # 리포트 렌더링 (50_Reports/MarketRegime/)
-uv run python -m investor_intel regime run-daily --vault-path ./vault    # 위 세 단계를 한 번에
+uv run python -m investor_intel regime run-daily --vault-path ./vault    # collect -> score -> report (analyze-ai 제외)
 ```
 
 `collect`/`score`/`report`는 `--date YYYY-MM-DD`로 특정일을 지정할 수 있다(생략 시 오늘).
-LLM을 쓰지 않으므로 `.github/workflows/daily-collect.yml`에서 `collect`와 함께 매일 무인
-실행된다(아래 "자동 실행" 참고).
+`collect`/`score`/`report`/`run-daily`는 LLM을 쓰지 않으므로
+`.github/workflows/daily-collect.yml`에서 매일 무인 실행된다(아래 "자동 실행" 참고).
+`analyze-ai`는 ANTHROPIC_API_KEY와 LLM 예산이 필요해 무인 크론에 포함하지 않는다 - 돌리고
+싶으면 `regime collect` → `regime analyze-ai` → `regime score` → `regime report` 순서로
+수동 실행한다(순서가 바뀌면 그날 리포트에 반영되지 않는다).
 
 ### 점수/국면
 
@@ -280,6 +293,91 @@ LLM을 쓰지 않으므로 `.github/workflows/daily-collect.yml`에서 `collect`
 가용 지표의 가중치를 비례 재조정하며, 커버리지가 70% 미만이면 `confidence_level`이 낮아지고
 50% 미만이면 해당 국면이 `INDETERMINATE`가 된다 — 정확한 가중치·판정 규칙은
 `investor_intel/regime/scoring.py`, `investor_intel/regime/regime_classifier.py`를 참고한다.
+
+## 종목별 정량 스코어링 (Stock Scoring)
+
+미래 주가를 예측하는 시스템이 아니다. 종목별 투자 매력도를 일관된 결정론적 규칙(0-100점)으로
+평가하고, 투자 가설이 강화/훼손됐는지 조기에 발견하며, 매수/보유/축소/매도 판단의 근거를
+제공한다. 최종 점수는 항상 코드가 구조화된 Feature로부터 계산하며, LLM은 사실 추출·정성
+판단·반론에만 관여한다(`TenbaggerVerification`이 `total_score`를 코드로 재계산하는 것과 동일한
+원칙). 실제 주문은 실행하지 않는다.
+
+### 지원 종목·산업 추가 방법
+
+`config/scoring/universe.yaml`에 종목을 추가한다(코드 변경 불필요). `sector` 필드가
+`config/scoring/sector_<sector>.yaml`과 매칭되면 그 섹터 전용 가중치·Feature 목록을 쓰고,
+없으면 `global_scoring.yaml`의 공통 기준을 쓴다. 기본 제공 섹터는 `memory`(SK하이닉스,
+삼성전자)뿐이다 — GPU/전력/냉각/클라우드/네오클라우드 섹터는 아직 구체적인 Feature 스펙이
+없어 만들지 않았다(동일한 스키마로 `sector_gpu.yaml` 등을 추가하면 로더가 그대로 인식한다).
+
+이 레지스트리는 `vault/30_Portfolio/portfolio.yaml`(실제 보유·평균단가·비중)과 의도적으로
+분리되어 있다 — 기업의 투자 매력도 점수는 매수원가와 무관해야 하기 때문에 `average_cost`/
+`quantity` 필드 자체가 존재하지 않는다. 평균 매수가와 현재 비중은 오직 포지션 사이징(비중
+확대/축소 판단)에만 쓰인다.
+
+### 실행 방법
+
+```bash
+# 일간 - LLM을 쓰지 않는다 (가격/거래량/재무제표 성장률만 갱신, 무인 실행 가능)
+uv run python -m investor_intel score compute 000660.KS
+
+# 주간/이벤트 (실적 발표 등) - Evidence Collector/Fundamental Analyst/Bear Case Critic 실행
+# 하루 LLM 예산과 충돌하지 않도록 daily 크론에는 배선하지 않는다 - 수동 또는 주 1회만 실행
+uv run python -m investor_intel score run-weekly 000660.KS
+
+# 저장된 스냅샷으로 12개 섹션 리포트 렌더링
+uv run python -m investor_intel score report 000660.KS
+```
+
+### 스코어링 기준
+
+대분류 가중치(합 100)는 `config/scoring/global_scoring.yaml`(공통) 또는
+`config/scoring/sector_memory.yaml`(메모리 섹터)에서 관리한다:
+
+| 카테고리 | 공통 가중치 | 메모리 섹터 가중치 |
+|---|---|---|
+| 매크로/유동성 | 15 | 10 |
+| 최종수요/산업 (메모리: 수급·가격) | 20 | 25 |
+| 기업 펀더멘털 (메모리: HBM 경쟁력) | 25 | 25 |
+| 실적 전망치 | 15 | 15 |
+| 밸류에이션 | 10 | 10 |
+| 가격/수급 | 10 | 10 |
+| 리스크 (메모리: 공급과잉 등) | 5 | 5 |
+
+매크로 카테고리는 `regime` 모듈의 시장 전체 cooling_risk를 재사용한다(종목마다 다시 계산하지
+않는다). 밸류에이션은 목표주가를 쓰지 않고 bear/base/bull 시나리오(peak/현재 forward/정상화
+중기 EPS × 배수)로 계산한다. 신규 매수 신호는 총점(72점 이상 진입, 62점 이상 유지)뿐 아니라
+신뢰도·연속 점수 상승·2차 확인 신호를 모두 충족해야 하며, 하드게이트(핵심 고객 상실, 2개
+분기 연속 가이던스/컨센서스 하향 등)가 하나라도 발동하면 총점과 무관하게 차단된다. 신호
+전환에는 5거래일 대기기간이 있어 단일 뉴스로 매수↔매도가 바로 뒤집히지 않는다. 정확한
+계산은 `investor_intel/scoring/{categories,hard_gates,hysteresis,valuation_scenarios}.py`를
+참고한다.
+
+### 데이터 출처와 한계
+
+- 가격/거래량/분기 재무제표(YoY 성장률)는 Yahoo Finance에서 실시간 조회한다(무료, 인증 불필요
+  — 단 `fundamentals-timeseries` 엔드포인트는 환경에 따라 일시적으로 rate limit에 걸릴 수
+  있으며, 이 경우 크래시하지 않고 해당 feature만 missing 처리된다).
+- DRAM/NAND/HBM 계약가·bit shipment·고객 인증 등 산업 지표와 EPS 컨센서스 수정(상향/하향
+  애널리스트 수)은 TrendForce/I·B·E·S 같은 유료 데이터를 전혀 쓰지 않는다 — 대신 이미 매일
+  수집 중인 국내 IB 리포트(`naver-weekly-hot`/`naver_research`)에서 `score run-weekly`의
+  Evidence Collector가 LLM으로 구조화 추출한다. 유료 컨센서스 패널보다 표본이 작고 노이즈가
+  있다는 한계가 있다.
+- 벤치마크는 KOSPI/S&P500/NASDAQ100/PHLX_SEMICONDUCTOR만 지원한다 — KRX 반도체 지수는 Yahoo
+  무료 API에 심볼이 없어 지원하지 않으며, 이 경우 상대강도 지표가 missing으로 남는다.
+- Champion/Challenger 워크포워드 비교(`investor_intel/scoring/evaluation.py`)는 최소 표본
+  20건을 채우기 전까지 항상 "표본 부족"으로 비교를 보류한다 - 스냅샷이 몇 개월 쌓이기 전까지는
+  정상적으로 작동하지 않는 것처럼 보일 수 있다(의도된 동작).
+- 모델 버전 변경 방법: `model_registry/champion.yaml`이 현재 승인된 버전을 기록한다.
+  Model Reviewer의 제안은 항상 `pending_human_approval` 상태로만 나오며, 실제로 반영하려면
+  `model_registry/challengers/`에 후보 설정을 추가하고 `compare_champion_challenger()`로
+  검증한 뒤 사람이 승인해 `config/scoring/*.yaml`을 교체하고 `champion.yaml`/`changelog.md`를
+  갱신해야 한다 - 코드가 자동으로 승격하지 않는다.
+
+예시 리포트: [`docs/examples/stock_score_000660.KS.md`](docs/examples/stock_score_000660.KS.md)
+(2026-08-02 실제 라이브 데이터로 생성 — 주간 LLM 미실행 상태라 일부 카테고리가 missing인
+"실제 daily 실행 결과"), [`docs/examples/stock_score_005930.KS_full_example.md`](docs/examples/stock_score_005930.KS_full_example.md)
+(주간 실행 이후를 가정한 Mock 데이터 예시 — 파일 상단에 Example 표시).
 
 ## 아키텍처와 로드맵
 
