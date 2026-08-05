@@ -67,3 +67,10 @@ investor: CIK | 에세이URL(선택)
 - [x] sec: VRT
 - [x] sec: CRWV
 - [x] sec: IREN
+- [x] telegram: https://t.me/akacommodity
+- [x] telegram: https://t.me/quantum_ALGO
+- [x] telegram: https://t.me/merITz_tech
+- [x] telegram: https://t.me/shStrategy
+- [x] telegram: https://t.me/china_kis
+- [x] telegram: https://t.me/miraeoillee
+- [x] telegram: https://t.me/KISemicon
