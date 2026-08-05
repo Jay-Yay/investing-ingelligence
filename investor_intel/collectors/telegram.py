@@ -5,6 +5,7 @@ from datetime import date, timedelta
 from investor_intel.collectors.base import CheckpointStore, CollectItem, CollectResult
 from investor_intel.collectors.http_client import SimpleHttpClient
 from investor_intel.collectors.telegram_document import render_telegram_message_body
+from investor_intel.collectors.telegram_link_article import extract_article_urls, fetch_article
 from investor_intel.collectors.telegram_parser import (
     TelegramMessage,
     parse_all_message_ids,
@@ -62,7 +63,10 @@ class TelegramCollector:
         return all_messages
 
     def _build_item(self, message: TelegramMessage) -> CollectItem:
-        body = render_telegram_message_body(message, self._source, message.link)
+        articles = [
+            fetch_article(self._client, url) for url in extract_article_urls(message.text)
+        ]
+        body = render_telegram_message_body(message, self._source, message.link, articles)
 
         return CollectItem(
             source_specific_id=message.message_id,
