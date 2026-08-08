@@ -87,7 +87,9 @@ def test_persist_is_idempotent_on_rerun(tmp_path) -> None:
     )
     files_after_second = list(vault_path.rglob("*.md"))
 
-    assert second.count == 1
+    # 내용이 그대로면 파일도 DB도 건드리지 않고 skipped로만 집계한다.
+    assert second.count == 0
+    assert second.skipped == 1
     assert files_after_first == files_after_second
 
 
@@ -118,6 +120,71 @@ def test_persist_reuses_existing_id_when_duplicate_detected_via_content_hash(tmp
         vault_path=vault_path, conn=conn,
     )
 
-    assert second.count == 1
+    # 같은 내용이 다른 URL로 재게시된 것이므로 기존 id를 재사용하고 새 파일을 만들지 않는다.
+    assert second.count == 0
+    assert second.skipped == 1
     files = list(vault_path.rglob("*.md"))
     assert len(files) == 1
+    assert conn.execute("SELECT COUNT(*) AS n FROM documents").fetchone()["n"] == 1
+
+
+def _persist(vault_path, conn, item):
+    return persist_collect_result(
+        CollectResult(source_id="cb_boj", success=True, items=[item], errors=[], new_count=1),
+        source_type=SourceType.CENTRAL_BANK,
+        source_name="boj",
+        vault_path=vault_path,
+        conn=conn,
+    )
+
+
+def _vault_files(vault_path):
+    return sorted(p for p in vault_path.rglob("*.md"))
+
+
+def test_recollecting_same_document_with_new_published_at_does_not_duplicate_file(
+    tmp_path,
+) -> None:
+    """`path_for_document`가 파일명을 published_at으로 만드는데, central_bank는 회의록이
+    늦게 공개돼도 recency 창에 걸리도록 published_at=now를 쓴다. 그래서 재수집할 때마다
+    경로가 달라져 같은 문서의 사본이 계속 쌓였다(실측: 271개 id / 초과 파일 678개 / 20.4MB).
+    """
+    vault_path = tmp_path / "vault"
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+
+    _persist(vault_path, conn, _item(published_at=datetime(2026, 8, 1, tzinfo=UTC)))
+    second = _persist(vault_path, conn, _item(published_at=datetime(2026, 8, 5, tzinfo=UTC)))
+
+    assert len(_vault_files(vault_path)) == 1
+    # 내용이 같으므로 파일도 DB도 건드리지 않고 건너뛴다.
+    assert second.count == 0
+    assert second.skipped == 1
+
+
+def test_recollected_document_with_changed_content_is_updated_in_place(tmp_path) -> None:
+    """내용이 실제로 바뀐 재수집은 기존 파일을 제자리에서 갱신하고 재분석 대상으로 되돌린다."""
+    vault_path = tmp_path / "vault"
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+
+    _persist(vault_path, conn, _item(published_at=datetime(2026, 8, 1, tzinfo=UTC)))
+    row = conn.execute("SELECT id, file_path FROM documents").fetchone()
+    doc_id, original_path = row["id"], row["file_path"]
+    conn.execute("UPDATE documents SET llm_processed = 1 WHERE id = ?", (doc_id,))
+    conn.commit()
+
+    result = _persist(
+        vault_path,
+        conn,
+        _item(published_at=datetime(2026, 8, 5, tzinfo=UTC), body_text="개정된 본문입니다."),
+    )
+
+    assert result.count == 1
+    assert result.skipped == 0
+    assert len(_vault_files(vault_path)) == 1
+    updated = get_document_by_id(conn, doc_id)
+    # 경로는 그대로 유지하고, 내용이 달라졌으므로 재분석 대상으로 되돌린다.
+    assert updated["file_path"] == original_path
+    assert updated["llm_processed"] == 0
+    assert "개정된 본문입니다." in (vault_path / original_path).read_text(encoding="utf-8")

@@ -56,6 +56,7 @@ from investor_intel.scoring.snapshot import load_snapshot as load_stock_score_sn
 from investor_intel.storage.cost_ledger import init_cost_ledger
 from investor_intel.storage.sqlite_index import connect, init_db
 from investor_intel.storage.sqlite_index import reindex as reindex_vault
+from investor_intel.storage.vault_dedupe import apply_dedupe, plan_dedupe
 
 app = typer.Typer(help="Investor Intelligence CLI")
 regime_app = typer.Typer(
@@ -649,6 +650,66 @@ def reindex(
         conn.close()
 
 
+@app.command(name="dedupe-vault")
+def dedupe_vault_cmd(
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    sqlite_path: Annotated[Path, typer.Option(help="SQLite index path")] = Path(
+        "./data/index.sqlite3"
+    ),
+    apply: Annotated[
+        bool, typer.Option("--apply", help="실제로 삭제한다 (기본은 dry-run: 계획만 출력)")
+    ] = False,
+    verbose: Annotated[
+        bool, typer.Option("--verbose", help="그룹별 파일 목록을 모두 출력")
+    ] = False,
+) -> None:
+    """같은 문서 id로 여러 벌 저장된 사본을 찾아 하나만 남긴다.
+
+    이미 분석된 사본을 우선 남기고, 없으면 SQLite 인덱스가 가리키는 사본을(그것도 없으면
+    published_at이 가장 최신인 사본을) 남긴 뒤 나머지를 지운다. 서로 다른 분석 결과가 여러
+    사본에 있는 그룹은 건드리지 않고 따로 보고한다. 기본은 dry-run이라 `--apply` 없이는
+    아무것도 지우지 않는다.
+    """
+    conn = connect(sqlite_path)
+    try:
+        init_db(conn)
+        report = plan_dedupe(vault_path, conn)
+
+        if verbose:
+            for group in report.groups:
+                typer.echo(f"[{group.doc_id}] 유지: {group.keep}")
+                for path in group.remove:
+                    typer.echo(f"    삭제: {path}")
+
+        excess = sum(len(group.remove) for group in report.groups)
+        freed_mb = report.freed_bytes / 1_000_000
+
+        for path, reason in report.unparsed:
+            typer.echo(f"파싱 실패(건너뜀): {path} - {reason}")
+        if report.protected:
+            typer.echo(
+                f"분석 결과가 서로 달라 건너뛴 문서 {len(report.protected)}건: "
+                + ", ".join(report.protected)
+            )
+
+        if not apply:
+            typer.echo(
+                f"[dry-run] 중복 {len(report.groups)}그룹 / 삭제 대상 {excess}개 "
+                f"({freed_mb:.1f}MB). 실제로 지우려면 --apply를 붙여라."
+            )
+            return
+
+        apply_dedupe(vault_path, conn, report)
+        repointed_note = (
+            f" / DB 경로 수정 {len(report.repointed)}건" if report.repointed else ""
+        )
+        typer.echo(
+            f"중복 정리 완료: {len(report.removed)}개 삭제 ({freed_mb:.1f}MB){repointed_note}"
+        )
+    finally:
+        conn.close()
+
+
 @app.command(name="web-research")
 def web_research_cmd(
     vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
@@ -804,15 +865,21 @@ def collect(
         results = run_collectors(entries, vault_path, conn, backfill_days=backfill)
 
         total_persisted = 0
+        total_skipped = 0
         had_errors = bool(setup_errors)
         for result in results:
-            typer.echo(f"[{result.source_id}] {result.persisted}건 저장")
+            skipped_note = (
+                f" (기존 사본과 동일해 건너뜀 {result.skipped}건)" if result.skipped else ""
+            )
+            typer.echo(f"[{result.source_id}] {result.persisted}건 저장{skipped_note}")
             for error in result.errors:
                 typer.echo(f"[{result.source_id}] 오류: {error}")
                 had_errors = True
             total_persisted += result.persisted
+            total_skipped += result.skipped
 
-        typer.echo(f"총 {total_persisted}건 저장")
+        skipped_total_note = f" / 건너뜀 {total_skipped}건" if total_skipped else ""
+        typer.echo(f"총 {total_persisted}건 저장{skipped_total_note}")
         raise typer.Exit(code=1 if had_errors else 0)
     finally:
         conn.close()

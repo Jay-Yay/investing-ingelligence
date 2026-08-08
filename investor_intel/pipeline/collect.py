@@ -30,14 +30,24 @@ from investor_intel.config.settings import AppSettings
 from investor_intel.models.common import ContentCaptureMode, SourceType
 from investor_intel.models.source_document import AssetMention, ContentCapture, SourceDocument
 from investor_intel.storage.content_hash import compute_content_hash, compute_stable_id
-from investor_intel.storage.obsidian_repo import write_document
-from investor_intel.storage.sqlite_index import find_duplicate, upsert_document
+from investor_intel.storage.obsidian_repo import (
+    resolve_document_path,
+    write_document,
+    write_document_at,
+)
+from investor_intel.storage.sqlite_index import (
+    find_duplicate,
+    get_document_by_id,
+    upsert_document,
+)
 
 
 @dataclass
 class PersistResult:
     count: int
     errors: list[str] = field(default_factory=list)
+    # 이미 vault에 같은 내용으로 있어 파일도 DB도 건드리지 않은 건수.
+    skipped: int = 0
 
 
 @dataclass
@@ -45,6 +55,8 @@ class SourceRunResult:
     source_id: str
     persisted: int
     errors: list[str] = field(default_factory=list)
+    # 이미 같은 내용으로 vault에 있어 건너뛴 건수 (재수집이 잘 걸러지는지 관측용).
+    skipped: int = 0
 
 
 def collect_item_to_source_document(
@@ -90,6 +102,7 @@ def persist_collect_result(
     conn: sqlite3.Connection,
 ) -> PersistResult:
     count = 0
+    skipped = 0
     errors: list[str] = []
 
     for item in result.items:
@@ -107,10 +120,27 @@ def persist_collect_result(
                 author=item.author,
                 published_at=item.published_at.isoformat(),
             )
+
+            # 이미 아는 문서라면 기존 사본을 "제자리에서" 다룬다. write_document는 파일명을
+            # published_at으로 만들기 때문에(그리고 central_bank는 published_at=now를 쓴다)
+            # 그냥 부르면 재수집할 때마다 같은 문서의 새 사본이 생긴다.
+            existing_path: Path | None = None
             if existing_id is not None:
                 doc = doc.model_copy(update={"id": existing_id})
+                row = get_document_by_id(conn, existing_id)
+                if row is not None:
+                    existing_path = resolve_document_path(vault_path, row["file_path"])
+                    if existing_path is not None and row["content_hash"] == doc.content_hash:
+                        skipped += 1
+                        continue
 
-            file_path = write_document(vault_path, doc, body)
+            file_path = (
+                write_document_at(existing_path, doc, body)
+                if existing_path is not None
+                # 내용이 바뀐 재수집은 llm_processed가 false로 리셋된다 - 의도된 동작이다
+                # (내용이 달라졌으니 다시 분석해야 한다).
+                else write_document(vault_path, doc, body)
+            )
             upsert_document(
                 conn,
                 doc,
@@ -122,7 +152,7 @@ def persist_collect_result(
             identifier = item.source_specific_id or item.canonical_url
             errors.append(f"{identifier}: {exc}")
 
-    return PersistResult(count=count, errors=errors)
+    return PersistResult(count=count, errors=errors, skipped=skipped)
 
 
 def run_collectors(
@@ -136,6 +166,7 @@ def run_collectors(
     for collector, source_type, source_name in entries:
         errors: list[str] = []
         persisted = 0
+        skipped = 0
         try:
             collect_result = (
                 collector.backfill(backfill_days)
@@ -147,12 +178,18 @@ def run_collectors(
                 collect_result, source_type, source_name, vault_path, conn
             )
             persisted = persist_result.count
+            skipped = persist_result.skipped
             errors.extend(persist_result.errors)
         except Exception as exc:  # noqa: BLE001
             errors.append(str(exc))
 
         results.append(
-            SourceRunResult(source_id=collector.source_id, persisted=persisted, errors=errors)
+            SourceRunResult(
+                source_id=collector.source_id,
+                persisted=persisted,
+                errors=errors,
+                skipped=skipped,
+            )
         )
 
     return results

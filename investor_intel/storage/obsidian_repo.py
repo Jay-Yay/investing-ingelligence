@@ -87,8 +87,14 @@ def parse_document(text: str) -> tuple[SourceDocument, str]:
     return SourceDocument.model_validate(data), body
 
 
-def write_document(vault_path: Path, doc: SourceDocument, body: str) -> Path:
-    path = path_for_document(vault_path, doc)
+def write_document_at(path: Path, doc: SourceDocument, body: str) -> Path:
+    """지정한 경로에 문서를 쓴다.
+
+    `path_for_document`는 파일명을 published_at으로 만들기 때문에, published_at이 달라지는
+    재수집(central_bank는 recency 창을 위해 published_at=now를 쓴다)에서는 같은 문서가
+    매번 새 경로를 얻는다. 이미 vault에 있는 사본을 "제자리에서" 갱신하려면 호출부가 경로를
+    직접 지정해야 한다.
+    """
     if path.exists():
         existing_doc, _ = parse_document(path.read_text(encoding="utf-8"))
         if existing_doc.content_hash == doc.content_hash:
@@ -96,6 +102,10 @@ def write_document(vault_path: Path, doc: SourceDocument, body: str) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(render_document(doc, body), encoding="utf-8")
     return path
+
+
+def write_document(vault_path: Path, doc: SourceDocument, body: str) -> Path:
+    return write_document_at(path_for_document(vault_path, doc), doc, body)
 
 
 def read_document(path: Path) -> tuple[SourceDocument, str]:
