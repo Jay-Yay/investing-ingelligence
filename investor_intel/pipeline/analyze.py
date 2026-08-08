@@ -14,7 +14,12 @@ from investor_intel.models.common import ContentCaptureMode, SourceType
 from investor_intel.models.source_document import SourceDocument
 from investor_intel.pipeline.claims_splice import splice_claims_into_body
 from investor_intel.storage.content_hash import compute_content_hash
-from investor_intel.storage.obsidian_repo import path_for_document, read_document, render_document
+from investor_intel.storage.obsidian_repo import (
+    path_for_document,
+    read_document,
+    render_document,
+    resolve_document_path,
+)
 from investor_intel.storage.sqlite_index import upsert_document
 
 
@@ -185,7 +190,7 @@ def analyze_pending_documents(
         upsert_document(
             conn,
             updated_doc,
-            file_path=str(path),
+            file_path=str(path.relative_to(vault_path)),
             source_specific_id=updated_doc.source_specific_id,
         )
         extractions[updated_doc.id] = extraction
@@ -246,8 +251,12 @@ def analyze_pending_documents(
 
     budget_exhausted = False
     for file_path in find_unprocessed_document_paths(conn, portfolio_tickers=portfolio_tickers):
+        resolved_path = resolve_document_path(vault_path, file_path)
+        if resolved_path is None:
+            errors.append(f"{file_path}: vault에서 찾을 수 없음")
+            continue
         try:
-            doc, body = read_document(Path(file_path))
+            doc, body = read_document(resolved_path)
         except Exception as exc:  # noqa: BLE001
             errors.append(f"{file_path}: {exc}")
             continue

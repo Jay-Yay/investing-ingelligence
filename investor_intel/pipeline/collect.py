@@ -112,7 +112,10 @@ def persist_collect_result(
 
             file_path = write_document(vault_path, doc, body)
             upsert_document(
-                conn, doc, file_path=str(file_path), source_specific_id=item.source_specific_id
+                conn,
+                doc,
+                file_path=str(file_path.relative_to(vault_path)),
+                source_specific_id=item.source_specific_id,
             )
             count += 1
         except Exception as exc:  # noqa: BLE001

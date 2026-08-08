@@ -169,6 +169,51 @@ def test_ticker_document_outside_followup_window_excluded(tmp_path) -> None:
     assert find_unprocessed_document_paths(conn, portfolio_tickers={"000660"}) == []
 
 
+def test_analyze_processes_document_stored_with_vault_relative_path(tmp_path) -> None:
+    """documents.file_path is sometimes stored as a vault-relative path (this is what
+    reindex() always writes, and what persist_collect_result() should write too - see P0 in
+    docs/plans/analyze-cost-reduction.md). analyze_pending_documents must resolve that against
+    vault_path rather than assuming the raw string opens directly from the process cwd."""
+    vault_path, conn = _setup(tmp_path)
+    doc = _doc("doc-1")
+    path = write_document(vault_path, doc, _BODY_WITH_SECTIONS)
+    relative_file_path = str(path.relative_to(vault_path))
+    upsert_document(
+        conn, doc, file_path=relative_file_path, source_specific_id=doc.source_specific_id
+    )
+
+    client = _FakeAnthropicClient(_tool_use_response())
+    cost_tracker = CostTracker(conn, daily_budget_usd=10.0, monthly_budget_usd=100.0)
+
+    result = analyze_pending_documents(
+        conn, vault_path, client, cost_tracker, system_prompt="시스템 프롬프트"
+    )
+
+    assert result.processed == 1
+    assert result.errors == []
+
+
+def test_analyze_processes_document_stored_with_absolute_path(tmp_path) -> None:
+    """Legacy rows may still have an absolute file_path (old write_document()/analyze.py
+    behavior) - those must keep working after the fix above."""
+    vault_path, conn = _setup(tmp_path)
+    doc = _doc("doc-1")
+    path = write_document(vault_path, doc, _BODY_WITH_SECTIONS)
+    upsert_document(
+        conn, doc, file_path=str(path), source_specific_id=doc.source_specific_id
+    )
+
+    client = _FakeAnthropicClient(_tool_use_response())
+    cost_tracker = CostTracker(conn, daily_budget_usd=10.0, monthly_budget_usd=100.0)
+
+    result = analyze_pending_documents(
+        conn, vault_path, client, cost_tracker, system_prompt="시스템 프롬프트"
+    )
+
+    assert result.processed == 1
+    assert result.errors == []
+
+
 def test_analyze_marks_document_processed_and_records_cost(tmp_path) -> None:
     vault_path, conn = _setup(tmp_path)
     doc = _doc("doc-1")

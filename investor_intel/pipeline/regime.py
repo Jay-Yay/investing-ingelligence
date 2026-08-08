@@ -42,7 +42,7 @@ from investor_intel.regime.models import (
 )
 from investor_intel.regime.regime_classifier import classify_ai_regime, classify_market_regime
 from investor_intel.regime.signal_state import build_signals
-from investor_intel.storage.obsidian_repo import read_document
+from investor_intel.storage.obsidian_repo import read_document, resolve_document_path
 from investor_intel.storage.sqlite_index import connect, latest_filing_for_ticker
 
 PROCESSED_DIR = "60_MarketRegime/processed"
@@ -245,8 +245,8 @@ def _extract_for_ticker(
     row = latest_filing_for_ticker(conn, ticker, _SEC_FILING_TYPES)
     if row is None:
         return None
-    doc_path = vault_path / row["file_path"]
-    if not doc_path.exists():
+    doc_path = resolve_document_path(vault_path, row["file_path"])
+    if doc_path is None:
         return None
     _, body = read_document(doc_path)
     outcome = extract_ai_revenue_metrics(client, body, prompt)

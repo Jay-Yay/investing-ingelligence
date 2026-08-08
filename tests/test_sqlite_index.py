@@ -1,8 +1,10 @@
 from datetime import UTC, datetime
 from pathlib import Path
 
+from investor_intel.collectors.base import CollectItem, CollectResult
 from investor_intel.models.common import ContentCaptureMode, SourceType
 from investor_intel.models.source_document import ContentCapture, SourceDocument
+from investor_intel.pipeline.collect import persist_collect_result
 from investor_intel.storage.content_hash import compute_content_hash, compute_stable_id
 from investor_intel.storage.obsidian_repo import write_document
 from investor_intel.storage.sqlite_index import (
@@ -195,6 +197,50 @@ def test_reindex_preserves_source_specific_id_for_dedup(tmp_path: Path) -> None:
         "2099-01-01T00:00:00+00:00",
     )
     assert found == doc_a.id
+
+
+def test_persist_collect_result_stores_same_file_path_representation_as_reindex(
+    tmp_path: Path,
+) -> None:
+    """persist_collect_result() and reindex() must record documents.file_path in the same
+    form (vault-relative), otherwise whichever path last wrote the row determines whether
+    downstream readers (analyze.py etc.) can open the file at all - see P0 in
+    docs/plans/analyze-cost-reduction.md."""
+    vault_path = tmp_path / "vault"
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+
+    item = CollectItem(
+        source_specific_id="acc-1",
+        canonical_url="https://example.com/doc-1",
+        title="Example title",
+        author="Example Author",
+        published_at=datetime(2026, 7, 24, tzinfo=UTC),
+        updated_at=None,
+        language="ko",
+        body_text="본문 내용입니다.",
+        content_capture_mode="full",
+    )
+    result = CollectResult(
+        source_id="naver_x", success=True, items=[item], errors=[], new_count=1
+    )
+    persist_collect_result(
+        result,
+        source_type=SourceType.NAVER,
+        source_name="engineerinvestor",
+        vault_path=vault_path,
+        conn=conn,
+    )
+
+    row = conn.execute("SELECT id, file_path FROM documents").fetchone()
+    persisted_file_path = row["file_path"]
+    assert not Path(persisted_file_path).is_absolute()
+    assert (vault_path / persisted_file_path).exists()
+
+    reindex(conn, vault_path)
+
+    reindexed_row = get_document_by_id(conn, row["id"])
+    assert reindexed_row["file_path"] == persisted_file_path
 
 
 def test_collector_state_round_trip(tmp_path: Path) -> None:

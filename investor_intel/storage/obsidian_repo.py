@@ -102,6 +102,23 @@ def read_document(path: Path) -> tuple[SourceDocument, str]:
     return parse_document(path.read_text(encoding="utf-8"))
 
 
+def resolve_document_path(vault_path: Path, raw_file_path: str) -> Path | None:
+    """`documents.file_path`가 실제로 vault_path 기준 상대경로인지, `vault_path`의 부모
+    디렉터리(즉 "vault/..." 접두어 포함) 기준 상대경로인지가 `reindex()` 호출 시점의
+    `--vault-path` 값에 따라 달라질 수 있어(이 저장소를 실제로 운영해보며 확인됨) 두 후보를
+    모두 시도한다 - 절대경로로 이미 저장된 경우도 처리한다."""
+    raw = Path(raw_file_path)
+    candidates = (
+        [raw]
+        if raw.is_absolute()
+        else [vault_path / raw, vault_path.parent / raw]
+    )
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return None
+
+
 def list_documents(vault_path: Path) -> list[Path]:
     sources_dir = vault_path / "10_Sources"
     if not sources_dir.exists():
