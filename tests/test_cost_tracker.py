@@ -71,3 +71,27 @@ def test_is_within_budget_true_when_under_budget(tmp_path) -> None:
     tracker = CostTracker(conn, daily_budget_usd=10.0, monthly_budget_usd=100.0)
     tracker.record_usage("claude-sonnet-5", input_tokens=1000, output_tokens=0)
     assert tracker.is_within_budget() is True
+
+
+def test_compute_cost_usd_batch_is_half_price() -> None:
+    """Message Batches API는 입력/출력 토큰이 전 구간 50% 할인이다."""
+    standard = compute_cost_usd("claude-sonnet-5", input_tokens=1_000_000, output_tokens=1_000_000)
+    batched = compute_cost_usd(
+        "claude-sonnet-5", input_tokens=1_000_000, output_tokens=1_000_000, batch=True
+    )
+
+    assert batched == pytest.approx(standard * 0.5)
+
+
+def test_record_usage_batch_persists_discounted_cost(tmp_path) -> None:
+    """llm_usage에 남는 값이 실제 청구액이어야 예산 판정이 현실과 맞는다."""
+    conn = _conn(tmp_path)
+    tracker = CostTracker(conn, daily_budget_usd=100.0, monthly_budget_usd=1000.0)
+
+    cost = tracker.record_usage(
+        "claude-sonnet-5", input_tokens=1_000_000, output_tokens=0, batch=True
+    )
+
+    assert cost == pytest.approx(1.50)
+    row = conn.execute("SELECT cost_usd FROM llm_usage").fetchone()
+    assert row["cost_usd"] == pytest.approx(1.50)

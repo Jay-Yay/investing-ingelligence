@@ -13,15 +13,23 @@ _PRICING_USD_PER_MILLION_TOKENS: dict[str, dict[str, float]] = {
 }
 
 
+# Message Batches API는 입력/출력 토큰이 전 구간 50% 할인이다. llm_usage 테이블에는 실제
+# 청구액이 남아야 예산 판정(is_within_budget)이 현실과 맞으므로 여기서 반영한다.
+BATCH_DISCOUNT = 0.5
+
+
 class UnknownModelPricingError(Exception):
     pass
 
 
-def compute_cost_usd(model: str, input_tokens: int, output_tokens: int) -> float:
+def compute_cost_usd(
+    model: str, input_tokens: int, output_tokens: int, batch: bool = False
+) -> float:
     pricing = _PRICING_USD_PER_MILLION_TOKENS.get(model)
     if pricing is None:
         raise UnknownModelPricingError(f"no pricing table entry for model {model!r}")
-    return (input_tokens * pricing["input"] + output_tokens * pricing["output"]) / 1_000_000
+    cost = (input_tokens * pricing["input"] + output_tokens * pricing["output"]) / 1_000_000
+    return cost * BATCH_DISCOUNT if batch else cost
 
 
 class CostTracker:
@@ -37,8 +45,10 @@ class CostTracker:
         self._monthly_budget_usd = monthly_budget_usd
         self._zone = ZoneInfo(timezone)
 
-    def record_usage(self, model: str, input_tokens: int, output_tokens: int) -> float:
-        cost = compute_cost_usd(model, input_tokens, output_tokens)
+    def record_usage(
+        self, model: str, input_tokens: int, output_tokens: int, batch: bool = False
+    ) -> float:
+        cost = compute_cost_usd(model, input_tokens, output_tokens, batch=batch)
         record_usage(
             self._conn,
             timestamp=datetime.now(UTC),

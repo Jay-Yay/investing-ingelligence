@@ -1,5 +1,8 @@
+import re
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
+
+import pytest
 
 from investor_intel.llm.cost_tracker import CostTracker, compute_cost_usd
 from investor_intel.models.common import ContentCaptureMode, SourceType
@@ -530,3 +533,253 @@ def test_analyze_does_not_batch_a_single_small_document(tmp_path) -> None:
     assert result.processed == 1
     updated_doc, _ = read_document(path)
     assert updated_doc.llm_model == "claude-sonnet-5"
+
+
+# --- Message Batches API 경로 -------------------------------------------------------------
+
+# 본문에 심어둔 문서 식별 마커. 가짜 클라이언트가 제출된 프롬프트에서 이 마커를 읽어
+# "그 문서에만 해당하는" 응답을 만들기 때문에, 결과가 엉뚱한 문서에 붙으면 테스트가 깨진다.
+_DOC_MARKER_RE = re.compile(r"DOCMARK:(\S+)")
+
+
+def _marked_body(doc_id: str) -> str:
+    return _BODY_WITH_SECTIONS.replace("본문 내용", f"본문 내용 DOCMARK:{doc_id}")
+
+
+def _claims_for(doc_id: str) -> dict:
+    claim = dict(_VALID_CLAIMS_INPUT["claims"][0], claim=f"{doc_id}에 대한 주장")
+    return {"claims": [claim]}
+
+
+def _batch_tool_use_message(tool_name: str, document_ids: list[str]) -> SimpleNamespace:
+    """배치 결과로 돌아오는 Message. 동기 경로 응답과 같은 모양(content/usage)이다."""
+    if tool_name == "record_claims":
+        tool_input = _claims_for(document_ids[0])
+    else:
+        tool_input = {
+            "documents": [
+                {"document_id": doc_id, **_claims_for(doc_id)} for doc_id in document_ids
+            ]
+        }
+    return SimpleNamespace(
+        content=[SimpleNamespace(type="tool_use", input=tool_input)],
+        usage=SimpleNamespace(
+            input_tokens=_KNOWN_INPUT_TOKENS, output_tokens=_KNOWN_OUTPUT_TOKENS
+        ),
+    )
+
+
+class _FakeBatchAnthropicClient:
+    """messages.batches 3종을 흉내내는 가짜 클라이언트.
+
+    제출된 요청 본문에서 tool_choice와 document_id를 읽어 결과를 만들기 때문에, 배치 경로가
+    동기 경로와 같은 프롬프트/스키마를 쓰는지도 함께 검증된다.
+    """
+
+    def __init__(
+        self,
+        model: str = "claude-sonnet-5",
+        errored_custom_ids: tuple[str, ...] = (),
+        reverse_results: bool = False,
+        processing_statuses: list[str] | None = None,
+    ) -> None:
+        self.model = model
+        self.submitted: list[dict] = []
+        self.errored_custom_ids = set(errored_custom_ids)
+        self.reverse_results = reverse_results
+        self._processing_statuses = list(processing_statuses or ["ended"])
+        self.create_message_calls = 0
+
+    def create_message(self, **kwargs):
+        self.create_message_calls += 1
+        return _tool_use_response()
+
+    def create_batch(self, requests):
+        self.submitted = requests
+        return "msgbatch_test"
+
+    def retrieve_batch(self, batch_id):
+        status = self._processing_statuses[0]
+        if len(self._processing_statuses) > 1:
+            self._processing_statuses.pop(0)
+        return SimpleNamespace(id=batch_id, processing_status=status)
+
+    def batch_results(self, batch_id):
+        results = []
+        for request in self.submitted:
+            custom_id = request["custom_id"]
+            if custom_id in self.errored_custom_ids:
+                results.append(
+                    SimpleNamespace(
+                        custom_id=custom_id,
+                        result=SimpleNamespace(type="errored", error=SimpleNamespace(type="x")),
+                    )
+                )
+                continue
+            params = request["params"]
+            content = params["messages"][0]["content"]
+            message = _batch_tool_use_message(
+                params["tool_choice"]["name"], _DOC_MARKER_RE.findall(content)
+            )
+            results.append(
+                SimpleNamespace(
+                    custom_id=custom_id,
+                    result=SimpleNamespace(type="succeeded", message=message),
+                )
+            )
+        if self.reverse_results:
+            results.reverse()
+        return iter(results)
+
+
+def _analyze_with_batch(vault_path, conn, client, **kwargs):
+    cost_tracker = CostTracker(conn, daily_budget_usd=10.0, monthly_budget_usd=100.0)
+    result = analyze_pending_documents(
+        conn,
+        vault_path,
+        client,
+        cost_tracker,
+        system_prompt="시스템 프롬프트",
+        use_batch_api=True,
+        batch_poll_interval_seconds=0,
+        **kwargs,
+    )
+    return result, cost_tracker
+
+
+def test_batch_api_processes_all_documents_in_one_submission(tmp_path) -> None:
+    vault_path, conn = _setup(tmp_path)
+    for index in range(3):
+        doc = _doc(f"doc-{index}")
+        path = write_document(vault_path, doc, _marked_body(doc.id))
+        upsert_document(
+            conn,
+            doc,
+            file_path=str(path.relative_to(vault_path)),
+            source_specific_id=doc.source_specific_id,
+        )
+
+    client = _FakeBatchAnthropicClient()
+    result, _ = _analyze_with_batch(vault_path, conn, client)
+
+    assert result.processed == 3
+    assert result.errors == []
+    assert result.pending_batch_id is None
+    # 소형 문서 3건은 한 요청으로 묶여 배치 1회 제출로 끝나야 한다.
+    assert len(client.submitted) == 1
+    assert client.create_message_calls == 0
+
+
+def test_batch_results_are_matched_by_custom_id_not_arrival_order(tmp_path) -> None:
+    """배치 결과는 도착 순서가 보장되지 않는다 - 뒤섞여 와도 문서별로 올바르게 마감돼야 한다."""
+    vault_path, conn = _setup(tmp_path)
+    for index in range(4):
+        doc = _doc(f"doc-{index}")
+        path = write_document(vault_path, doc, _marked_body(doc.id))
+        upsert_document(
+            conn,
+            doc,
+            file_path=str(path.relative_to(vault_path)),
+            source_specific_id=doc.source_specific_id,
+        )
+
+    client = _FakeBatchAnthropicClient(reverse_results=True)
+    # batch_size=1로 문서마다 별도 요청을 만들어 custom_id 매칭이 실제로 필요하게 만든다.
+    result, _ = _analyze_with_batch(vault_path, conn, client, batch_size=1)
+
+    assert len(client.submitted) == 4
+    assert result.processed == 4
+    assert result.errors == []
+    assert sorted(result.extractions) == ["doc-0", "doc-1", "doc-2", "doc-3"]
+    # 각 문서에 "그 문서의" 추출 결과가 붙어야 한다 - 위치로 매칭하면 여기서 엇갈린다.
+    for doc_id, extraction in result.extractions.items():
+        assert extraction.claims[0].claim == f"{doc_id}에 대한 주장"
+
+
+def test_batch_errored_result_falls_back_to_individual_calls(tmp_path) -> None:
+    vault_path, conn = _setup(tmp_path)
+    for index in range(2):
+        doc = _doc(f"doc-{index}")
+        path = write_document(vault_path, doc, _marked_body(doc.id))
+        upsert_document(
+            conn,
+            doc,
+            file_path=str(path.relative_to(vault_path)),
+            source_specific_id=doc.source_specific_id,
+        )
+
+    client = _FakeBatchAnthropicClient(errored_custom_ids=("req-0",))
+    result, _ = _analyze_with_batch(vault_path, conn, client, batch_size=1)
+
+    # 실패한 요청의 문서도 개별 호출 폴백으로 결국 처리된다.
+    assert result.processed == 2
+    assert client.create_message_calls == 1
+    assert any("개별 호출로 폴백" in error for error in result.errors)
+
+
+def test_batch_usage_is_recorded_at_half_price(tmp_path) -> None:
+    vault_path, conn = _setup(tmp_path)
+    doc = _doc("doc-1")
+    path = write_document(vault_path, doc, _marked_body(doc.id))
+    upsert_document(
+        conn,
+        doc,
+        file_path=str(path.relative_to(vault_path)),
+        source_specific_id=doc.source_specific_id,
+    )
+
+    client = _FakeBatchAnthropicClient()
+    result, cost_tracker = _analyze_with_batch(vault_path, conn, client)
+
+    assert result.processed == 1
+    expected = (
+        compute_cost_usd("claude-sonnet-5", _KNOWN_INPUT_TOKENS, _KNOWN_OUTPUT_TOKENS) * 0.5
+    )
+    assert cost_tracker.daily_total_usd() == pytest.approx(expected)
+
+
+def test_batch_poll_timeout_leaves_documents_unprocessed_and_reports_batch_id(tmp_path) -> None:
+    """상한을 넘기면 문서를 미처리로 남기고 batch_id를 돌려줘 다음 실행에서 이어받게 한다."""
+    vault_path, conn = _setup(tmp_path)
+    doc = _doc("doc-1")
+    path = write_document(vault_path, doc, _BODY_WITH_SECTIONS)
+    upsert_document(
+        conn,
+        doc,
+        file_path=str(path.relative_to(vault_path)),
+        source_specific_id=doc.source_specific_id,
+    )
+
+    client = _FakeBatchAnthropicClient(processing_statuses=["in_progress"])
+    result, _ = _analyze_with_batch(vault_path, conn, client, batch_poll_timeout_seconds=0)
+
+    assert result.processed == 0
+    assert result.pending_batch_id == "msgbatch_test"
+    assert find_unprocessed_document_paths(conn) != []
+
+
+def test_batch_routes_large_document_to_large_doc_client_model(tmp_path) -> None:
+    """라우팅은 배치 경로에서도 유지돼야 한다 - 요청 params의 model로 확인한다."""
+    vault_path, conn = _setup(tmp_path)
+    large_doc = _doc("large-1")
+    large_body = _marked_body(large_doc.id).replace("본문 내용", "본문 " * 2_000)
+    path = write_document(vault_path, large_doc, large_body)
+    upsert_document(
+        conn,
+        large_doc,
+        file_path=str(path.relative_to(vault_path)),
+        source_specific_id=large_doc.source_specific_id,
+    )
+
+    client = _FakeBatchAnthropicClient()
+    large_doc_client = _FakeBatchAnthropicClient(model="claude-haiku-4-5")
+    result, _ = _analyze_with_batch(
+        vault_path,
+        conn,
+        client,
+        large_doc_client=large_doc_client,
+        large_doc_char_threshold=1_000,
+    )
+
+    assert result.processed == 1
+    assert [request["params"]["model"] for request in client.submitted] == ["claude-haiku-4-5"]

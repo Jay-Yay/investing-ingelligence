@@ -825,6 +825,17 @@ def analyze(
     sqlite_path: Annotated[Path, typer.Option(help="SQLite index path")] = Path(
         "./data/index.sqlite3"
     ),
+    batch: Annotated[
+        bool | None,
+        typer.Option(
+            "--batch/--no-batch",
+            help=(
+                "Message Batches API 사용 여부 (미지정 시 ANALYZE_USE_BATCH_API 설정을 따름). "
+                "배치는 토큰이 전 구간 50% 할인이지만 결과까지 최대 수십 분 기다린다 - "
+                "대화형으로 즉시 결과가 필요하면 --no-batch."
+            ),
+        ),
+    ] = None,
 ) -> None:
     """미처리 문서에 대해 LLM 핵심 주장 추출을 실행한다."""
     settings = AppSettings()
@@ -860,9 +871,14 @@ def analyze(
             portfolio_tickers=portfolio_tickers,
             large_doc_client=large_doc_client,
             large_doc_char_threshold=settings.large_doc_char_threshold,
+            use_batch_api=settings.analyze_use_batch_api if batch is None else batch,
         )
 
         typer.echo(f"{result.processed}건 분석 완료")
+        if result.pending_batch_id is not None:
+            typer.echo(
+                f"배치 {result.pending_batch_id}가 아직 처리 중 - 해당 문서는 미처리로 남았다"
+            )
         for error in result.errors:
             typer.echo(f"오류: {error}")
         raise typer.Exit(code=1 if result.errors else 0)

@@ -13,6 +13,9 @@ class AppSettings(BaseSettings):
     anthropic_model: str = "claude-sonnet-5"
     anthropic_large_doc_model: str = "claude-haiku-4-5"
     large_doc_char_threshold: int = 50_000
+    # analyze는 야간 크론에서 vault에 기록만 하므로 지연 민감도가 0이고, Message Batches API는
+    # 입력/출력 토큰이 전 구간 50% 할인이다. 대화형으로 즉시 결과가 필요하면 CLI `--no-batch`.
+    analyze_use_batch_api: bool = True
     sec_user_agent: str | None = None
     dart_api_key: str | None = None
     fred_api_key: str | None = None

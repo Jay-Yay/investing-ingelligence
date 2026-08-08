@@ -250,8 +250,16 @@ def run_daily(
             analyze_result = analyze_pending_documents(
                 conn, vault_path, client, cost_tracker, analyze_prompt,
                 portfolio_tickers=portfolio_tickers,
+                use_batch_api=settings.analyze_use_batch_api,
             )
             analyze_errors.extend(analyze_result.errors)
+            if analyze_result.pending_batch_id is not None:
+                # 배치가 폴링 상한 안에 끝나지 않으면 claims_digest가 빈 채로 후속 단계가
+                # 진행된다 - 예산 소진 시와 같은 동작이지만, 리포트에 이유를 남긴다.
+                analyze_errors.append(
+                    f"주장 추출 배치({analyze_result.pending_batch_id}) 처리 중 - "
+                    "이번 실행의 주장 요약은 비어 있다"
+                )
         else:
             analyze_errors.append("ANTHROPIC_API_KEY 미설정 - 분석 단계 건너뜀")
 

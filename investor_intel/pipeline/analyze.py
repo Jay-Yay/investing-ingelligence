@@ -2,13 +2,23 @@ from __future__ import annotations
 
 import re
 import sqlite3
+import time
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 from investor_intel.llm.client import AnthropicClient
 from investor_intel.llm.cost_tracker import CostTracker
-from investor_intel.llm.extraction import extract_claims, extract_claims_batch
+from investor_intel.llm.extraction import (
+    LLMRequest,
+    build_claims_batch_request,
+    build_claims_request,
+    extract_claims,
+    extract_claims_batch,
+    parse_claims_batch_response,
+    parse_claims_response,
+)
 from investor_intel.models.analysis import ExtractionResult
 from investor_intel.models.common import ContentCaptureMode, SourceType
 from investor_intel.models.source_document import SourceDocument
@@ -43,6 +53,19 @@ class AnalyzeResult:
     errors: list[str] = field(default_factory=list)
     extractions: dict[str, ExtractionResult] = field(default_factory=dict)
     digest: list[ClaimDigestEntry] = field(default_factory=list)
+    # 배치가 폴링 상한 안에 끝나지 않은 경우의 batch_id. 이 경우 그 문서들은 미처리 상태로
+    # 남고(다음 실행에서 다시 잡힌다), digest도 비어 있다 - 리포트에 그 사실을 표기하라는 신호.
+    pending_batch_id: str | None = None
+
+
+@dataclass
+class _BatchGroup:
+    """배치 요청 1건 = LLM 호출 1회분. 소형 문서 묶음이면 documents가 여럿, 대형 문서면 1건."""
+
+    custom_id: str
+    client: AnthropicClient
+    documents: list[tuple[SourceDocument, str]]
+    request: LLMRequest
 
 
 # DART/SEC 공시와 보유 종목 웹 검색 스크랩은 source_name에 티커(KR 종목코드 또는 US 심볼)를
@@ -64,6 +87,11 @@ DEFAULT_TICKER_FOLLOWUP_DAYS = 180
 # 커지기 때문에 상한을 둔다.
 DEFAULT_BATCH_SIZE = 8
 DEFAULT_BATCH_CHAR_LIMIT = 12_000
+
+# Message Batches API 폴링. 대부분 1시간 내에 끝나지만 야간 크론이 무한정 붙들려 있으면
+# 안 되므로 상한을 둔다 - 상한을 넘으면 문서를 미처리 상태로 남기고 batch_id만 보고한다.
+DEFAULT_BATCH_POLL_INTERVAL_SECONDS = 60.0
+DEFAULT_BATCH_POLL_TIMEOUT_SECONDS = 1_800.0
 
 RULE_BASED_SKIP_MODEL_TAG = "rule_based_skip"
 
@@ -149,6 +177,9 @@ def analyze_pending_documents(
     large_doc_char_threshold: int = 50_000,
     batch_size: int = DEFAULT_BATCH_SIZE,
     batch_char_limit: int = DEFAULT_BATCH_CHAR_LIMIT,
+    use_batch_api: bool = False,
+    batch_poll_interval_seconds: float = DEFAULT_BATCH_POLL_INTERVAL_SECONDS,
+    batch_poll_timeout_seconds: float = DEFAULT_BATCH_POLL_TIMEOUT_SECONDS,
 ) -> AnalyzeResult:
     """미분석 문서에 LLM 핵심 주장 추출을 실행한다.
 
@@ -166,12 +197,19 @@ def analyze_pending_documents(
        처리한다 - 문서별 고정 프롬프트/스키마 오버헤드를 문서 수만큼 나눠 낸다. 배치 호출이
        스키마 검증에 실패하면(모델이 일부 document_id를 누락하는 등) 그 배치만 문서별 개별
        호출로 폴백해 전체가 유실되지 않게 한다. 대형 문서는 기존과 동일하게 개별 처리한다.
+
+    `use_batch_api=True`면 위에서 정한 호출 단위(소형 문서 묶음 / 대형 문서 개별)를 즉시
+    호출하는 대신 Message Batches API에 한 번에 제출한다 - 입력/출력 토큰이 전 구간 50%
+    할인이다. analyze는 야간 크론에서 vault에 기록만 하므로 지연 민감도가 0이라 가능하다.
+    배치 결과는 **도착 순서가 보장되지 않으므로 custom_id로 매칭**하며, 실패한 요청은 기존
+    개별 호출 경로로 폴백한다.
     """
     processed = 0
     errors: list[str] = []
     extractions: dict[str, ExtractionResult] = {}
     digest: list[ClaimDigestEntry] = []
     pending_small: list[tuple[SourceDocument, str]] = []
+    batch_groups: list[_BatchGroup] = []
 
     def _finalize(
         doc: SourceDocument, body: str, extraction: ExtractionResult, model_name: str
@@ -209,45 +247,175 @@ def analyze_pending_documents(
             )
         processed += 1
 
-    def _process_single(doc: SourceDocument, body: str) -> None:
+    def _process_single(
+        doc: SourceDocument, body: str, active_client: AnthropicClient | None = None
+    ) -> None:
+        target = active_client or client
         try:
-            outcome = extract_claims(client, document_body=body, system_prompt=system_prompt)
+            outcome = extract_claims(target, document_body=body, system_prompt=system_prompt)
             cost_tracker.record_usage(
-                client.model, outcome.usage.input_tokens, outcome.usage.output_tokens
+                target.model, outcome.usage.input_tokens, outcome.usage.output_tokens
             )
-            _finalize(doc, body, outcome.result, client.model)
+            _finalize(doc, body, outcome.result, target.model)
         except Exception as exc:  # noqa: BLE001
             errors.append(f"{doc.id}: {exc}")
+
+    def _process_group_individually(group: _BatchGroup) -> None:
+        for doc, body in group.documents:
+            _process_single(doc, body, group.client)
+
+    def _enqueue_batch_group(
+        active_client: AnthropicClient,
+        documents: list[tuple[SourceDocument, str]],
+        request: LLMRequest,
+    ) -> None:
+        # custom_id는 소형 묶음/대형 문서를 한 리스트에서 채번해 배치 안에서 유일함을 보장한다.
+        batch_groups.append(
+            _BatchGroup(
+                custom_id=f"req-{len(batch_groups)}",
+                client=active_client,
+                documents=documents,
+                request=request,
+            )
+        )
+
+    def _process_large_document(doc: SourceDocument, body: str) -> None:
+        assert large_doc_client is not None
+        if use_batch_api:
+            _enqueue_batch_group(
+                large_doc_client, [(doc, body)], build_claims_request(body, system_prompt)
+            )
+        else:
+            _process_single(doc, body, large_doc_client)
 
     def _flush_pending_small() -> None:
         nonlocal pending_small
         if not pending_small:
             return
-        if len(pending_small) == 1:
-            doc, body = pending_small[0]
-            _process_single(doc, body)
-        else:
-            batch = list(pending_small)
-            try:
-                outcome = extract_claims_batch(
-                    client,
-                    documents=[(doc.id, body) for doc, body in batch],
-                    system_prompt=system_prompt,
-                )
-                cost_tracker.record_usage(
-                    client.model, outcome.usage.input_tokens, outcome.usage.output_tokens
-                )
-                for doc, body in batch:
-                    _finalize(doc, body, outcome.results[doc.id], client.model)
-            except Exception as exc:  # noqa: BLE001
-                # 배치 전체가 스키마 검증 등으로 실패해도 문서별 개별 호출로 폴백해
-                # 이 배치에 모인 문서들이 통째로 유실되지 않게 한다.
-                errors.append(
-                    f"batch of {len(batch)} documents fell back to individual calls: {exc}"
-                )
-                for doc, body in batch:
-                    _process_single(doc, body)
+        batch = list(pending_small)
         pending_small = []
+
+        if use_batch_api:
+            # 1건짜리 묶음은 다중 문서 스키마를 쓸 이유가 없으므로 단일 문서 프롬프트로 낸다.
+            request = (
+                build_claims_request(batch[0][1], system_prompt)
+                if len(batch) == 1
+                else build_claims_batch_request(
+                    [(doc.id, body) for doc, body in batch], system_prompt
+                )
+            )
+            _enqueue_batch_group(client, batch, request)
+            return
+
+        if len(batch) == 1:
+            doc, body = batch[0]
+            _process_single(doc, body)
+            return
+        try:
+            outcome = extract_claims_batch(
+                client,
+                documents=[(doc.id, body) for doc, body in batch],
+                system_prompt=system_prompt,
+            )
+            cost_tracker.record_usage(
+                client.model, outcome.usage.input_tokens, outcome.usage.output_tokens
+            )
+            for doc, body in batch:
+                _finalize(doc, body, outcome.results[doc.id], client.model)
+        except Exception as exc:  # noqa: BLE001
+            # 배치 전체가 스키마 검증 등으로 실패해도 문서별 개별 호출로 폴백해
+            # 이 배치에 모인 문서들이 통째로 유실되지 않게 한다.
+            errors.append(
+                f"batch of {len(batch)} documents fell back to individual calls: {exc}"
+            )
+            for doc, body in batch:
+                _process_single(doc, body)
+
+    def _finalize_batch_group(group: _BatchGroup, message: Any) -> None:
+        """배치 응답 1건을 파싱해 그 그룹의 문서들을 마감한다. 파싱 실패 시 예외를 올린다."""
+        model = group.client.model
+        if len(group.documents) == 1:
+            doc, body = group.documents[0]
+            results = {doc.id: parse_claims_response(message)}
+        else:
+            results = parse_claims_batch_response(
+                message, {doc.id for doc, _ in group.documents}
+            )
+        # 파싱이 끝난 뒤에 비용을 기록한다 - 실패해 개별 폴백으로 넘어가면 폴백 호출 비용이
+        # 따로 기록되고, 여기서 먼저 적어두면 어느 쪽이든 실제 청구액과 맞는다.
+        cost_tracker.record_usage(
+            model, message.usage.input_tokens, message.usage.output_tokens, batch=True
+        )
+        for doc, body in group.documents:
+            _finalize(doc, body, results[doc.id], model)
+
+    def _run_batch_api() -> str | None:
+        """모아둔 요청을 배치로 제출·수집한다. 폴링 상한 초과 시 batch_id를 반환한다."""
+        payloads = [
+            {
+                "custom_id": group.custom_id,
+                "params": {
+                    "model": group.client.model,
+                    "max_tokens": 4096,
+                    "system": group.request.system,
+                    "messages": group.request.messages,
+                    "tools": group.request.tools,
+                    "tool_choice": group.request.tool_choice,
+                },
+            }
+            for group in batch_groups
+        ]
+        try:
+            batch_id = client.create_batch(payloads)
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"배치 생성 실패 - 개별 호출로 폴백: {exc}")
+            for group in batch_groups:
+                _process_group_individually(group)
+            return None
+
+        deadline = time.monotonic() + batch_poll_timeout_seconds
+        while True:
+            try:
+                status = client.retrieve_batch(batch_id).processing_status
+            except Exception as exc:  # noqa: BLE001
+                errors.append(f"배치 {batch_id} 상태 조회 실패: {exc}")
+                return batch_id
+            if status == "ended":
+                break
+            if time.monotonic() >= deadline:
+                errors.append(
+                    f"배치 {batch_id}가 폴링 상한({batch_poll_timeout_seconds:.0f}초) 내에 "
+                    f"끝나지 않음(현재 상태: {status}) - 문서는 미처리로 남는다"
+                )
+                return batch_id
+            time.sleep(batch_poll_interval_seconds)
+
+        groups_by_id = {group.custom_id: group for group in batch_groups}
+        seen: set[str] = set()
+        for result in client.batch_results(batch_id):
+            # 결과 도착 순서는 보장되지 않는다 - 반드시 custom_id로 매칭한다(위치 인덱싱 금지).
+            group = groups_by_id.get(result.custom_id)
+            if group is None:
+                errors.append(f"배치 {batch_id}: 알 수 없는 custom_id {result.custom_id}")
+                continue
+            seen.add(result.custom_id)
+            if result.result.type != "succeeded":
+                errors.append(
+                    f"{result.custom_id}: 배치 결과 {result.result.type} - 개별 호출로 폴백"
+                )
+                _process_group_individually(group)
+                continue
+            try:
+                _finalize_batch_group(group, result.result.message)
+            except Exception as exc:  # noqa: BLE001
+                errors.append(f"{result.custom_id}: 배치 응답 파싱 실패 - 개별 호출로 폴백: {exc}")
+                _process_group_individually(group)
+
+        for custom_id, group in groups_by_id.items():
+            if custom_id not in seen:
+                errors.append(f"{custom_id}: 배치 결과 누락 - 개별 호출로 폴백")
+                _process_group_individually(group)
+        return None
 
     budget_exhausted = False
     for file_path in find_unprocessed_document_paths(conn, portfolio_tickers=portfolio_tickers):
@@ -272,18 +440,7 @@ def analyze_pending_documents(
             continue
 
         if large_doc_client is not None and len(body) > large_doc_char_threshold:
-            try:
-                outcome = extract_claims(
-                    large_doc_client, document_body=body, system_prompt=system_prompt
-                )
-                cost_tracker.record_usage(
-                    large_doc_client.model,
-                    outcome.usage.input_tokens,
-                    outcome.usage.output_tokens,
-                )
-                _finalize(doc, body, outcome.result, large_doc_client.model)
-            except Exception as exc:  # noqa: BLE001
-                errors.append(f"{file_path}: {exc}")
+            _process_large_document(doc, body)
             continue
 
         pending_small.append((doc, body))
@@ -293,5 +450,13 @@ def analyze_pending_documents(
 
     _flush_pending_small()
 
+    pending_batch_id = _run_batch_api() if use_batch_api and batch_groups else None
+
     digest.sort(key=lambda entry: entry.published_at, reverse=True)
-    return AnalyzeResult(processed=processed, errors=errors, extractions=extractions, digest=digest)
+    return AnalyzeResult(
+        processed=processed,
+        errors=errors,
+        extractions=extractions,
+        digest=digest,
+        pending_batch_id=pending_batch_id,
+    )
