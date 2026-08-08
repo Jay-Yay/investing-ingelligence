@@ -9,6 +9,8 @@ from investor_intel.config.settings import AppSettings
 from investor_intel.llm.client import AnthropicClient
 from investor_intel.market_data.coingecko_adapter import CoinGeckoAdapter
 from investor_intel.market_data.yfinance_adapter import YahooFinanceAdapter
+from investor_intel.pipeline import orchestrator
+from investor_intel.pipeline.analyze import AnalyzeResult
 from investor_intel.pipeline.orchestrator import run_daily, run_portfolio_stage
 
 _RSS_FEED = """<?xml version="1.0" encoding="UTF-8"?>
@@ -409,3 +411,41 @@ def test_run_portfolio_stage_converts_kr_and_us_positions_to_a_common_currency(t
     # because USD and KRW were never converted.
     assert {v.rule for v in violations} == {"max_single_position_weight", "max_sector_weight"}
     assert all(v.symbol == "NBIS" for v in violations)
+
+
+def test_run_daily_passes_large_doc_client_to_analyze(tmp_path, monkeypatch) -> None:
+    """`anthropic_large_doc_model` 설정이 run_daily 경로에서 死코드가 되지 않도록 한다.
+
+    run_daily가 large_doc_client를 넘기지 않으면 analyze는 모든 문서를 기본 모델(sonnet,
+    3배 가격)로 돌린다 - 미처리 백로그 대부분이 SEC/central_bank 같은 대형 문서라
+    비용 차이가 크다. CLI `analyze`는 이미 넘기고 있었고 run_daily만 누락돼 있었다.
+    """
+    captured: dict = {}
+
+    def _capture(conn, vault_path, client, cost_tracker, system_prompt, **kwargs):
+        captured["client"] = client
+        captured.update(kwargs)
+        return AnalyzeResult(processed=0)
+
+    monkeypatch.setattr(orchestrator, "analyze_pending_documents", _capture)
+
+    config_dir = tmp_path / "config"
+    config_dir.mkdir()
+    vault_path = tmp_path / "vault"
+    settings = AppSettings(_env_file=None, anthropic_api_key="test-key")
+    anthropic_client = AnthropicClient(
+        api_key="test-key", model="claude-sonnet-5", client=_FakeAnthropicSDKClient()
+    )
+
+    run_daily(
+        config_dir=config_dir,
+        vault_path=vault_path,
+        sqlite_path=tmp_path / "index.sqlite3",
+        settings=settings,
+        anthropic_client=anthropic_client,
+    )
+
+    large_doc_client = captured.get("large_doc_client")
+    assert large_doc_client is not None
+    assert large_doc_client.model == settings.anthropic_large_doc_model
+    assert captured["large_doc_char_threshold"] == settings.large_doc_char_threshold

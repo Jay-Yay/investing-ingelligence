@@ -247,9 +247,22 @@ def run_daily(
             cost_tracker = CostTracker(
                 conn, settings.daily_llm_budget_usd, settings.monthly_llm_budget_usd
             )
+            # 대형 문서(SEC 10-K/10-Q 전문, 중앙은행 의사록 등)는 더 저렴한 모델로 돌린다.
+            # CLI `analyze`는 처음부터 이렇게 했지만 run_daily만 누락돼 있어
+            # `anthropic_large_doc_model` 설정이 이 경로에서 死코드였다.
+            large_doc_client = (
+                AnthropicClient(
+                    api_key=settings.anthropic_api_key,
+                    model=settings.anthropic_large_doc_model,
+                )
+                if settings.anthropic_api_key
+                else None
+            )
             analyze_result = analyze_pending_documents(
                 conn, vault_path, client, cost_tracker, analyze_prompt,
                 portfolio_tickers=portfolio_tickers,
+                large_doc_client=large_doc_client,
+                large_doc_char_threshold=settings.large_doc_char_threshold,
                 use_batch_api=settings.analyze_use_batch_api,
             )
             analyze_errors.extend(analyze_result.errors)
