@@ -110,10 +110,45 @@ DART 공시)까지 매번 큐에 올리면 하루 예산이 오래된 문서 처
 SEC 10-K/10-Q는 전문을 그대로 vault에 캡처한다(글자 제한 없음 — 정보 누락 방지가 우선).
 그 결과 문서 하나가 수십만 자에 달할 수 있어, 기본 모델(`ANTHROPIC_MODEL`)로 그대로 분석하면
 대형 문서 한두 건이 하루 예산을 통째로 소진할 수 있다. 이를 막기 위해 본문 길이가
-`LARGE_DOC_CHAR_THRESHOLD`(기본 50,000자)를 넘는 문서는 자동으로 `ANTHROPIC_LARGE_DOC_MODEL`
+`LARGE_DOC_CHAR_THRESHOLD`(기본 15,000자)를 넘는 문서는 자동으로 `ANTHROPIC_LARGE_DOC_MODEL`
 (기본 `claude-haiku-4-5` — 저렴한 모델)로 라우팅된다(`analyze_pending_documents`의
 `large_doc_client` 인자, `investor_intel/pipeline/analyze.py`). vault에 저장되는 원문 자체는
 어느 모델로 분석되든 그대로이며, 분석에 쓰는 모델만 문서 크기에 따라 달라진다.
+
+임계값이 50,000자였을 때는 실제 미처리 문서 평균(central_bank·ib_insights 모두 ~29KB)이
+그 아래라 분량 대부분이 기본 모델로 갔다. 15,000자로 낮추면 고유 18.9MB 백로그 기준
+기본 모델 처리량이 10.8MB → 5.0MB로 줄어든다(입력비 추정 ~$11.9 → ~$8.5). 주장 추출은
+정해진 툴 스키마를 채우는 작업이라 저렴한 모델로 내려도 품질 저하가 작다.
+
+`analyze`는 기본적으로 **Message Batches API**로 실행된다(`ANALYZE_USE_BATCH_API`, 기본 켜짐).
+야간 크론에서 vault에 기록만 하므로 지연 민감도가 0이고, 배치는 입력/출력 토큰이 전 구간
+50% 할인이다. 대신 결과까지 최대 수십 분 걸리므로 대화형으로 즉시 결과가 필요하면
+`analyze --no-batch`로 끈다. 폴링 상한(기본 30분) 안에 배치가 끝나지 않으면 해당 문서는
+`llm_processed: false`로 남고 batch_id가 출력된다(다음 실행에서 다시 큐에 오른다).
+
+## 같은 문서의 중복 사본
+
+`path_for_document`는 파일명을 `published_at` 날짜로 만든다. central_bank는 회의록이 늦게
+공개돼도 analyze recency 창에 걸리도록 `published_at=now`를 쓰고(의도된 설계) ib_insights는
+크롤 날짜를 쓰므로, 수집 실행마다 같은 문서가 새 경로를 얻었다 — `write_document`의 중복
+방지는 *같은 경로*에만 걸려 무력했다.
+
+`persist_collect_result`가 이미 아는 문서는 기존 사본을 제자리에서 갱신하도록 고쳐서 더는
+쌓이지 않는다(내용이 같으면 파일·DB 모두 건드리지 않고 `collect` 출력에 "건너뜀"으로 집계,
+내용이 바뀌었으면 같은 경로를 덮어쓰고 `llm_processed`를 false로 되돌려 재분석 대상이 된다).
+
+그 수정 이전에 쌓인 사본(2026-08 실측: id 280개 / 초과 파일 687개 / 19.5MB)은 아래 스크립트로
+정리한다. **기본은 dry-run이고, 실제 삭제는 `--apply`를 붙였을 때만 일어난다.**
+
+```
+uv run python scripts/dedupe_vault.py                  # 무엇을 지울지 확인만
+uv run python scripts/dedupe_vault.py --apply          # 실제 삭제
+uv run python -m investor_intel reindex --vault-path ./vault   # 삭제 후 필수
+```
+
+보존 규칙은 `llm_processed: true`인 사본 우선, 없으면 `published_at`이 가장 오래된 사본이다.
+(1)이 중요한 이유: `list_documents`가 정렬 순회라 reindex 때 가장 최근 날짜 파일이 DB 행을
+차지하는데, 그게 미분석 사본이면 이미 분석한 문서가 통째로 재분석 대상이 된다.
 
 ## SQLite 인덱스는 커밋하지 않는다 (로컬 전용 캐시)
 
