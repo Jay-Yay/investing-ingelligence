@@ -53,6 +53,7 @@ from investor_intel.pipeline.web_research import run_web_research_for_portfolio
 from investor_intel.reports.daily_report_renderer import DailyReportContext, render_daily_report
 from investor_intel.reports.stock_score_renderer import render_stock_score_report
 from investor_intel.scoring.snapshot import load_snapshot as load_stock_score_snapshot
+from investor_intel.storage.checkpoint_file import load_checkpoints, save_checkpoints
 from investor_intel.storage.cost_ledger import init_cost_ledger
 from investor_intel.storage.sqlite_index import connect, init_db
 from investor_intel.storage.sqlite_index import reindex as reindex_vault
@@ -845,9 +846,17 @@ def collect(
     """설정된 소스에서 수집하여 vault와 인덱스에 반영한다."""
     settings = AppSettings()
     conn = connect(sqlite_path)
+    # data/index.sqlite3 자체는 매 실행마다 vault에서 재구축되는 휘발성 캐시라 collector_state
+    # (소스별 last_seen_id 체크포인트)도 그 안에선 함께 사라진다 - 이걸 그대로 두면 매일 모든
+    # 소스가 "첫 실행"으로 처리되어 전체 히스토리를 다시 훑는다(예: central_bank/ib_insights
+    # 소스들의 최근 1~2년치 재수집). checkpoints.json에 별도로 영속화해 매 실행 시작에 불러오고,
+    # 소스 하나가 끝날 때마다 즉시 다시 써서 - 중간에 타임아웃으로 잘려도 이미 끝난 소스들의
+    # 체크포인트는 남는다.
+    checkpoints_path = sqlite_path.parent / "checkpoints.json"
     try:
         init_db(conn)
         reindex_vault(conn, vault_path)
+        load_checkpoints(conn, checkpoints_path)
         checkpoint_store = CheckpointStore(conn)
         entries, setup_errors = build_collect_entries(config_dir, settings, checkpoint_store, conn)
 
@@ -862,7 +871,13 @@ def collect(
                 raise typer.Exit(code=1)
             entries = [e for e in entries if e[1].value in wanted]
 
-        results = run_collectors(entries, vault_path, conn, backfill_days=backfill)
+        results = run_collectors(
+            entries,
+            vault_path,
+            conn,
+            backfill_days=backfill,
+            on_source_done=lambda: save_checkpoints(conn, checkpoints_path),
+        )
 
         total_persisted = 0
         total_skipped = 0

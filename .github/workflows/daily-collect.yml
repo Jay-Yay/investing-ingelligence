@@ -78,6 +78,10 @@ jobs:
           TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
           TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
           TELEGRAM_SESSION: ${{ secrets.TELEGRAM_SESSION }}
+          # unbuffer stdout so per-source progress lines actually reach the log as they
+          # happen, instead of sitting in Python's block buffer and vanishing if the job
+          # gets cancelled (e.g. by timeout-minutes) before the process exits cleanly.
+          PYTHONUNBUFFERED: "1"
         run: |
           uv run python -m investor_intel collect \
             --vault-path state/vault \
@@ -102,13 +106,20 @@ jobs:
       # entirely - which previously meant a timeout silently threw away everything collected
       # up to that point. With always(), whatever's on disk still gets committed.
       #
-      # Only vault/ is committed - data/index.sqlite3 is gitignored on this branch (binary,
-      # unmergeable across the multiple writers that push here; rebuilt via reindex instead).
+      # vault/ and data/checkpoints.json are committed - data/index.sqlite3 itself stays
+      # gitignored on this branch (binary, unmergeable across the multiple writers that push
+      # here; rebuilt via reindex instead). checkpoints.json is the one piece of collector_state
+      # that needs to survive across runs (source_id -> last_seen_id etc.) - without it every
+      # run starts with an empty collector_state table and every source falls back to processing
+      # its entire available history instead of just what's new, which is what let a handful of
+      # slow/unbounded sources (central bank statements, IB insights) balloon into the ~3h
+      # timeouts seen 2026-08-03~10.
       - name: Commit and push collected vault data
         if: always()
         run: |
           cd state
           git add vault
+          git add data/checkpoints.json 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "no new data"
           else

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -160,6 +161,7 @@ def run_collectors(
     vault_path: Path,
     conn: sqlite3.Connection,
     backfill_days: int | None = None,
+    on_source_done: Callable[[], None] | None = None,
 ) -> list[SourceRunResult]:
     results: list[SourceRunResult] = []
 
@@ -191,6 +193,14 @@ def run_collectors(
                 skipped=skipped,
             )
         )
+
+        # a source's own checkpoint (last_seen_id) is already committed to `conn` by this
+        # point (collectors call CheckpointStore.record_success/failure inside collect_incremental/
+        # backfill above) - flushing it to disk here, once per source rather than once at the end,
+        # means a hard cancellation (GH Actions timeout-minutes) mid-run only loses the checkpoint
+        # of whichever source was in flight, not every source that already finished.
+        if on_source_done is not None:
+            on_source_done()
 
     return results
 

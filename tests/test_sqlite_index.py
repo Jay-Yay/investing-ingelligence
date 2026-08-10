@@ -9,12 +9,14 @@ from investor_intel.storage.content_hash import compute_content_hash, compute_st
 from investor_intel.storage.obsidian_repo import write_document
 from investor_intel.storage.sqlite_index import (
     connect,
+    export_collector_state,
     find_dart_company_by_stock_code,
     find_dart_corp_code,
     find_duplicate,
     get_collector_state,
     get_document_by_id,
     has_transcript_for_period,
+    import_collector_state,
     init_db,
     is_dart_corp_code_cache_populated,
     reindex,
@@ -260,6 +262,37 @@ def test_collector_state_round_trip(tmp_path: Path) -> None:
     row = get_collector_state(conn, "telegram_allbareun")
     assert row is not None
     assert row["last_seen_id"] == "123"
+    assert bool(row["backfill_completed"]) is True
+
+
+def test_collector_state_export_import_round_trip(tmp_path: Path) -> None:
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    save_collector_state(
+        conn,
+        source_id="fed_statements",
+        last_success_at="2026-08-09T09:00:00+00:00",
+        last_seen_id="https://www.federalreserve.gov/2026-07-30",
+        last_accession_number=None,
+        failure_count=0,
+        next_retry_at=None,
+        backfill_completed=True,
+    )
+
+    exported = export_collector_state(conn)
+    assert exported["fed_statements"]["last_seen_id"] == (
+        "https://www.federalreserve.gov/2026-07-30"
+    )
+
+    fresh_conn = connect(tmp_path / "reindexed.sqlite3")
+    init_db(fresh_conn)
+    assert get_collector_state(fresh_conn, "fed_statements") is None
+
+    import_collector_state(fresh_conn, exported)
+
+    row = get_collector_state(fresh_conn, "fed_statements")
+    assert row is not None
+    assert row["last_seen_id"] == "https://www.federalreserve.gov/2026-07-30"
     assert bool(row["backfill_completed"]) is True
 
 

@@ -111,3 +111,29 @@ def test_one_failing_collector_does_not_stop_others(tmp_path) -> None:
     assert results[1].source_id == "naver_good"
     assert results[1].persisted == 1
     assert results[1].errors == []
+
+
+def test_on_source_done_called_once_per_source_even_on_failure(tmp_path) -> None:
+    vault_path = tmp_path / "vault"
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+
+    failing = _FakeCollector("naver_bad", [], raises=True)
+    healthy = _FakeCollector("naver_good", [_item("post-2")])
+    calls = 0
+
+    def on_source_done() -> None:
+        nonlocal calls
+        calls += 1
+
+    run_collectors(
+        [
+            (failing, SourceType.NAVER, "bad_source"),
+            (healthy, SourceType.NAVER, "good_source"),
+        ],
+        vault_path,
+        conn,
+        on_source_done=on_source_done,
+    )
+
+    assert calls == 2

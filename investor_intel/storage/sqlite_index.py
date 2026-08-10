@@ -323,6 +323,35 @@ def save_collector_state(
     conn.commit()
 
 
+def export_collector_state(conn: sqlite3.Connection) -> dict[str, dict[str, object]]:
+    rows = conn.execute("SELECT * FROM collector_state").fetchall()
+    return {
+        row["source_id"]: {
+            "last_success_at": row["last_success_at"],
+            "last_seen_id": row["last_seen_id"],
+            "last_accession_number": row["last_accession_number"],
+            "failure_count": row["failure_count"],
+            "next_retry_at": row["next_retry_at"],
+            "backfill_completed": bool(row["backfill_completed"]),
+        }
+        for row in rows
+    }
+
+
+def import_collector_state(conn: sqlite3.Connection, states: dict[str, dict[str, object]]) -> None:
+    for source_id, state in states.items():
+        save_collector_state(
+            conn,
+            source_id=source_id,
+            last_success_at=state.get("last_success_at"),
+            last_seen_id=state.get("last_seen_id"),
+            last_accession_number=state.get("last_accession_number"),
+            failure_count=state.get("failure_count", 0),
+            next_retry_at=state.get("next_retry_at"),
+            backfill_completed=bool(state.get("backfill_completed", False)),
+        )
+
+
 def is_dart_corp_code_cache_populated(conn: sqlite3.Connection) -> bool:
     row = conn.execute("SELECT COUNT(*) AS c FROM dart_corp_codes").fetchone()
     return bool(row["c"])
