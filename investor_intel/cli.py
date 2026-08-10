@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from datetime import date
+import json
+from datetime import date, datetime
 from pathlib import Path
 from typing import Annotated
+from zoneinfo import ZoneInfo
 
 import typer
 
@@ -11,7 +13,11 @@ from investor_intel.collectors.base import CheckpointStore
 from investor_intel.collectors.dart_client import DartClient
 from investor_intel.collectors.http_client import SimpleHttpClient
 from investor_intel.collectors.sec_client import SECClient
-from investor_intel.config.loaders import load_companies_yaml, load_portfolio_yaml
+from investor_intel.config.loaders import (
+    load_companies_yaml,
+    load_macro_theses_yaml,
+    load_portfolio_yaml,
+)
 from investor_intel.config.settings import AppSettings
 from investor_intel.llm.client import AnthropicClient
 from investor_intel.llm.cost_tracker import CostTracker
@@ -24,6 +30,7 @@ from investor_intel.market_data.yahoo_fundamentals_adapter import (
 from investor_intel.market_data.yfinance_adapter import YahooFinanceAdapter
 from investor_intel.models.analysis import TenbaggerVerification
 from investor_intel.models.common import SourceType
+from investor_intel.models.macro import IndicatorSnapshot, MacroThesisDef
 from investor_intel.pipeline.analyze import analyze_pending_documents
 from investor_intel.pipeline.collect import build_collect_entries, run_collectors
 from investor_intel.pipeline.earnings_transcript import run_earnings_transcript_collection
@@ -55,6 +62,10 @@ from investor_intel.reports.stock_score_renderer import render_stock_score_repor
 from investor_intel.scoring.snapshot import load_snapshot as load_stock_score_snapshot
 from investor_intel.storage.checkpoint_file import load_checkpoints, save_checkpoints
 from investor_intel.storage.cost_ledger import init_cost_ledger
+from investor_intel.storage.macro_indicator_log import (
+    append_macro_snapshot,
+    read_macro_history,
+)
 from investor_intel.storage.sqlite_index import connect, init_db
 from investor_intel.storage.sqlite_index import reindex as reindex_vault
 from investor_intel.storage.vault_dedupe import apply_dedupe, plan_dedupe
@@ -94,6 +105,7 @@ VAULT_DIRS = [
     "40_Analysis/Claims",
     "40_Analysis/Contradictions",
     "40_Analysis/Events",
+    "40_Analysis/Macro",
     "50_Reports/Daily",
     "50_Reports/MarketRegime",
     "50_Reports/StockScore",
@@ -172,6 +184,22 @@ DART_COMPANIES_YAML = """dart_companies:
 SETTINGS_YAML = """vault_path: ./vault
 timezone: Asia/Seoul
 daily_report_time: "09:00"
+"""
+
+MACRO_THESES_YAML = """# record-indicators/macro-status가 참조하는 매크로 가설·지표 정의. 예시:
+# theses:
+#   - id: example_thesis
+#     title: "예시 가설"
+#     summary: "이 가설이 무엇을 주장하는지"
+#     indicators:
+#       - id: example_indicator
+#         label: "예시 지표"
+#         unit: "%"
+#         baseline: "기록 시작 시점 값"
+#         bullish_threshold: "이 값 이상/이하면 강세로 판단"
+#         bearish_threshold: "이 값 이상/이하면 약세로 판단"
+#         source_hint: "어디서/어떻게 이 값을 확인하는지"
+theses: []
 """
 
 INBOX_SOURCES_MD = """# 소스 Inbox
@@ -521,6 +549,7 @@ def init(
     _write_if_missing(config_dir / "companies.yaml", COMPANIES_YAML)
     _write_if_missing(config_dir / "dart_companies.yaml", DART_COMPANIES_YAML)
     _write_if_missing(config_dir / "settings.yaml", SETTINGS_YAML)
+    _write_if_missing(config_dir / "macro_theses.yaml", MACRO_THESES_YAML)
     for filename, content in PROMPTS.items():
         _write_if_missing(config_dir / "prompts" / filename, content)
 
@@ -1108,6 +1137,90 @@ def verify_tenbagger_cmd(
         typer.echo(_render_markdown_table(rows))
 
     raise typer.Exit(code=1 if had_errors else 0)
+
+
+def _find_thesis(config_dir: Path, thesis_id: str) -> MacroThesisDef | None:
+    theses = load_macro_theses_yaml(config_dir / "macro_theses.yaml")
+    for thesis in theses.theses:
+        if thesis.id == thesis_id:
+            return thesis
+    return None
+
+
+@app.command(name="record-indicators")
+def record_indicators_cmd(
+    thesis_id: Annotated[str, typer.Argument(help="config/macro_theses.yaml의 가설 id")],
+    data_file: Annotated[
+        Path,
+        typer.Option(help='지표 값 JSON 파일. {"indicator_id": {"value", "note"?, "source_url"?}}'),
+    ],
+    as_of: Annotated[
+        str | None,
+        typer.Option(help="기록 시각 'YYYY-MM-DD HH:MM' (KST). 생략 시 현재 시각(분 단위)"),
+    ] = None,
+    config_dir: Annotated[Path, typer.Option(help="Config directory")] = Path("./config"),
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+) -> None:
+    """매크로 가설 지표 스냅샷을 vault/40_Analysis/Macro/<thesis_id>.md에 기록한다.
+
+    지표 정의는 config/macro_theses.yaml에 미리 등록돼 있어야 한다 - 정의 안 된 id가
+    data_file에 있으면 실패한다(오타/철자 불일치 방지).
+    """
+    thesis = _find_thesis(config_dir, thesis_id)
+    if thesis is None:
+        typer.echo(f"'{thesis_id}' 가설을 {config_dir / 'macro_theses.yaml'}에서 찾을 수 없다.")
+        raise typer.Exit(code=1)
+
+    raw = json.loads(data_file.read_text(encoding="utf-8"))
+    known_ids = {indicator.id for indicator in thesis.indicators}
+    unknown_ids = sorted(set(raw) - known_ids)
+    if unknown_ids:
+        typer.echo(f"config/macro_theses.yaml에 정의되지 않은 지표 id: {unknown_ids}")
+        raise typer.Exit(code=1)
+
+    values = {key: IndicatorSnapshot.model_validate(val) for key, val in raw.items()}
+    when = (
+        datetime.strptime(as_of, "%Y-%m-%d %H:%M")
+        if as_of
+        else datetime.now(ZoneInfo("Asia/Seoul")).replace(second=0, microsecond=0, tzinfo=None)
+    )
+    append_macro_snapshot(vault_path, thesis_id, thesis.title, when, values)
+    typer.echo(f"기록 완료: {thesis_id} @ {when.strftime('%Y-%m-%d %H:%M')} ({len(values)}개 지표)")
+
+
+@app.command(name="macro-status")
+def macro_status_cmd(
+    thesis_id: Annotated[str, typer.Argument(help="config/macro_theses.yaml의 가설 id")],
+    config_dir: Annotated[Path, typer.Option(help="Config directory")] = Path("./config"),
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    limit: Annotated[int, typer.Option(help="최근 몇 개 기록 시점만 표로 보여줄지")] = 10,
+) -> None:
+    """저장된 매크로 지표 스냅샷 이력을 지표=행, 기록시점=열의 표로 조회한다."""
+    thesis = _find_thesis(config_dir, thesis_id)
+    if thesis is None:
+        typer.echo(f"'{thesis_id}' 가설을 {config_dir / 'macro_theses.yaml'}에서 찾을 수 없다.")
+        raise typer.Exit(code=1)
+
+    history = read_macro_history(vault_path, thesis_id)
+    if not history:
+        typer.echo("기록된 스냅샷이 없다 - `record-indicators`로 먼저 기록하라.")
+        raise typer.Exit(code=0)
+
+    recent = history[-limit:]
+    timestamps = [ts for ts, _ in recent]
+    header = "| 지표 | " + " | ".join(timestamps) + " |"
+    separator = "|" + "|".join(["---"] * (len(timestamps) + 1)) + "|"
+    rows = [
+        "| "
+        + indicator.label
+        + " | "
+        + " | ".join(values.get(indicator.id, "") for _, values in recent)
+        + " |"
+        for indicator in thesis.indicators
+    ]
+
+    typer.echo(f"# {thesis.title}\n")
+    typer.echo("\n".join([header, separator, *rows]))
 
 
 @app.command()

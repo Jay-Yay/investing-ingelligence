@@ -1,0 +1,56 @@
+theses:
+  - id: ai_capex_funding_bottleneck
+    title: "AI 인프라 자금조달 병목 가설"
+    created: "2026-07-30"
+    summary: >
+      하이퍼스케일러의 AI capex가 FCF를 넘어서면서 회사채 조달 의존도가 급등했고, AA~AAA급
+      빅테크 회사채가 국채의 대체재라 공급 증가가 국채 금리에 상방 압력을 준다. 신용시장의
+      소화 능력이 한계에 가까워지는 와중에 Anthropic(2026-10 목표)·OpenAI(2027 목표) IPO가
+      추가로 겹치면, "돈 자체가 병목"이 되어 AI 인프라 트레이드가 조정을 겪을 수 있다는
+      가설. 2026-07-30 대화에서 사용자가 공유한 자금조달 병목 메모를 계기로 수립.
+    indicators:
+      - id: hyperscaler_bond_bid_to_cover
+        label: "하이퍼스케일러 채권 응찰배율"
+        unit: "배"
+        baseline: "2026-02: 약 5배 → 2026-07: 2배 미만"
+        bullish_threshold: "3배 이상으로 회복 = 신용시장 수요 정상화"
+        bearish_threshold: "1배 근접/미달 = 사실상 미달(undersubscribed)"
+        source_hint: >
+          신규 하이퍼스케일러(MSFT/META/GOOGL/AMZN/ORCL 등) 대형 회사채 발행 뉴스에 보도되는
+          응찰배율(bid-to-cover). Fortune/Reuters/Bloomberg 크레딧 관련 기사, WebSearch로 추적.
+
+      - id: ai_revenue_capex_gap
+        label: "AI 매출-capex 갭 (Sequoia 추정 등)"
+        unit: "연간 $bn"
+        baseline: "2026-07 기준 약 $600bn (Sequoia David Cahn 추정), 확대 중"
+        bullish_threshold: "갭이 축소 추세로 전환 = AI 매출이 capex를 따라잡기 시작"
+        bearish_threshold: "갭이 계속 확대 = ROI 내러티브 약화, 신용시장 신뢰 저하 가속"
+        source_hint: "Sequoia/David Cahn 정기 업데이트, 하이퍼스케일러 실적 콜의 AI 매출 가이던스"
+
+      - id: hyperscaler_credit_rating_outlook
+        label: "하이퍼스케일러 신용등급/아웃룩 변화"
+        unit: "등급/아웃룩"
+        baseline: "2026-07 기준 MSFT/GOOGL/META/AMZN/ORCL 모두 AA~AAA 유지"
+        bullish_threshold: "아웃룩 안정적 유지 또는 상향"
+        bearish_threshold: "5개사 중 1개 이상 아웃룩 negative 전환 또는 등급 강등 - 안전자산 투자자 이탈 방아쇠"
+        source_hint: "S&P/Moody's/Fitch 하이퍼스케일러 커버리지 보도, 신용평가사 리포트"
+
+      - id: ai_lab_ipo_reaction
+        label: "Anthropic/OpenAI 상장 밸류에이션 반응"
+        unit: "정성 + 초기 거래일 등락률"
+        baseline: >
+          Anthropic 2026-10 나스닥 목표, 비공개 S-1(2026-06-01 제출) 기준 $965bn 밸류.
+          OpenAI는 2026 하반기에서 2027로 연기 검토 중, Altman은 $1T 미만 거부.
+        bullish_threshold: "공모가 대비 상장 초기(1~2주) 안정적 유지 또는 상승, 후속 실적 가이던스에 긍정적 반응"
+        bearish_threshold: "상장 직후 공모가 큰 폭 하회 또는 후속 실적 발표에서 재무 스토리에 대한 급격한 재평가(주가 급락)"
+        source_hint: "Anthropic/OpenAI IPO 관련 실시간 뉴스, WebSearch"
+
+      - id: fed_rate_path
+        label: "연준 금리 경로 / 장기국채 금리"
+        unit: "%, bp"
+        baseline: >
+          2026-07-29 FOMC: 3.5~3.75% 동결하되 3명 위원이 즉시 인상 지지(이례적 매파적 이탈).
+          같은 시기 30년물 금리가 2007년 이후 최고치 경신.
+        bullish_threshold: "금리 인하 재개 또는 인상 우려 완화 = 국채-회사채 경합 압력 완화"
+        bearish_threshold: "추가 매파적 서프라이즈 또는 장기금리 추가 상승 = 병목 메커니즘 강화"
+        source_hint: "FOMC 성명/의사록, 장기국채(10y/30y) 금리 추이"

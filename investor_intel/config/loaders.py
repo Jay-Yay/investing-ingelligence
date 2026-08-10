@@ -15,6 +15,7 @@ from investor_intel.models.config import (
     SectorScoringConfig,
     SourceConfig,
 )
+from investor_intel.models.macro import MacroThesesConfig
 from investor_intel.models.portfolio import Portfolio
 
 
@@ -62,3 +63,7 @@ def load_global_scoring_yaml(path: Path) -> GlobalScoringConfig:
 
 def load_sector_scoring_yaml(path: Path) -> SectorScoringConfig:
     return SectorScoringConfig.model_validate(_load_yaml(path))
+
+
+def load_macro_theses_yaml(path: Path) -> MacroThesesConfig:
+    return MacroThesesConfig.model_validate(_load_yaml(path))

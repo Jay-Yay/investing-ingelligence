@@ -62,6 +62,10 @@ uv run python -m investor_intel report               # 현재 상태로 리포�
 uv run python -m investor_intel reindex              # vault 기준으로 SQLite 인덱스 재구축
 uv run python -m investor_intel dedupe-vault         # 같은 문서 id의 중복 사본 정리 (--apply 없으면 dry-run)
 
+# 매크로 가설 지표 트래킹 (config/macro_theses.yaml에 가설/지표 정의 필요)
+uv run python -m investor_intel record-indicators <가설id> --data-file snapshot.json
+uv run python -m investor_intel macro-status <가설id>       # 지표=행, 기록시점=열 표로 조회
+
 # 전체 파이프라인 (collect -> analyze -> portfolio -> report)
 uv run python -m investor_intel run-daily
 ```
