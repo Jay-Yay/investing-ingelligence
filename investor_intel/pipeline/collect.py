@@ -162,6 +162,7 @@ def run_collectors(
     conn: sqlite3.Connection,
     backfill_days: int | None = None,
     on_source_done: Callable[[], None] | None = None,
+    on_source_result: Callable[[SourceRunResult], None] | None = None,
 ) -> list[SourceRunResult]:
     results: list[SourceRunResult] = []
 
@@ -185,14 +186,20 @@ def run_collectors(
         except Exception as exc:  # noqa: BLE001
             errors.append(str(exc))
 
-        results.append(
-            SourceRunResult(
-                source_id=collector.source_id,
-                persisted=persisted,
-                errors=errors,
-                skipped=skipped,
-            )
+        result = SourceRunResult(
+            source_id=collector.source_id,
+            persisted=persisted,
+            errors=errors,
+            skipped=skipped,
         )
+        results.append(result)
+
+        # 소스 하나가 끝날 때마다 즉시 호출한다 - GitHub Actions 로그가 전체 collect 완료 시점까지
+        # 아무 출력 없이 몇 시간씩 비어 있어(2026-08-10 3시간 타임아웃 때 확인됨) 멈춘 건지
+        # 그냥 느린 건지 구분이 안 되는 문제가 있었다. PYTHONUNBUFFERED와 짝지어야 실시간으로
+        # 보인다.
+        if on_source_result is not None:
+            on_source_result(result)
 
         # a source's own checkpoint (last_seen_id) is already committed to `conn` by this
         # point (collectors call CheckpointStore.record_success/failure inside collect_incremental/

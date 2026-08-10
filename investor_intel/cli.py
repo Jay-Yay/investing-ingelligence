@@ -32,7 +32,11 @@ from investor_intel.models.analysis import TenbaggerVerification
 from investor_intel.models.common import SourceType
 from investor_intel.models.macro import IndicatorSnapshot, MacroThesisDef
 from investor_intel.pipeline.analyze import analyze_pending_documents
-from investor_intel.pipeline.collect import build_collect_entries, run_collectors
+from investor_intel.pipeline.collect import (
+    SourceRunResult,
+    build_collect_entries,
+    run_collectors,
+)
 from investor_intel.pipeline.earnings_transcript import run_earnings_transcript_collection
 from investor_intel.pipeline.inbox import InboxDeps, sync_inbox
 from investor_intel.pipeline.orchestrator import (
@@ -900,27 +904,31 @@ def collect(
                 raise typer.Exit(code=1)
             entries = [e for e in entries if e[1].value in wanted]
 
-        results = run_collectors(
-            entries,
-            vault_path,
-            conn,
-            backfill_days=backfill,
-            on_source_done=lambda: save_checkpoints(conn, checkpoints_path),
-        )
-
-        total_persisted = 0
-        total_skipped = 0
-        had_errors = bool(setup_errors)
-        for result in results:
+        def _echo_source_result(result: SourceRunResult) -> None:
             skipped_note = (
                 f" (기존 사본과 동일해 건너뜀 {result.skipped}건)" if result.skipped else ""
             )
             typer.echo(f"[{result.source_id}] {result.persisted}건 저장{skipped_note}")
             for error in result.errors:
                 typer.echo(f"[{result.source_id}] 오류: {error}")
-                had_errors = True
+
+        results = run_collectors(
+            entries,
+            vault_path,
+            conn,
+            backfill_days=backfill,
+            on_source_done=lambda: save_checkpoints(conn, checkpoints_path),
+            on_source_result=_echo_source_result,
+        )
+
+        total_persisted = 0
+        total_skipped = 0
+        had_errors = bool(setup_errors)
+        for result in results:
             total_persisted += result.persisted
             total_skipped += result.skipped
+            if result.errors:
+                had_errors = True
 
         skipped_total_note = f" / 건너뜀 {total_skipped}건" if total_skipped else ""
         typer.echo(f"총 {total_persisted}건 저장{skipped_total_note}")
