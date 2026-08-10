@@ -101,7 +101,11 @@ def build_valuation_rationale(
         f"- 기준 가정: {base.key_assumption}",
     ]
     if scenarios.bear_case is not None:
-        lines.append(f"- 비관(bear) 적정가 {scenarios.bear_case.fair_value:,.0f} {scenarios.currency}")
+        lines.append(
+            f"- 비관(bear) 적정가 {scenarios.bear_case.fair_value:,.0f} {scenarios.currency}"
+        )
     if scenarios.bull_case is not None:
-        lines.append(f"- 낙관(bull) 적정가 {scenarios.bull_case.fair_value:,.0f} {scenarios.currency}")
+        lines.append(
+            f"- 낙관(bull) 적정가 {scenarios.bull_case.fair_value:,.0f} {scenarios.currency}"
+        )
     return "\n".join(lines[:5])

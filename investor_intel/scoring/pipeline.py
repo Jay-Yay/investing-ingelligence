@@ -21,6 +21,7 @@ from investor_intel.scoring.hysteresis import HysteresisState, next_signal
 from investor_intel.scoring.models import (
     CategoryScore,
     Citation,
+    DriverNote,
     Feature,
     StockScoreResult,
     ThesisStatus,
@@ -89,8 +90,8 @@ class StockScoringInputs:
     days_since_last_change: int = 999
 
     thesis_status: ThesisStatus = ThesisStatus.MAINTAINED
-    positive_drivers: list[str] = field(default_factory=list)
-    negative_drivers: list[str] = field(default_factory=list)
+    positive_drivers: list[DriverNote] = field(default_factory=list)
+    negative_drivers: list[DriverNote] = field(default_factory=list)
     next_catalysts: list[str] = field(default_factory=list)
     invalidation_conditions: list[str] = field(default_factory=list)
 

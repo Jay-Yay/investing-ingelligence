@@ -18,12 +18,12 @@ from investor_intel.llm.cost_tracker import CostTracker
 from investor_intel.llm.evidence_collector import EvidenceCollectorError, extract_evidence
 from investor_intel.llm.fundamental_analyst import FundamentalAnalystError, assess_fundamentals
 from investor_intel.market_data.provider import PriceBar, QuarterlyFundamentals
-from investor_intel.models.analysis import FundamentalAnalystAssessment
 from investor_intel.market_data.yahoo_fundamentals_adapter import (
     BROWSER_LIKE_USER_AGENT,
     YahooFundamentalsAdapter,
 )
 from investor_intel.market_data.yfinance_adapter import YahooFinanceAdapter
+from investor_intel.models.analysis import FundamentalAnalystAssessment
 from investor_intel.models.common import ThesisShift
 from investor_intel.models.config import (
     HardGateDefinition,

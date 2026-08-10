@@ -104,5 +104,7 @@ def build_earnings_revision_rationale(inputs: EarningsRevisionInputs) -> str:
             f"{inputs.analysts_downgraded}건 하향"
         )
     if inputs.guidance_or_earnings_surprise_pct is not None:
-        lines.append(f"- 가이던스/실적 서프라이즈: {inputs.guidance_or_earnings_surprise_pct:+.1f}%")
+        lines.append(
+            f"- 가이던스/실적 서프라이즈: {inputs.guidance_or_earnings_surprise_pct:+.1f}%"
+        )
     return "\n".join(lines[:5])

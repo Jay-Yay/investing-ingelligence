@@ -55,7 +55,9 @@ def test_fetch_full_text_strips_inline_xbrl_hidden_header() -> None:
         "<p>Table of Contents UNITED STATES SECURITIES AND EXCHANGE COMMISSION</p>"
         "</body></html>"
     )
-    respx.get(f"{_ARCHIVE_BASE}/amzn-20260630.htm").mock(return_value=httpx.Response(200, text=html))
+    respx.get(f"{_ARCHIVE_BASE}/amzn-20260630.htm").mock(
+        return_value=httpx.Response(200, text=html)
+    )
     client = _client()
 
     result = fetch_full_text(client, _CIK, _ACCESSION, "amzn-20260630.htm")

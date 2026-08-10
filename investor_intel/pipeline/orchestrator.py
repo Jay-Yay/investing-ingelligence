@@ -358,9 +358,13 @@ def run_daily(
                         cap = max_allowed_recommendation(violations, signal_entry.symbol)
                         if cap is not None and signal_entry.signal is not None:
                             signal_entry = signal_entry.model_copy(
-                                update={"signal": apply_recommendation_cap(signal_entry.signal, cap)}
+                                update={
+                                    "signal": apply_recommendation_cap(signal_entry.signal, cap)
+                                }
                             )
-                        append_signal_log(vault_path, signal_entry.symbol, date.today(), signal_entry)
+                        append_signal_log(
+                            vault_path, signal_entry.symbol, date.today(), signal_entry
+                        )
                         position_signal_models.append(signal_entry)
                 except Exception as exc:  # noqa: BLE001
                     analyze_errors.append(f"포트폴리오 모니터 실패: {exc}")
@@ -377,7 +381,9 @@ def run_daily(
                         ),
                         mandate,
                     )
-                    discovery_outcome = discover_candidates(client, claims_summary, discovery_prompt)
+                    discovery_outcome = discover_candidates(
+                        client, claims_summary, discovery_prompt
+                    )
                     cost_tracker.record_usage(
                         client.model,
                         discovery_outcome.usage.input_tokens,

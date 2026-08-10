@@ -394,8 +394,8 @@ def analyze_pending_documents(
         seen: set[str] = set()
         for result in client.batch_results(batch_id):
             # 결과 도착 순서는 보장되지 않는다 - 반드시 custom_id로 매칭한다(위치 인덱싱 금지).
-            group = groups_by_id.get(result.custom_id)
-            if group is None:
+            matched_group = groups_by_id.get(result.custom_id)
+            if matched_group is None:
                 errors.append(f"배치 {batch_id}: 알 수 없는 custom_id {result.custom_id}")
                 continue
             seen.add(result.custom_id)
@@ -403,13 +403,13 @@ def analyze_pending_documents(
                 errors.append(
                     f"{result.custom_id}: 배치 결과 {result.result.type} - 개별 호출로 폴백"
                 )
-                _process_group_individually(group)
+                _process_group_individually(matched_group)
                 continue
             try:
-                _finalize_batch_group(group, result.result.message)
+                _finalize_batch_group(matched_group, result.result.message)
             except Exception as exc:  # noqa: BLE001
                 errors.append(f"{result.custom_id}: 배치 응답 파싱 실패 - 개별 호출로 폴백: {exc}")
-                _process_group_individually(group)
+                _process_group_individually(matched_group)
 
         for custom_id, group in groups_by_id.items():
             if custom_id not in seen:

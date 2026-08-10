@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sqlite3
 from pathlib import Path
+from typing import cast
 
 from investor_intel.models.source_document import SourceDocument
 from investor_intel.storage.obsidian_repo import list_documents, read_document
@@ -343,11 +344,11 @@ def import_collector_state(conn: sqlite3.Connection, states: dict[str, dict[str,
         save_collector_state(
             conn,
             source_id=source_id,
-            last_success_at=state.get("last_success_at"),
-            last_seen_id=state.get("last_seen_id"),
-            last_accession_number=state.get("last_accession_number"),
-            failure_count=state.get("failure_count", 0),
-            next_retry_at=state.get("next_retry_at"),
+            last_success_at=cast("str | None", state.get("last_success_at")),
+            last_seen_id=cast("str | None", state.get("last_seen_id")),
+            last_accession_number=cast("str | None", state.get("last_accession_number")),
+            failure_count=cast("int", state.get("failure_count", 0)),
+            next_retry_at=cast("str | None", state.get("next_retry_at")),
             backfill_completed=bool(state.get("backfill_completed", False)),
         )
 

@@ -210,7 +210,9 @@ def _table_to_markdown(table_html: str) -> str | None:
             deduped = list(dict.fromkeys(parts))  # rowspan 반영으로 같은 텍스트 중복 방지
             header.append(" ".join(deduped))
 
-    data_rows = [row for row in (_row_texts(r) for r in data_positioned) if any(c.strip() for c in row)]
+    data_rows = [
+        row for row in (_row_texts(r) for r in data_positioned) if any(c.strip() for c in row)
+    ]
     if not data_rows:
         return None
 

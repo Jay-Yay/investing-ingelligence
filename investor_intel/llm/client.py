@@ -66,7 +66,7 @@ class AnthropicClient:
 
     @property
     def _batches(self) -> _BatchesProtocol:
-        return self._client.messages.batches  # type: ignore[attr-defined]
+        return self._client.messages.batches  # type: ignore[union-attr,return-value]
 
     def create_batch(self, requests: list[dict[str, Any]]) -> str:
         """`{"custom_id": ..., "params": {...}}` 목록을 제출하고 batch_id를 돌려준다."""
