@@ -1,0 +1,730 @@
+{
+  "dart_000660": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "20260807000537",
+    "last_success_at": "2026-08-10T07:23:57.561509+00:00",
+    "next_retry_at": null
+  },
+  "dart_005930": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "20260713000395",
+    "last_success_at": "2026-08-10T06:50:02.734192+00:00",
+    "next_retry_at": null
+  },
+  "dart_278470": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "20260515001577",
+    "last_success_at": "2026-08-10T06:59:22.266990+00:00",
+    "next_retry_at": null
+  },
+  "dart_483650": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "20260721001093",
+    "last_success_at": "2026-08-10T06:51:49.551585+00:00",
+    "next_retry_at": null
+  },
+  "essay_situational_awareness_lp": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "2026-07-26T14:08:09.846724+00:00",
+    "last_success_at": "2026-08-10T04:58:18.896728+00:00",
+    "next_retry_at": null
+  },
+  "naver_a463508": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "https://blog.naver.com/a463508/224273322706",
+    "last_success_at": "2026-08-10T07:30:34.170100+00:00",
+    "next_retry_at": null
+  },
+  "naver_engineerinvestor": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "https://blog.naver.com/engineerinvestor/224373244418",
+    "last_success_at": "2026-08-10T07:24:26.515488+00:00",
+    "next_retry_at": null
+  },
+  "naver_royvalue": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "https://blog.naver.com/royvalue/224366002136",
+    "last_success_at": "2026-08-10T07:31:26.690132+00:00",
+    "next_retry_at": null
+  },
+  "naver_slowwalkingbull": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "https://blog.naver.com/slowwalkingbull/224373862624",
+    "last_success_at": "2026-08-10T07:31:00.407697+00:00",
+    "next_retry_at": null
+  },
+  "naver_tmdejr1267": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "https://blog.naver.com/tmdejr1267/224362750335",
+    "last_success_at": "2026-08-10T07:31:52.853578+00:00",
+    "next_retry_at": null
+  },
+  "sec_13f_baillie_gifford_co": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001088875-26-000057",
+    "last_success_at": "2026-08-10T04:57:10.792594+00:00",
+    "next_retry_at": null
+  },
+  "sec_13f_berkshire_hathaway_inc": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001193125-26-226661",
+    "last_success_at": "2026-08-10T04:56:07.748020+00:00",
+    "next_retry_at": null
+  },
+  "sec_13f_duquesne_family_office": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001536411-26-000004",
+    "last_success_at": "2026-08-10T04:55:19.235198+00:00",
+    "next_retry_at": null
+  },
+  "sec_13f_pershing_square_capital_management_l_p": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001172661-26-002336",
+    "last_success_at": "2026-08-10T04:58:18.774590+00:00",
+    "next_retry_at": null
+  },
+  "sec_13f_situational_awareness_lp": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0002045724-26-000008",
+    "last_success_at": "2026-08-10T04:55:28.235432+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_aaoi": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001683168-26-006055",
+    "last_success_at": "2026-08-10T05:15:22.116617+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_aapl": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0000320193-26-000020",
+    "last_success_at": "2026-08-10T05:05:50.628527+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_acn": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001193125-26-300813",
+    "last_success_at": "2026-08-10T05:15:45.139801+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_aehr": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001654954-26-006919",
+    "last_success_at": "2026-08-10T05:17:06.330944+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_alab": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001736297-26-000035",
+    "last_success_at": "2026-08-10T05:17:22.734866+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_amd": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0000002488-26-000123",
+    "last_success_at": "2026-08-10T05:11:03.447570+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_amzn": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001018724-26-000026",
+    "last_success_at": "2026-08-10T05:03:13.888825+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_anet": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001596532-26-000175",
+    "last_success_at": "2026-08-10T05:18:01.742898+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_app": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001751008-26-000057",
+    "last_success_at": "2026-08-10T05:18:54.636992+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_arry": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001628280-26-053342",
+    "last_success_at": "2026-08-10T05:19:56.063354+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_avgo": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001193125-26-295589",
+    "last_success_at": "2026-08-10T05:21:57.686498+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_be": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001628280-26-050150",
+    "last_success_at": "2026-08-10T04:59:56.844047+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_ceg": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001868275-26-000097",
+    "last_success_at": "2026-08-10T05:22:48.353868+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_cohr": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0000820318-26-000013",
+    "last_success_at": "2026-08-10T05:25:31.202957+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_coin": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001679788-26-000087",
+    "last_success_at": "2026-08-10T05:26:11.875719+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_crcl": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001876042-26-000246",
+    "last_success_at": "2026-08-10T05:26:21.309298+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_crdo": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001628280-26-043303",
+    "last_success_at": "2026-08-10T05:26:59.947022+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_crwv": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001769628-26-000291",
+    "last_success_at": "2026-08-10T05:12:59.242287+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_dash": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001792789-26-000048",
+    "last_success_at": "2026-08-10T05:27:46.878362+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_dlo": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001846832-26-000019",
+    "last_success_at": "2026-08-10T05:27:47.926854+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_dlr": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001104659-26-089296",
+    "last_success_at": "2026-08-10T05:30:44.646448+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_enph": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001463101-26-000080",
+    "last_success_at": "2026-08-10T05:32:47.086426+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_eqix": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001104659-26-092009",
+    "last_success_at": "2026-08-10T05:34:20.759515+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_etn": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001551182-26-000027",
+    "last_success_at": "2026-08-10T05:35:50.225549+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_figr": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0000950103-26-010619",
+    "last_success_at": "2026-08-10T05:36:04.243425+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_fslr": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001274494-26-000169",
+    "last_success_at": "2026-08-10T05:37:08.752962+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_gev": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001996810-26-000147",
+    "last_success_at": "2026-08-10T05:37:24.826229+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_googl": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001652044-26-000071",
+    "last_success_at": "2026-08-10T05:00:44.470644+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_hood": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001783879-26-000114",
+    "last_success_at": "2026-08-10T05:38:05.069725+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_iren": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001140361-26-031053",
+    "last_success_at": "2026-08-10T05:13:27.254068+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_keys": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001601046-26-000024",
+    "last_success_at": "2026-08-10T05:39:19.288015+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_lite": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001628280-26-051078",
+    "last_success_at": "2026-08-10T05:40:57.213738+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_meli": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001099590-26-000023",
+    "last_success_at": "2026-08-10T05:43:53.335636+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_meta": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001628280-26-050705",
+    "last_success_at": "2026-08-10T05:03:30.897468+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_mrvl": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001193125-26-299843",
+    "last_success_at": "2026-08-10T05:45:12.465360+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_msft": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001193125-26-323632",
+    "last_success_at": "2026-08-10T05:01:58.175736+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_mstr": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001193125-26-329565",
+    "last_success_at": "2026-08-10T05:47:44.682143+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_mu": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0000723125-26-000015",
+    "last_success_at": "2026-08-10T05:09:43.385821+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_nbis": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001104659-26-087080",
+    "last_success_at": "2026-08-10T04:58:19.511708+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_now": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001373715-26-000076",
+    "last_success_at": "2026-08-10T05:48:10.393336+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_ntnx": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001193125-26-331661",
+    "last_success_at": "2026-08-10T05:49:53.258409+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_nvda": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001045810-26-000060",
+    "last_success_at": "2026-08-10T05:04:15.272166+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_nvts": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001628280-26-049795",
+    "last_success_at": "2026-08-10T05:50:58.830358+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_nxt": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001852131-26-000048",
+    "last_success_at": "2026-08-10T05:51:33.920945+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_oklo": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001628280-26-054571",
+    "last_success_at": "2026-08-10T05:52:06.433624+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_orcl": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001193125-26-277521",
+    "last_success_at": "2026-08-10T05:53:46.992470+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_pins": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001506293-26-000107",
+    "last_success_at": "2026-08-10T05:54:41.544143+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_powl": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0000080420-26-000107",
+    "last_success_at": "2026-08-10T05:57:49.980308+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_pwr": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001193125-26-337945",
+    "last_success_at": "2026-08-10T06:00:12.161351+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_rddt": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001713445-26-000100",
+    "last_success_at": "2026-08-10T05:00:10.247341+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_run": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001628280-26-053349",
+    "last_success_at": "2026-08-10T06:01:05.152994+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_sap": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001104659-26-087251",
+    "last_success_at": "2026-08-10T06:01:06.202805+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_se": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001193125-26-219378",
+    "last_success_at": "2026-08-10T06:01:07.402707+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_sei": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001628280-26-054349",
+    "last_success_at": "2026-08-10T06:02:41.307926+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_shls": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001831651-26-000105",
+    "last_success_at": "2026-08-10T06:03:23.687391+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_shop": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001594805-26-000046",
+    "last_success_at": "2026-08-10T06:03:36.693692+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_smci": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001375365-26-000020",
+    "last_success_at": "2026-08-10T06:05:19.263082+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_smr": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001822966-26-000085",
+    "last_success_at": "2026-08-10T06:06:32.864372+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_smtc": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0000088941-26-000022",
+    "last_success_at": "2026-08-10T06:08:00.304244+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_snap": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001564408-26-000052",
+    "last_success_at": "2026-08-10T06:09:18.505081+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_sndk": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001628280-26-053346",
+    "last_success_at": "2026-08-10T06:09:34.249372+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_tmdx": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001193125-26-332767",
+    "last_success_at": "2026-08-10T06:10:52.760689+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_tsla": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001628280-26-049270",
+    "last_success_at": "2026-08-10T05:07:48.216241+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_tsm": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001046179-26-000459",
+    "last_success_at": "2026-08-10T05:11:04.399646+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_ttd": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001671933-26-000085",
+    "last_success_at": "2026-08-10T06:12:18.232968+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_twlo": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001447669-26-000092",
+    "last_success_at": "2026-08-10T06:13:33.927682+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_u": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001810806-26-000041",
+    "last_success_at": "2026-08-10T06:14:37.968372+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_viav": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001628280-26-053381",
+    "last_success_at": "2026-08-10T06:16:12.417560+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_vicr": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001193125-26-322462",
+    "last_success_at": "2026-08-10T06:17:26.132223+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_vrt": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001628280-26-050323",
+    "last_success_at": "2026-08-10T05:12:29.450708+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_vst": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001692819-26-000017",
+    "last_success_at": "2026-08-10T06:19:53.603629+00:00",
+    "next_retry_at": null
+  },
+  "sec_filings_wdc": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "0001628280-26-053305",
+    "last_success_at": "2026-08-10T06:21:29.124489+00:00",
+    "next_retry_at": null
+  },
+  "telegram_BRILLER_Research": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "4618",
+    "last_success_at": "2026-08-10T07:36:03.797338+00:00",
+    "next_retry_at": null
+  },
+  "telegram_allbareun": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "9071",
+    "last_success_at": "2026-08-10T07:30:07.352503+00:00",
+    "next_retry_at": null
+  },
+  "telegram_dolbikong": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "4842",
+    "last_success_at": "2026-08-10T07:36:27.387769+00:00",
+    "next_retry_at": null
+  },
+  "telegram_getfeed": {
+    "backfill_completed": false,
+    "failure_count": 0,
+    "last_accession_number": null,
+    "last_seen_id": "142542",
+    "last_success_at": "2026-08-10T07:36:18.568390+00:00",
+    "next_retry_at": null
+  }
+}
