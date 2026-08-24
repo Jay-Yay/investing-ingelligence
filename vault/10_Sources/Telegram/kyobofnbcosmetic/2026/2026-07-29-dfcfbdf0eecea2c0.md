@@ -7,10 +7,10 @@ title: null
 source_url: https://t.me/kyobofnbcosmetic/2142
 source_specific_id: '2142'
 published_at: '2026-07-29T06:44:17Z'
-collected_at: '2026-08-06T05:43:11.286581Z'
+collected_at: '2026-08-11T03:16:42.601952Z'
 updated_at: null
 language: ko
-content_hash: 31ad1c1bb88cd0c1b12b8188e965e230fd3843267e644b55a98dd8c64679dba0
+content_hash: b4534bf5c57961179ac5c4d0266b8a932af1e4c3896210774a92c7346aac8e1c
 content_capture:
   mode: full
   reason: null
@@ -52,11 +52,39 @@ kyobofnbcosmetic (@kyobofnbcosmetic) — 2026-07-29T06:44:17+00:00
 
 ## 첨부 기사 원문
 
-### https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260729800658
+### 달바글로벌/타법인주식및출자증권취득결정(자율공시)/2026.07.29
 
 (https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260729800658)
 
-[기사 본문 추출 실패: [Errno 104] Connection reset by peer]
+잠시만 기다려주세요.
+유
+달바글로벌
+현재목차
+전체문서
+선택
+검색
+이전
+다음
+본문
++본문선택+
+2026.07.31 [정정] 타법인주식및출자증권취득결정(자율공시)
+2026.07.29 타법인주식및출자증권취득결정(자율공시)
+첨부
++첨부선택+
+2026.07.29 기타공시첨부서류
++문서 선택+
+-본문문서선택-
+2026.07.31 [정정] 타법인주식및출자증권취득결정(자율공시)
+2026.07.29 타법인주식및출자증권취득결정(자율공시)
+-첨부문서선택-
+2026.07.29 기타공시첨부서류
+영문보기
+다운로드
+인쇄
+닫기
+문서목차
+☞ 본 공시사항은 [한국거래소 유가증권시장본부] 소관사항입니다.
+본 문서는 최종문서가 아니므로 투자판단시 유의하시기 바랍니다.
 
 ### 달바글로벌 : Npay 증권
 
@@ -94,4 +122,5 @@ kyobofnbcosmetic (@kyobofnbcosmetic) — 2026-07-29T06:44:17+00:00
 ## 출처
 
 - [원문](https://t.me/kyobofnbcosmetic/2142)
+- [기사 원문](https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260729800658)
 - [기사 원문](https://finance.naver.com/item/main.nhn?code=483650)
