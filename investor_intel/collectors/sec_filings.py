@@ -79,9 +79,17 @@ class SECFilingsCollector:
             )
             if full_text is not None:
                 capture_kind = "primary_document"
-        elif filing.form == "8-K":
+        elif filing.form in ("8-K", "6-K"):
+            # FPI의 6-K는 8-K 항목 코드가 없다 - period_of_report가 채워진 6-K만 실적 관련으로
+            # 간주하는 기존 휴리스틱(pipeline/earnings_transcript.py 참고)을 그대로 재사용한다.
+            force_results_search = filing.form == "6-K" and filing.period_of_report is not None
             exhibit = find_earnings_exhibit(
-                self._client, self._company.cik, filing.accession_number, filing.items
+                self._client,
+                self._company.cik,
+                filing.accession_number,
+                filing.items,
+                filing.primary_document,
+                force_results_exhibit_search=force_results_search,
             )
             if exhibit is not None:
                 full_text = exhibit.text

@@ -19,7 +19,7 @@ def classify_dart_report(report_nm: str) -> str | None:
 def classify_sec_form(form: str) -> str | None:
     """SEC form 코드(예: '10-K', '10-K/A')에서 정기보고서 종류를 판별한다."""
     base = form.split("/")[0]
-    if base == "10-K":
+    if base in ("10-K", "20-F"):
         return "연간"
     if base == "10-Q":
         return "분기"
