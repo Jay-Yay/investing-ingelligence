@@ -1,0 +1,286 @@
+{
+  "sqlite": {
+    "tables": [
+      "documents",
+      "document_assets",
+      "collector_state",
+      "dart_corp_codes"
+    ],
+    "columns": {
+      "documents": [
+        "id",
+        "source_type",
+        "source_name",
+        "source_specific_id",
+        "canonical_url",
+        "title",
+        "author",
+        "published_at",
+        "collected_at",
+        "content_hash",
+        "document_type",
+        "filing_type",
+        "accession_number",
+        "llm_processed",
+        "file_path"
+      ],
+      "document_assets": [
+        "document_id",
+        "ticker",
+        "asset_type"
+      ],
+      "collector_state": [
+        "source_id",
+        "last_success_at",
+        "last_seen_id",
+        "last_accession_number",
+        "failure_count",
+        "next_retry_at",
+        "backfill_completed"
+      ],
+      "dart_corp_codes": [
+        "corp_code",
+        "corp_name",
+        "stock_code",
+        "modify_date"
+      ]
+    },
+    "rowcounts": {
+      "documents": 4370,
+      "document_assets": 0,
+      "collector_state": 42,
+      "dart_corp_codes": 118535
+    },
+    "has_fts": false,
+    "body_text_column": false
+  },
+  "parse": {
+    "total_md": 4820,
+    "parsed": 4819,
+    "unparsable": 1,
+    "unparsable_samples": [
+      [
+        "vault/40_Analysis/Macro/ai_capex_funding_bottleneck.md",
+        "no-frontmatter"
+      ]
+    ]
+  },
+  "source_docs": 4818,
+  "length": {
+    "n": 4818,
+    "min": 363,
+    "p25": 516,
+    "median": 813,
+    "p75": 1817,
+    "p90": 15793,
+    "p95": 40592,
+    "p99": 40933,
+    "max": 1476399,
+    "mean": 5570.3,
+    "total_chars": 26837466,
+    "over_8k_docs": 631,
+    "over_8k_share_of_chars": 0.8202
+  },
+  "largest_docs": [
+    {
+      "path": "vault/10_Sources/IB/oaktree/2025/2025-10-12-d51152f040835d9a.md",
+      "chars": 1476399,
+      "source_type": "ib_insights",
+      "title": "The Best of . . ."
+    },
+    {
+      "path": "vault/10_Sources/IB/pershing-square/2026/2026-02-18-5b297f5a524ba28c.md",
+      "chars": 385447,
+      "source_type": "ib_insights",
+      "title": "Letter to Shareholders in the 2025 Annual Report"
+    },
+    {
+      "path": "vault/10_Sources/IB/blackrock/2026/2026-06-23-3a5973013ba9ad11.md",
+      "chars": 368642,
+      "source_type": "ib_insights",
+      "title": "Monthly Commentary: Multi-Asset Income Fund"
+    },
+    {
+      "path": "vault/10_Sources/IB/pershing-square/2025/2025-08-20-9a19ed65a42ec385.md",
+      "chars": 171338,
+      "source_type": "ib_insights",
+      "title": "Letter to Shareholders in the 2025 Semiannual Financial Statement"
+    },
+    {
+      "path": "vault/10_Sources/IB/pershing-square/2026/2026-02-11-dee1aa02da6f351f.md",
+      "chars": 112068,
+      "source_type": "ib_insights",
+      "title": "PSCM Annual Investor Update Presentation – Slides"
+    },
+    {
+      "path": "vault/10_Sources/IB/citi/2026/2026-07-26-436f6b4ccba58de6.md",
+      "chars": 106620,
+      "source_type": "ib_insights",
+      "title": "Sizing the ETF Opportunity: Active ETFs Move to Center Stage"
+    },
+    {
+      "path": "vault/10_Sources/IB/citi/2026/2026-07-29-436f6b4ccba58de6.md",
+      "chars": 106620,
+      "source_type": "ib_insights",
+      "title": "Sizing the ETF Opportunity: Active ETFs Move to Center Stage"
+    },
+    {
+      "path": "vault/10_Sources/IB/blackrock/2026/2026-06-30-98baf2b705a97256.md",
+      "chars": 85883,
+      "source_type": "ib_insights",
+      "title": "Scarcity vs. abundance"
+    },
+    {
+      "path": "vault/10_Sources/IB/oaktree/2021/2021-01-11-9bbda2d18b730c99.md",
+      "chars": 69016,
+      "source_type": "ib_insights",
+      "title": "Something of Value"
+    },
+    {
+      "path": "vault/10_Sources/IB/oaktree/2021/2021-03-04-d1eb189ee7b2377b.md",
+      "chars": 65704,
+      "source_type": "ib_insights",
+      "title": "2020 in Review"
+    }
+  ],
+  "by_source_type": {
+    "telegram": 1990,
+    "dart": 1362,
+    "naver": 517,
+    "sec_filing": 396,
+    "ib_insights": 353,
+    "sec_13f": 198,
+    "essay": 2
+  },
+  "by_document_type": {
+    "telegram_message": 1990,
+    "dart_filing": 1362,
+    "blog_post": 517,
+    "sec_filing": 396,
+    "ib_research_summary": 353,
+    "13f_filing": 198,
+    "essay": 2
+  },
+  "content_capture": {
+    "full": 3221,
+    "metadata_only": 1552,
+    "excerpt": 45
+  },
+  "content_capture_by_source": {
+    "sec_13f": {
+      "full": 198
+    },
+    "dart": {
+      "full": 303,
+      "metadata_only": 1059
+    },
+    "essay": {
+      "full": 2
+    },
+    "ib_insights": {
+      "excerpt": 45,
+      "full": 170,
+      "metadata_only": 138
+    },
+    "naver": {
+      "full": 517
+    },
+    "sec_filing": {
+      "metadata_only": 355,
+      "full": 41
+    },
+    "telegram": {
+      "full": 1990
+    }
+  },
+  "metadata_completeness": {
+    "assets": {
+      "filled": 0,
+      "share": 0.0
+    },
+    "companies": {
+      "filled": 2063,
+      "share": 0.4282
+    },
+    "themes": {
+      "filled": 0,
+      "share": 0.0
+    },
+    "published_at": {
+      "filled": 4818,
+      "share": 1.0
+    },
+    "author": {
+      "filled": 4818,
+      "share": 1.0
+    },
+    "title": {
+      "filled": 2828,
+      "share": 0.587
+    },
+    "reporting_period": {
+      "filled": 1956,
+      "share": 0.406
+    },
+    "language": {
+      "filled": 4818,
+      "share": 1.0
+    },
+    "filing_type": {
+      "filled": 1956,
+      "share": 0.406
+    }
+  },
+  "duplicates": {
+    "distinct_content_hash": 4804,
+    "docs": 4818,
+    "docs_in_dup_groups": 28,
+    "dup_groups": 14
+  },
+  "duplicate_ids": {
+    "dup_id_groups": 30
+  },
+  "language": {
+    "ko": 3977,
+    "en": 841
+  },
+  "by_year": {
+    "1990": 1,
+    "1991": 1,
+    "1992": 1,
+    "1993": 1,
+    "1994": 4,
+    "1995": 1,
+    "1996": 2,
+    "1997": 1,
+    "1998": 2,
+    "1999": 7,
+    "2000": 100,
+    "2001": 145,
+    "2002": 157,
+    "2003": 156,
+    "2004": 175,
+    "2005": 149,
+    "2006": 78,
+    "2007": 45,
+    "2008": 56,
+    "2009": 23,
+    "2010": 24,
+    "2011": 25,
+    "2012": 29,
+    "2013": 30,
+    "2014": 38,
+    "2015": 34,
+    "2016": 44,
+    "2017": 48,
+    "2018": 56,
+    "2019": 71,
+    "2020": 92,
+    "2021": 75,
+    "2022": 83,
+    "2023": 82,
+    "2024": 127,
+    "2025": 204,
+    "2026": 2651
+  }
+}

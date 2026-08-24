@@ -1,0 +1,299 @@
+{
+  "V0": {
+    "label": "현행 수준 — 문서 단위 · 어절 토큰",
+    "config": {
+      "name": "V0",
+      "label": "현행 수준 — 문서 단위 · 어절 토큰",
+      "chunking": false,
+      "target_chars": 700,
+      "max_chars": 1200,
+      "overlap_chars": 120,
+      "strip_boilerplate": false,
+      "korean_ngram": false,
+      "context_header": false,
+      "metadata_boost": false,
+      "separate_metadata_only": false
+    },
+    "stats": {
+      "n_docs": 4788,
+      "n_chunks": 4788,
+      "n_chars_indexed": 22764012,
+      "build_seconds": 26.82,
+      "db_bytes": 88440832
+    },
+    "telemetry": {
+      "docs": 4788,
+      "docs_without_body": 1548,
+      "boilerplate_chars_dropped": 0,
+      "duplicate_doc_ids_skipped": 30,
+      "chunks_by_kind": {
+        "prose": 4788
+      },
+      "chunk_len": {
+        "n": 4788,
+        "min": 307,
+        "p25": 467,
+        "median": 755,
+        "p75": 1691,
+        "p95": 28227,
+        "max": 1465977,
+        "mean": 4754.4
+      }
+    }
+  },
+  "V1": {
+    "label": "+ 구조 인식 청킹",
+    "config": {
+      "name": "V1",
+      "label": "+ 구조 인식 청킹",
+      "chunking": true,
+      "target_chars": 700,
+      "max_chars": 1200,
+      "overlap_chars": 120,
+      "strip_boilerplate": false,
+      "korean_ngram": false,
+      "context_header": false,
+      "metadata_boost": false,
+      "separate_metadata_only": false
+    },
+    "stats": {
+      "n_docs": 4788,
+      "n_chunks": 51909,
+      "n_chars_indexed": 25102754,
+      "build_seconds": 31.36,
+      "db_bytes": 131334144
+    },
+    "telemetry": {
+      "docs": 4788,
+      "docs_without_body": 1548,
+      "boilerplate_chars_dropped": 0,
+      "duplicate_doc_ids_skipped": 30,
+      "chunks_by_kind": {
+        "prose": 40406,
+        "table": 11503
+      },
+      "chunk_len": {
+        "n": 51909,
+        "min": 1,
+        "p25": 108,
+        "median": 366,
+        "p75": 690,
+        "p95": 1288,
+        "max": 2617,
+        "mean": 483.6
+      }
+    }
+  },
+  "V2": {
+    "label": "+ 한글 bigram 토크나이징",
+    "config": {
+      "name": "V2",
+      "label": "+ 한글 bigram 토크나이징",
+      "chunking": true,
+      "target_chars": 700,
+      "max_chars": 1200,
+      "overlap_chars": 120,
+      "strip_boilerplate": false,
+      "korean_ngram": true,
+      "context_header": false,
+      "metadata_boost": false,
+      "separate_metadata_only": false
+    },
+    "stats": {
+      "n_docs": 4788,
+      "n_chunks": 51909,
+      "n_chars_indexed": 25102754,
+      "build_seconds": 33.63,
+      "db_bytes": 149258240
+    },
+    "telemetry": {
+      "docs": 4788,
+      "docs_without_body": 1548,
+      "boilerplate_chars_dropped": 0,
+      "duplicate_doc_ids_skipped": 30,
+      "chunks_by_kind": {
+        "prose": 40406,
+        "table": 11503
+      },
+      "chunk_len": {
+        "n": 51909,
+        "min": 1,
+        "p25": 108,
+        "median": 366,
+        "p75": 690,
+        "p95": 1288,
+        "max": 2617,
+        "mean": 483.6
+      }
+    }
+  },
+  "V3": {
+    "label": "+ 문맥 헤더 · 보일러플레이트 제거",
+    "config": {
+      "name": "V3",
+      "label": "+ 문맥 헤더 · 보일러플레이트 제거",
+      "chunking": true,
+      "target_chars": 700,
+      "max_chars": 1200,
+      "overlap_chars": 120,
+      "strip_boilerplate": true,
+      "korean_ngram": true,
+      "context_header": true,
+      "metadata_boost": false,
+      "separate_metadata_only": false
+    },
+    "stats": {
+      "n_docs": 4788,
+      "n_chunks": 47121,
+      "n_chars_indexed": 24083731,
+      "build_seconds": 42.11,
+      "db_bytes": 179548160
+    },
+    "telemetry": {
+      "docs": 4788,
+      "docs_without_body": 1548,
+      "boilerplate_chars_dropped": 1195235,
+      "duplicate_doc_ids_skipped": 30,
+      "chunks_by_kind": {
+        "prose": 35618,
+        "table": 11503
+      },
+      "chunk_len": {
+        "n": 47121,
+        "min": 1,
+        "p25": 99,
+        "median": 464,
+        "p75": 700,
+        "p95": 1293,
+        "max": 2617,
+        "mean": 511.1
+      }
+    }
+  },
+  "V4": {
+    "label": "+ 메타데이터 가중 · 본문없음 분리",
+    "config": {
+      "name": "V4",
+      "label": "+ 메타데이터 가중 · 본문없음 분리",
+      "chunking": true,
+      "target_chars": 700,
+      "max_chars": 1200,
+      "overlap_chars": 120,
+      "strip_boilerplate": true,
+      "korean_ngram": true,
+      "context_header": true,
+      "metadata_boost": true,
+      "separate_metadata_only": true
+    },
+    "stats": {
+      "n_docs": 4788,
+      "n_chunks": 47121,
+      "n_chars_indexed": 24083731,
+      "build_seconds": 44.42,
+      "db_bytes": 186642432
+    },
+    "telemetry": {
+      "docs": 4788,
+      "docs_without_body": 1548,
+      "boilerplate_chars_dropped": 1195235,
+      "duplicate_doc_ids_skipped": 30,
+      "chunks_by_kind": {
+        "prose": 35618,
+        "table": 11503
+      },
+      "chunk_len": {
+        "n": 47121,
+        "min": 1,
+        "p25": 99,
+        "median": 464,
+        "p75": 700,
+        "p95": 1293,
+        "max": 2617,
+        "mean": 511.1
+      }
+    }
+  },
+  "V5": {
+    "label": "+ 메타데이터 가중만 (본문없음 유지)",
+    "config": {
+      "name": "V5",
+      "label": "+ 메타데이터 가중만 (본문없음 유지)",
+      "chunking": true,
+      "target_chars": 700,
+      "max_chars": 1200,
+      "overlap_chars": 120,
+      "strip_boilerplate": true,
+      "korean_ngram": true,
+      "context_header": true,
+      "metadata_boost": true,
+      "separate_metadata_only": false
+    },
+    "stats": {
+      "n_docs": 4788,
+      "n_chunks": 47121,
+      "n_chars_indexed": 24083731,
+      "build_seconds": 42.4,
+      "db_bytes": 186642432
+    },
+    "telemetry": {
+      "docs": 4788,
+      "docs_without_body": 1548,
+      "boilerplate_chars_dropped": 1195235,
+      "duplicate_doc_ids_skipped": 30,
+      "chunks_by_kind": {
+        "prose": 35618,
+        "table": 11503
+      },
+      "chunk_len": {
+        "n": 47121,
+        "min": 1,
+        "median": 464,
+        "p95": 1293,
+        "max": 2617,
+        "mean": 511.1
+      }
+    }
+  },
+  "V6": {
+    "label": "+ 어절 원형 토큰 병기 (권장)",
+    "config": {
+      "name": "V6",
+      "label": "+ 어절 원형 토큰 병기 (권장)",
+      "chunking": true,
+      "target_chars": 700,
+      "max_chars": 1200,
+      "overlap_chars": 120,
+      "strip_boilerplate": true,
+      "korean_ngram": true,
+      "korean_keep_word": true,
+      "context_header": true,
+      "metadata_boost": true,
+      "separate_metadata_only": false
+    },
+    "stats": {
+      "n_docs": 4788,
+      "n_chunks": 47121,
+      "n_chars_indexed": 24083731,
+      "build_seconds": 46.52,
+      "db_bytes": 209506304
+    },
+    "telemetry": {
+      "docs": 4788,
+      "docs_without_body": 1548,
+      "boilerplate_chars_dropped": 1195235,
+      "duplicate_doc_ids_skipped": 30,
+      "chunks_by_kind": {
+        "prose": 35618,
+        "table": 11503
+      },
+      "chunk_len": {
+        "n": 47121,
+        "min": 1,
+        "median": 464,
+        "p95": 1293,
+        "max": 2617,
+        "mean": 511.1
+      }
+    }
+  }
+}
