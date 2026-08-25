@@ -1,0 +1,60 @@
+{
+  "model": "hash-3gram",
+  "dim": 256,
+  "chunks_embedded": 27906,
+  "docs_embedded": 3029,
+  "scope": {
+    "accepted_docs": 3029,
+    "skipped_docs": 2967,
+    "skipped_reasons": {
+      "no_body": 1208,
+      "status:stub": 1534,
+      "status:corrupt": 211,
+      "status:superseded": 14
+    }
+  },
+  "seconds": 39.1,
+  "megabytes": 27.3,
+  "coverage": {
+    "by_axis": {
+      "dart": {
+        "questions": 4,
+        "gold_not_embedded": 4,
+        "ratio": 1.0,
+        "examples": [
+          "D-005",
+          "D-006",
+          "D-007",
+          "D-008"
+        ]
+      },
+      "ib_insights": {
+        "questions": 6,
+        "gold_not_embedded": 0,
+        "ratio": 0.0,
+        "examples": []
+      },
+      "naver": {
+        "questions": 4,
+        "gold_not_embedded": 0,
+        "ratio": 0.0,
+        "examples": []
+      },
+      "sec_13f": {
+        "questions": 4,
+        "gold_not_embedded": 0,
+        "ratio": 0.0,
+        "examples": []
+      },
+      "telegram": {
+        "questions": 6,
+        "gold_not_embedded": 0,
+        "ratio": 0.0,
+        "examples": []
+      }
+    },
+    "total_questions": 24,
+    "total_gold_not_embedded": 4,
+    "note": "벡터가 없는 정답 문서는 BM25 쪽에서 그대로 나온다. 이 표는 '벡터가 도와줄 수 없는 질문이 어느 유형에 몰려 있는가'를 본다."
+  }
+}

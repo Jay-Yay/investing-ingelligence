@@ -41,6 +41,7 @@ class OkfConcept:
     subject_name: str
     source_system: str
     native_id: str
+    content_hash: str = ""
     sections: list[tuple[str, str]] = field(default_factory=list)
 
     @property
@@ -110,7 +111,11 @@ def parse_concept(path: Path, root: Path) -> OkfConcept | None:
         entity_keys=keys,
         subject_name=str(subj.get("name") or ""),
         source_system=str(prov.get("system") or ""),
+        # native_id는 발행 기관이 매긴 번호다(DART 접수번호, SEC accession number).
         native_id=str(prov.get("native_id") or ""),
+        # content_hash는 이 저장소가 원본 문서에 매긴 id다. 평가셋이 정답을 이 값으로
+        # 적어 두어서, 지식 레이어 파일과 이어 붙이려면 따로 들고 있어야 한다.
+        content_hash=str(prov.get("content_hash") or ""),
         sections=sections,
     )
 

@@ -1,0 +1,768 @@
+[
+ {
+  "qid": "P-001",
+  "query": "우리나라 화장품 수출이 세계에서 몇 번째로 올라섰나",
+  "gold_doc": "d41477d4e0dcfc4f",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-002",
+  "query": "국내 뷰티 산업이 반짝 유행이 아니라고 보는 근거는 무엇인가",
+  "gold_doc": "d41477d4e0dcfc4f",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-003",
+  "query": "개인용 컴퓨터 출하 전망치가 어느 방향으로 조정됐나",
+  "gold_doc": "87f4509664d93044",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-004",
+  "query": "인공지능 때문에 중앙처리장치 수요가 얼마나 늘어난다고 봤나",
+  "gold_doc": "87f4509664d93044",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-005",
+  "query": "메타의 향후 설비 지출 규모를 두고 시장 의견이 왜 갈리나",
+  "gold_doc": "93947b2cc2f7d3dc",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-006",
+  "query": "기관 투자자 예상치와 증권가 평균 전망이 얼마나 벌어져 있나",
+  "gold_doc": "93947b2cc2f7d3dc",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-007",
+  "query": "적층세라믹콘덴서 판매 단가 가정을 어떻게 올려 잡았나",
+  "gold_doc": "ccd64f5eb85cbf69",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-008",
+  "query": "부품 회사가 소비자용에서 기업용으로 바뀌는 가치가 왜 덜 반영됐다는 건가",
+  "gold_doc": "ccd64f5eb85cbf69",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-009",
+  "query": "사고 차량 경매 회사 주가가 빠진 것이 해자가 무너져서인가",
+  "gold_doc": "63e58772c341bd36",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-010",
+  "query": "보험사가 차를 덜 넘기면 경매 물량에 어떤 영향이 있나",
+  "gold_doc": "63e58772c341bd36",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-011",
+  "query": "고객이 자기 칩을 가져와 운영만 맡기는 계약이 얼마나 커졌나",
+  "gold_doc": "a54f5733d6375e8b",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-012",
+  "query": "아직 매출로 안 잡힌 계약 잔고가 한 분기에 얼마나 불어났나",
+  "gold_doc": "a54f5733d6375e8b",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-013",
+  "query": "탈중앙 금융의 진짜 약점이 프로토콜이 아니라 무엇이라고 봤나",
+  "gold_doc": "7bfe20109d59f68e",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-014",
+  "query": "훔친 예치 자산을 다른 대출 플랫폼에 맡기고 돈을 빌려간 사건",
+  "gold_doc": "7bfe20109d59f68e",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-015",
+  "query": "한국 주식을 담는 상장지수펀드가 오랜 상승 흐름에서 벗어난 날",
+  "gold_doc": "b06dbea8bb6173fb",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-016",
+  "query": "메타의 클라우드 진출 소식이 인프라 업종에 양쪽으로 해석되는 이유",
+  "gold_doc": "b06dbea8bb6173fb",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-017",
+  "query": "코딩 도구와 업무용 챗봇을 합친 주간 사용자가 몇 명을 넘겼나",
+  "gold_doc": "3b04a0fa4bd04704",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-018",
+  "query": "사용 한도를 다시 풀어주면서 시간 제한도 두지 않은 이유",
+  "gold_doc": "3b04a0fa4bd04704",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-019",
+  "query": "작업 난이도에 따라 모델을 자동으로 골라주는 내부 프로젝트",
+  "gold_doc": "54df7921ba4fc4f2",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-020",
+  "query": "쉬운 요청에도 가장 비싼 모델을 쓰고 있다는 내부 지적",
+  "gold_doc": "54df7921ba4fc4f2",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-021",
+  "query": "연준 회의를 앞두고 투자자들이 몸을 사린 배경",
+  "gold_doc": "abf35823226bba76",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-022",
+  "query": "기술주 지수보다 전통 산업 지수가 더 버틴 날의 해석",
+  "gold_doc": "abf35823226bba76",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-023",
+  "query": "인공지능을 중앙 서버가 아니라 현장에서 돌리려는 수요가 커지는 이유",
+  "gold_doc": "da2b5a252707c756",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-024",
+  "query": "자율주행차나 로봇에서 왕복 지연 시간이 왜 위험한가",
+  "gold_doc": "da2b5a252707c756",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-025",
+  "query": "1920년대 미국 증시가 크게 오른 배경에 어떤 신기술이 있었나",
+  "gold_doc": "cd5d64062b6479d2",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-026",
+  "query": "새로운 성장은 늘 무엇과 함께 시작된다고 정리했나",
+  "gold_doc": "cd5d64062b6479d2",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-027",
+  "query": "예멘 반군 대표단이 탄 여객기가 착륙하려던 공항이 공격받은 사건",
+  "gold_doc": "a9b2d72d5ab58ccb",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-028",
+  "query": "그 미사일을 누가 쐈는지를 두고 주장이 엇갈리는 상황",
+  "gold_doc": "a9b2d72d5ab58ccb",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-029",
+  "query": "간암 치료제가 미국 규제당국 문턱을 못 넘은 배경",
+  "gold_doc": "558b3c7d6e3c247e",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-030",
+  "query": "판권을 사와서 개발하던 회사가 병용요법으로 다시 도전한 과정",
+  "gold_doc": "558b3c7d6e3c247e",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-031",
+  "query": "투자자 인터뷰 책을 쓰겠다고 마음먹게 된 계기",
+  "gold_doc": "0ea9fdf8040f4339",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-032",
+  "query": "인공지능 시대에 읽기가 오히려 더 중요해질 수 있다고 본 이유",
+  "gold_doc": "0ea9fdf8040f4339",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-033",
+  "query": "유조선 두 척이 공격받은 뒤 원유 수송에 생긴 위험",
+  "gold_doc": "e3f6405109429f75",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-034",
+  "query": "공격받은 배들이 어느 나라 국적이고 누가 소유했나",
+  "gold_doc": "e3f6405109429f75",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-035",
+  "query": "두 나라가 바다 경계선을 정하려 하자 중국이 반발한 이유",
+  "gold_doc": "9b5ac9414f8bb127",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-036",
+  "query": "일본 최남단 섬과 필리핀 북부 사이 해역을 둘러싼 갈등",
+  "gold_doc": "9b5ac9414f8bb127",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-037",
+  "query": "중국 메모리 반도체 회사가 정부 지원으로 성장한 과정",
+  "gold_doc": "019675c6193f9a78",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-038",
+  "query": "지방정부의 벤처 투자로 성공했다는 평가를 받는 중국 도시",
+  "gold_doc": "019675c6193f9a78",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-039",
+  "query": "남들과 비교하는 마음이 투자 판단에 어떻게 작용하나",
+  "gold_doc": "ef610155df1e1dd3",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-040",
+  "query": "가상자산을 일찍 시작했던 경험에서 무엇을 느꼈나",
+  "gold_doc": "ef610155df1e1dd3",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-041",
+  "query": "딸과 여행 가는 비행기 안에서 급히 써 보낸 시장 편지",
+  "gold_doc": "25fec2e76a6c7794",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-042",
+  "query": "주가가 오를 때마다 비중을 줄여 왔다고 밝힌 운용 방식",
+  "gold_doc": "25fec2e76a6c7794",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-043",
+  "query": "인터뷰 책의 서술 방식을 어느 작가에게서 참고하려 하나",
+  "gold_doc": "53b03b60058c8ec4",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-044",
+  "query": "녹음 한 시간이 원고 몇 쪽 분량이 되나",
+  "gold_doc": "53b03b60058c8ec4",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-045",
+  "query": "반도체 가격 상승이 거시 경제에 주는 영향을 다룬 자료",
+  "gold_doc": "8a089949e84b3b98",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-046",
+  "query": "일본의 물가 회복을 자산 배분 관점에서 어떻게 봤나",
+  "gold_doc": "8a089949e84b3b98",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-047",
+  "query": "금리 환경이 크게 바뀌었다는 관점에서 자산 배분을 다시 본 메모",
+  "gold_doc": "3821beabeacd060d",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-048",
+  "query": "호주에서 고객들과 이야기하다 떠오른 생각을 정리한 글",
+  "gold_doc": "3821beabeacd060d",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-049",
+  "query": "대규모 투어가 실적에 반영되면서 수익성이 두 자릿수로 돌아온 회사",
+  "gold_doc": "2b217690f96db9c0",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-050",
+  "query": "서구권 평균 티켓 가격이 오른 것이 공연 매출에 준 효과",
+  "gold_doc": "2b217690f96db9c0",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-051",
+  "query": "리먼 파산 당시를 돌아보며 아무도 모른다고 정리한 메모",
+  "gold_doc": "e4045e4f2ab4f602",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-052",
+  "query": "구제와 파산이 잇따르던 금융위기 초입을 회고한 글",
+  "gold_doc": "e4045e4f2ab4f602",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-053",
+  "query": "고대역폭 메모리 성장성을 감안해 목표가를 크게 올린 반도체 리포트",
+  "gold_doc": "8ef71c1b22a80647",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-054",
+  "query": "메모리 회사 주가가 52주 최고 대비 절반 수준이라 매력적이라고 본 자료",
+  "gold_doc": "8ef71c1b22a80647",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-055",
+  "query": "전력기기 회사 2분기가 무난했지만 저력이 있다고 본 리포트",
+  "gold_doc": "a11b2e3657f3c0fd",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-056",
+  "query": "변압기 만드는 회사 목표가를 100만원으로 올려 잡은 증권사",
+  "gold_doc": "a11b2e3657f3c0fd",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-057",
+  "query": "완성차 회사가 외부 변수를 지나면 실적이 남는다고 본 리포트",
+  "gold_doc": "0bb0f0abdc1afe0d",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-058",
+  "query": "현대차그룹 계열 완성차 목표주가를 21만원으로 제시한 자료",
+  "gold_doc": "0bb0f0abdc1afe0d",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-059",
+  "query": "고객 투자위원회에 직접 참여하며 본 것을 정리한 메모",
+  "gold_doc": "7c3d0f9704d89b04",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "P-060",
+  "query": "투자 절차와 포트폴리오를 안쪽에서 들여다본 이야기",
+  "gold_doc": "7c3d0f9704d89b04",
+  "axis": "paraphrase",
+  "note": ""
+ },
+ {
+  "qid": "I-001",
+  "query": "Bloom Energy 2024 회계연도 연간보고서 접수번호",
+  "gold_doc": "593963f275b6af26",
+  "axis": "identifier",
+  "note": ""
+ },
+ {
+  "qid": "I-002",
+  "query": "Bloom Energy 연간보고서가 2025년 2월에 제출된 건의 문서번호",
+  "gold_doc": "593963f275b6af26",
+  "axis": "identifier",
+  "note": ""
+ },
+ {
+  "qid": "I-003",
+  "query": "Reddit 2024년 3분기 분기보고서 접수번호",
+  "gold_doc": "cd0b03ecb3447262",
+  "axis": "identifier",
+  "note": ""
+ },
+ {
+  "qid": "I-004",
+  "query": "Bloom Energy 2023년 9월말 기준 분기보고서 문서번호",
+  "gold_doc": "721606fd5563a98a",
+  "axis": "identifier",
+  "note": ""
+ },
+ {
+  "qid": "I-005",
+  "query": "Bloom Energy 2018 회계연도 연간보고서 접수번호",
+  "gold_doc": "9f83652064dda672",
+  "axis": "identifier",
+  "note": ""
+ },
+ {
+  "qid": "I-006",
+  "query": "삼성전자 2025년 1분기 분기보고서 접수번호",
+  "gold_doc": "d446b1b67f9090f8",
+  "axis": "identifier",
+  "note": ""
+ },
+ {
+  "qid": "I-007",
+  "query": "달바글로벌 2026년 1분기 분기보고서 접수번호",
+  "gold_doc": "86f0638c8200df1f",
+  "axis": "identifier",
+  "note": ""
+ },
+ {
+  "qid": "I-008",
+  "query": "삼성전자 1998 사업연도 사업보고서 기재정정본 접수번호",
+  "gold_doc": "4b82106c2bac06ff",
+  "axis": "identifier",
+  "note": ""
+ },
+ {
+  "qid": "E-001",
+  "query": "삼성전자 제57기 1분기 보고서",
+  "gold_doc": "d446b1b67f9090f8",
+  "axis": "entity_period",
+  "note": ""
+ },
+ {
+  "qid": "E-002",
+  "query": "달바글로벌 제11기 1분기 보고서",
+  "gold_doc": "86f0638c8200df1f",
+  "axis": "entity_period",
+  "note": ""
+ },
+ {
+  "qid": "E-003",
+  "query": "삼성전자 1998년 사업보고서",
+  "gold_doc": "4b82106c2bac06ff",
+  "axis": "entity_period",
+  "note": ""
+ },
+ {
+  "qid": "E-004",
+  "query": "Bloom Energy 2024년 기준 연차 보고서",
+  "gold_doc": "593963f275b6af26",
+  "axis": "entity_period",
+  "note": ""
+ },
+ {
+  "qid": "E-005",
+  "query": "Bloom Energy 2023년 3분기 보고서",
+  "gold_doc": "721606fd5563a98a",
+  "axis": "entity_period",
+  "note": ""
+ },
+ {
+  "qid": "E-006",
+  "query": "Reddit 2024년 9월말 기준 보고서",
+  "gold_doc": "cd0b03ecb3447262",
+  "axis": "entity_period",
+  "note": ""
+ },
+ {
+  "qid": "E-007",
+  "query": "SK하이닉스 2026년 7월 실적 리뷰 리포트",
+  "gold_doc": "8ef71c1b22a80647",
+  "axis": "entity_period",
+  "note": ""
+ },
+ {
+  "qid": "E-008",
+  "query": "하이브 2026년 7월 실적 코멘트",
+  "gold_doc": "2b217690f96db9c0",
+  "axis": "entity_period",
+  "note": ""
+ },
+ {
+  "qid": "U-001",
+  "query": "카카오뱅크 2027년 배당성향 확정치",
+  "gold_doc": "",
+  "axis": "unanswerable",
+  "note": "코퍼스에 답이 없어야 정답"
+ },
+ {
+  "qid": "U-002",
+  "query": "테슬라 상하이 공장의 2030년 생산능력 계획",
+  "gold_doc": "",
+  "axis": "unanswerable",
+  "note": "코퍼스에 답이 없어야 정답"
+ },
+ {
+  "qid": "U-003",
+  "query": "이 저장소에 들어 있는 노르웨이 국부펀드 분기 보고서",
+  "gold_doc": "",
+  "axis": "unanswerable",
+  "note": "코퍼스에 답이 없어야 정답"
+ },
+ {
+  "qid": "U-004",
+  "query": "삼성전자 2028년 1분기 실적 발표 내용",
+  "gold_doc": "",
+  "axis": "unanswerable",
+  "note": "코퍼스에 답이 없어야 정답"
+ },
+ {
+  "qid": "U-005",
+  "query": "비트코인이 2027년에 얼마가 될지",
+  "gold_doc": "",
+  "axis": "unanswerable",
+  "note": "코퍼스에 답이 없어야 정답"
+ },
+ {
+  "qid": "U-006",
+  "query": "힐링페이퍼의 지난 분기 매출",
+  "gold_doc": "",
+  "axis": "unanswerable",
+  "note": "코퍼스에 답이 없어야 정답"
+ },
+ {
+  "qid": "D-001",
+  "query": "드러켄밀러 2014년 2분기 13F 총 보유 규모",
+  "gold_doc": "18b8832d5f9be37e",
+  "source_type": "sec_13f",
+  "axis": "table_lookup",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-002",
+  "query": "듀케인 패밀리오피스 2014년 6월말 최대 비중 종목은",
+  "gold_doc": "18b8832d5f9be37e",
+  "source_type": "sec_13f",
+  "axis": "table_lookup",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-003",
+  "query": "베일리기포드 2025년 4분기 13F 편입 종목 개수",
+  "gold_doc": "08ea14e5245cac20",
+  "source_type": "sec_13f",
+  "axis": "table_lookup",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-004",
+  "query": "베일리기포드 포트폴리오 상위 5종목 쏠림 정도",
+  "gold_doc": "08ea14e5245cac20",
+  "source_type": "sec_13f",
+  "axis": "table_lookup",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-005",
+  "query": "SK하이닉스 2013사업연도 연간보고서 공시 접수번호",
+  "gold_doc": "033fa65ddb79c49e",
+  "source_type": "dart",
+  "axis": "identifier",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-006",
+  "query": "에스케이하이닉스 2013년 결산 사업보고서 제출 시점",
+  "gold_doc": "033fa65ddb79c49e",
+  "source_type": "dart",
+  "axis": "identifier",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-007",
+  "query": "삼성전자 2010년 1분기 분기보고서 접수번호",
+  "gold_doc": "6c5928045e92ecd0",
+  "source_type": "dart",
+  "axis": "identifier",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-008",
+  "query": "삼성전자 2010년 3월말 기준 분기보고서 언제 제출됐나",
+  "gold_doc": "6c5928045e92ecd0",
+  "source_type": "dart",
+  "axis": "identifier",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-009",
+  "query": "AI 데이터센터 투자 규모가 얼마나 빠르게 불어나고 있나",
+  "gold_doc": "1291b69e6a855103",
+  "source_type": "ib_insights",
+  "axis": "paraphrase",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-010",
+  "query": "AGI 경쟁이 미국 전력 생산에 미칠 영향 전망",
+  "gold_doc": "1291b69e6a855103",
+  "source_type": "ib_insights",
+  "axis": "paraphrase",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-011",
+  "query": "캘리포니아 지방채 과세환산수익률 산출에 쓰인 세율",
+  "gold_doc": "023913fe1ef58fa5",
+  "source_type": "ib_insights",
+  "axis": "paraphrase",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-012",
+  "query": "블랙록 운용자산 2025년 9월말 기준 얼마",
+  "gold_doc": "023913fe1ef58fa5",
+  "source_type": "ib_insights",
+  "axis": "paraphrase",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-013",
+  "query": "제이미 다이먼이 바퀴벌레에 비유하며 경고한 계기",
+  "gold_doc": "ee246249ebfa1108",
+  "source_type": "ib_insights",
+  "axis": "paraphrase",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-014",
+  "query": "하워드 막스가 최근 신용 사고를 어떤 전조로 봤나",
+  "gold_doc": "ee246249ebfa1108",
+  "source_type": "ib_insights",
+  "axis": "paraphrase",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-015",
+  "query": "AI가 흔해지면 투자자 경쟁우위는 어디로 옮겨가나",
+  "gold_doc": "2cb0ce853551076b",
+  "source_type": "naver",
+  "axis": "paraphrase",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-016",
+  "query": "블타바 주주서한이 꼽은 범용화될 업무와 귀해질 능력",
+  "gold_doc": "2cb0ce853551076b",
+  "source_type": "naver",
+  "axis": "paraphrase",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-017",
+  "query": "미국에서 E15 주유가 허용되는 차량 연식 기준",
+  "gold_doc": "e48faf135bdab26d",
+  "source_type": "naver",
+  "axis": "paraphrase",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-018",
+  "query": "브라질이 오래전부터 써온 에탄올 혼합 비율",
+  "gold_doc": "e48faf135bdab26d",
+  "source_type": "naver",
+  "axis": "paraphrase",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-019",
+  "query": "에이피알 2분기 미국 매출 얼마나 늘었나",
+  "gold_doc": "3494cb6766ad0d82",
+  "source_type": "telegram",
+  "axis": "paraphrase",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-020",
+  "query": "교보증권이 제시한 에이피알 목표주가",
+  "gold_doc": "3494cb6766ad0d82",
+  "source_type": "telegram",
+  "axis": "paraphrase",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-021",
+  "query": "에이피알 일본 매출이 전분기보다 부진했던 이유",
+  "gold_doc": "3494cb6766ad0d82",
+  "source_type": "telegram",
+  "axis": "paraphrase",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-022",
+  "query": "7월 1일 미국 증시 신고가 종목 수와 최다 섹터",
+  "gold_doc": "f0d599cacb374ad2",
+  "source_type": "telegram",
+  "axis": "paraphrase",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-023",
+  "query": "신고가 종목 중 거래대금 가장 컸던 종목",
+  "gold_doc": "f0d599cacb374ad2",
+  "source_type": "telegram",
+  "axis": "paraphrase",
+  "note": "4주차·5주차에 쓰던 24건"
+ },
+ {
+  "qid": "D-024",
+  "query": "신고가 대형주 대비 중소형주 평균 상승폭 차이",
+  "gold_doc": "f0d599cacb374ad2",
+  "source_type": "telegram",
+  "axis": "paraphrase",
+  "note": "4주차·5주차에 쓰던 24건"
+ }
+]
