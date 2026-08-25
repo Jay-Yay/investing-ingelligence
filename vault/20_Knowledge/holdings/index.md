@@ -1,0 +1,212 @@
+---
+type: Index
+title: holdings
+description: holdings 아래 concept 202건의 목록
+---
+
+# holdings
+
+concept 202건.
+
+- [BERKSHIRE HATHAWAY INC 13F-HR (2026-06-30)](2026-08-14-bd3a1d365e.md) — HoldingsSnapshot
+- [Situational Awareness LP 13F-HR (2026-06-30)](2026-08-14-6d22b2039f.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2026-06-30)](2026-08-14-46feff12e2.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2026-06-30)](2026-08-06-fee87e21a3.md) — HoldingsSnapshot
+- [Situational Awareness LP 13F-HR (2026-03-31)](2026-05-18-9ad1218ff4.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2026-03-31)](2026-05-15-cb8113bb6c.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2026-03-31)](2026-05-15-c8bb0331f3.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2026-03-31)](2026-05-15-717954a944.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2026-03-31)](2026-05-08-43aad74ea6.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2025-12-31)](2026-02-17-e65dd31bd3.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2025-12-31)](2026-02-17-6e432d51c7.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2025-12-31)](2026-02-17-31d71cc7f3.md) — HoldingsSnapshot
+- [Situational Awareness LP 13F-HR (2025-12-31)](2026-02-11-f95e2d63c0.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2025-12-31)](2026-01-23-08ea14e524.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2025-09-30)](2025-11-14-f28c92cddf.md) — HoldingsSnapshot
+- [Situational Awareness LP 13F-HR (2025-09-30)](2025-11-14-9dfc43b75b.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2025-09-30)](2025-11-14-4326e8352c.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2025-09-30)](2025-11-14-0beb749c10.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2025-09-30)](2025-10-31-7f4c2f8768.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2025-06-30)](2025-08-15-21256190ce.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2025-06-30)](2025-08-14-e03d779f0b.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2025-06-30)](2025-08-14-a3a56478ef.md) — HoldingsSnapshot
+- [Situational Awareness LP 13F-HR (2025-06-30)](2025-08-14-69082ab602.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2025-06-30)](2025-08-06-d6d1e73d80.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2025-03-31)](2025-05-15-eed4240ef7.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2025-03-31)](2025-05-15-bce9573105.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2025-03-31)](2025-05-15-105ec21f30.md) — HoldingsSnapshot
+- [Situational Awareness LP 13F-HR (2025-03-31)](2025-05-14-9e72d8f12a.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2025-03-31)](2025-05-07-22118d5d40.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2024-12-31)](2025-02-14-ebe0a3b1b8.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2024-12-31)](2025-02-14-b300cd88e3.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2024-12-31)](2025-02-14-648a050c18.md) — HoldingsSnapshot
+- [Situational Awareness LP 13F-HR (2024-12-31)](2025-02-12-2291483f5c.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2024-12-31)](2025-01-31-af7cb8f9cf.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2024-09-30)](2024-11-14-a4475b9351.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2024-09-30)](2024-11-14-945d31accd.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2024-09-30)](2024-11-14-789b7e02cb.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2024-09-30)](2024-11-05-c64564669a.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2024-06-30)](2024-08-14-cb83ffd7d2.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2024-06-30)](2024-08-14-ca28f939e6.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2024-06-30)](2024-08-14-08b0bff545.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2024-06-30)](2024-07-25-1a11e39351.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2024-03-31)](2024-05-15-e1ebdfe612.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2024-03-31)](2024-05-15-8b7db380a4.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2024-03-31)](2024-05-15-84b6117569.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2024-03-31)](2024-05-01-8b65be323e.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2023-12-31)](2024-02-14-aaa1d6e67a.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2023-12-31)](2024-02-14-78883c4f46.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2023-12-31)](2024-02-14-056f75596b.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2023-12-31)](2024-01-26-fada73cce5.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2023-09-30)](2023-11-14-a60f75447d.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2023-09-30)](2023-11-14-8595d1be24.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2023-09-30)](2023-11-14-41783131ed.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2023-09-30)](2023-11-13-21a3b2150b.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2023-06-30)](2023-08-14-916837dd71.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2023-06-30)](2023-08-14-77c7a4c299.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2023-06-30)](2023-08-14-09abb5b12f.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2023-06-30)](2023-07-28-42a98180cd.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2023-03-31)](2023-05-15-f6d358ae2d.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2023-03-31)](2023-05-15-87d74641dd.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2023-03-31)](2023-05-15-1615bae5d6.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2023-03-31)](2023-05-03-9472b4cec1.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2022-12-31)](2023-02-14-708d56a2da.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2022-12-31)](2023-02-14-1c13559c38.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2022-12-31)](2023-02-13-68828b9d71.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2022-12-31)](2023-01-24-d74b60ba5a.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2022-09-30)](2022-11-14-ca9dfdaac8.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2022-09-30)](2022-11-14-bfb149cf62.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2022-09-30)](2022-11-14-7cae555c4a.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2022-09-30)](2022-10-27-58fdc2c91f.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2022-06-30)](2022-08-15-d3081b2fe3.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2022-06-30)](2022-08-15-d12a97189f.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2022-06-30)](2022-08-15-22e2af4d6a.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2022-06-30)](2022-08-08-6825583eb4.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2022-03-31)](2022-05-16-ddf08b7774.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2022-03-31)](2022-05-16-8bb3b42eb9.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2022-03-31)](2022-05-16-3702760bde.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2022-03-31)](2022-05-05-58d2850176.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2021-12-31)](2022-02-14-ff7665ba52.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2021-12-31)](2022-02-14-96024af586.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2021-12-31)](2022-02-14-3c7a1b99cd.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2021-12-31)](2022-01-20-027bfa69a4.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2021-09-30)](2021-11-15-dd12801657.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2021-09-30)](2021-11-15-82562ef8fa.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2021-09-30)](2021-11-15-49dbaa7e36.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2021-09-30)](2021-10-19-33a66278d2.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2021-06-30)](2021-08-16-e2d8c07f86.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2021-06-30)](2021-08-16-9d7ac3ad32.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2021-06-30)](2021-08-16-814bee4f7b.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2021-06-30)](2021-08-02-97b8ec159f.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2021-03-31)](2021-05-17-cfc1b14cc6.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2021-03-31)](2021-05-17-c6fe3fe0dd.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2021-03-31)](2021-05-17-a2166f32a4.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2021-03-31)](2021-05-06-29da194621.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2020-12-31)](2021-02-16-80221230db.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2020-12-31)](2021-02-16-7f5f15915c.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2020-12-31)](2021-02-16-3b248caf84.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2020-12-31)](2021-02-10-3a9fddab72.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2020-09-30)](2020-11-16-cade9289db.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2020-09-30)](2020-11-16-491899dd35.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2020-09-30)](2020-11-12-5ce33508b9.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2020-09-30)](2020-10-23-092622eaa4.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2020-06-30)](2020-08-14-4682557221.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2020-06-30)](2020-08-14-3dc62147eb.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2020-06-30)](2020-08-14-31692fd599.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2020-06-30)](2020-08-12-00df0ca545.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2020-03-31)](2020-05-15-9314ed6726.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2020-03-31)](2020-05-15-483db64d43.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2020-03-31)](2020-05-15-1078413cde.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2020-03-31)](2020-05-08-61204c1254.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2019-12-31)](2020-02-14-c3c3ac9455.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2019-12-31)](2020-02-14-be54a59e3a.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2019-12-31)](2020-02-14-00212d288f.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2019-12-31)](2020-02-10-1a100823b8.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2019-09-30)](2019-11-14-cca85dce0a.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2019-09-30)](2019-11-14-47c9b74bbe.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2019-09-30)](2019-11-14-1eb7a326d4.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2019-09-30)](2019-11-07-0251ce3824.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2019-06-30)](2019-08-14-845776976f.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2019-06-30)](2019-08-14-46f12d7dee.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2019-06-30)](2019-08-14-20010278b9.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2019-06-30)](2019-08-08-0b26079336.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2019-03-31)](2019-05-15-dc6a161f57.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2019-03-31)](2019-05-15-a2e09200ad.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2019-03-31)](2019-05-15-308f6722fa.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2019-03-31)](2019-05-01-e6f5414aef.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2018-12-31)](2019-02-14-d051431ac3.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2018-12-31)](2019-02-14-bdc5c73e52.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2018-12-31)](2019-02-14-a4e715cfbe.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2018-12-31)](2019-02-14-7b58dbc021.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2018-09-30)](2018-11-14-f9d505035e.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2018-09-30)](2018-11-14-4ea35ad720.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2018-09-30)](2018-11-14-1b2a389f42.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2018-09-30)](2018-11-13-ab39f77646.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2018-06-30)](2018-08-14-df350b2737.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2018-06-30)](2018-08-14-7b59605ed4.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2018-06-30)](2018-08-14-40fb5360f9.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2018-06-30)](2018-07-17-8c61f0781e.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2018-03-31)](2018-05-15-6e3c78736b.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2018-03-31)](2018-05-15-60f249c52e.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2018-03-31)](2018-05-15-2e3e1db657.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2018-03-31)](2018-05-10-cbb687abb9.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2017-12-31)](2018-02-14-c570231c89.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2017-12-31)](2018-02-14-c0b332f046.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2017-12-31)](2018-02-14-35e743414d.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2017-12-31)](2018-02-13-dad2d77f24.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2017-09-30)](2017-11-14-e7d3286f58.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2017-09-30)](2017-11-14-c9d2327e20.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2017-09-30)](2017-11-14-17bcbafaa5.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2017-09-30)](2017-10-20-6f240ed4e2.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2017-06-30)](2017-08-14-6be01e60df.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2017-06-30)](2017-08-14-6bcd4a4a66.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2017-06-30)](2017-08-14-2feeede75a.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2017-06-30)](2017-08-10-3ec4c71e4e.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2017-03-31)](2017-05-15-a8abdb8d30.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2017-03-31)](2017-05-15-26da6e9f20.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2017-03-31)](2017-05-15-1172006612.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2017-03-31)](2017-05-12-f351c266d1.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2016-12-31)](2017-02-14-cff5afe763.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2016-12-31)](2017-02-14-aed2b74b45.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2016-12-31)](2017-02-14-04695b035a.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2016-12-31)](2017-02-14-015f6f5515.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2016-09-30)](2016-11-14-d9cf750d75.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2016-09-30)](2016-11-14-7afe254fb9.md) — HoldingsSnapshot
+- [BERKSHIRE HATHAWAY INC 13F-HR (2016-09-30)](2016-11-14-4239650405.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2016-09-30)](2016-11-09-70f88b0654.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2016-06-30)](2016-08-15-ceebb7bded.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2016-06-30)](2016-08-15-78b474cd69.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2016-06-30)](2016-08-09-032798d0a6.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2016-03-31)](2016-05-16-a9d14fea7d.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2016-03-31)](2016-05-16-765ad7f72e.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2016-03-31)](2016-05-05-b2d9f9d962.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2015-12-31)](2016-02-16-ff03075be0.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2015-12-31)](2016-02-16-398ca3e5e7.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2015-12-31)](2016-02-08-65d4ea4b1d.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2015-09-30)](2015-11-16-ac10b18d11.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2015-09-30)](2015-11-13-2446c83ece.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2015-09-30)](2015-11-05-fdb2ba1a4c.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2015-06-30)](2015-08-14-2a997b18f7.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2015-06-30)](2015-08-14-237ab049a6.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2015-06-30)](2015-07-28-aafc6642bb.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2015-03-31)](2015-05-15-3f614dd4e8.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2015-03-31)](2015-05-15-0fc02820fc.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2015-03-31)](2015-05-14-f24352855f.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2014-12-31)](2015-02-17-c80cbb9311.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2014-12-31)](2015-02-12-c1b8f72a90.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2014-12-31)](2015-02-12-32a53b402a.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2014-09-30)](2014-11-14-a34d610041.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2014-09-30)](2014-11-14-99e7b499f3.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2014-09-30)](2014-11-07-f105b8ec0b.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2014-06-30)](2014-08-14-51bfde773c.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2014-06-30)](2014-08-14-18b8832d5f.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2014-06-30)](2014-08-01-3585073407.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2014-03-31)](2014-05-15-051aba4417.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2014-03-31)](2014-05-14-ef8bfa31ac.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2014-03-31)](2014-05-01-12ae7f7afc.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2013-12-31)](2014-02-14-a061bcac7c.md) — HoldingsSnapshot
+- [Duquesne Family Office LLC 13F-HR (2013-12-31)](2014-02-14-850a89c034.md) — HoldingsSnapshot
+- [BAILLIE GIFFORD & CO 13F-HR (2013-12-31)](2014-02-07-c63c9ddea1.md) — HoldingsSnapshot
+- [Pershing Square Capital Management, L.P. 13F-HR (2013-09-30)](2013-11-14-e3f091c202.md) — HoldingsSnapshot
+
+_외 2건은 파일 시스템에서 직접 탐색._

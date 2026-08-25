@@ -5,3 +5,9 @@
 # day. See vault/00_System/Runbook.md "인덱스 복구".
 data/index.sqlite3
 data/sec_company_tickers.json
+
+# data/search_index.sqlite3 (BM25/vector index) is likewise a derived cache, rebuilt whole
+# from vault/20_Knowledge via `investor_intel index build`. 2026-08-25: at 4.3GB it is also
+# far past any size git can carry - same reasoning as data/index.sqlite3 above.
+data/search_index.sqlite3
+data/embedding_cache.sqlite3

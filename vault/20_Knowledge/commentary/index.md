@@ -1,0 +1,212 @@
+---
+type: Index
+title: commentary
+description: commentary 아래 concept 8726건의 목록
+---
+
+# commentary
+
+concept 8726건.
+
+- [-브로드컴이 AI 인프라 투자에 필요한 대규모 자금조달을 지원하면서, 채권시장에서 브로드컴의 크레딧 스프레드 상승.](2026-08-25-fe567e4cab.md) — MarketCommentary
+- [美 세포라 87%에 '올영 깃발'.](2026-08-25-fb035a36a3.md) — MarketCommentary
+- [🤨 ## 출처 - 원문(https://t.](2026-08-25-fadf628f95.md) — MarketCommentary
+- [석학들의 마켓 (인)사이트 pinned «삼성선물 천연가스 슈퍼 엘니뇨 바로 다음 겨울은?](2026-08-25-f8ad72fc75.md) — MarketCommentary
+- [다올투자증권 자동차/이차전지 유지웅 ★ 삼성SDI(006400) - 드디어 올게 왔다 ▶ 투자의견 BUY 유지, 적정주가는 기](2026-08-25-f5eaa4c34e.md) — MarketCommentary
+- [전일, 금일 메디큐브 강세 중입니다.](2026-08-25-f5a9cc5c9e.md) — MarketCommentary
+- [SK증권 IT하드웨어/배터리 박형우, 정영환 심텍, 신규 시설투자 공시 ▶️ 투자 개요 - 투자 내용: A](2026-08-25-f41e659571.md) — MarketCommentary
+- [중국이 정유 제품 수출을 유의미하게 늘릴 수 있을지 모니터링 필요 ## 출처 - 원문(https://t.](2026-08-25-ef3b56b3b0.md) — MarketCommentary
+- [📈 요즘 많이 보는 리포트 TOP 10 2026-08-25 09:30 기준 🏆.](2026-08-25-ee9436d6d0.md) — MarketCommentary
+- [웨이모 “인간 눈 2개론 부족”.](2026-08-25-e9790d4d99.md) — MarketCommentary
+- [반도체 끝물이라더니 삼전닉스 '초대박'?](2026-08-25-e5beb50e75.md) — MarketCommentary
+- [(코스닥)펩트론 - 투자판단관련주요경영사항(임상시험계획승인신청) (PT403의 제1상 임상시험계획 승인 신청) http://d](2026-08-25-e4658a6cdf.md) — MarketCommentary
+- [8.](2026-08-25-e43256723f.md) — MarketCommentary
+- [국내 주식 마감 시황 - 8월 25일 『반도체 전약후강에 KOSPI 양전』 시황 강진혁 ☎️02-3772-2329 코스피 6,](2026-08-25-dfa49ff93d.md) — MarketCommentary
+- [美 국채가 흔들린다.](2026-08-25-de472ce588.md) — MarketCommentary
+- [스페이스X, 600억 달러 Cursor 인수 완료 SpaceXAI SpaceXAI 팀에 온 것을 환영합니다!](2026-08-25-db7a42d229.md) — MarketCommentary
+- [메리츠증권 전기전자/IT부품 양승수 삼성전기(009150): ABF 기판, 부족의 기울기가 가팔라진다 ▶](2026-08-25-d987faae78.md) — MarketCommentary
+- ["기술 탐난다".](2026-08-25-d86f31531a.md) — MarketCommentary
+- [펩트론 세마글루타이드 월 1회 출격준비중 📝 핵심적 본문 요약 PT403 피하 투여의 안전성과 내약성 및 약동학적 특성을 평가](2026-08-25-d6b5a0c704.md) — MarketCommentary
+- [릴리가 굳이 PT403을 안 샀다?](2026-08-25-d5613c89f8.md) — MarketCommentary
+- [티타임즈TV "이렇게까지 창의적으로 AI를 타락시켜?](2026-08-25-d54ef332c1.md) — MarketCommentary
+- [SK하이닉스 자사주 매매 현황 - 금일(8/25) SK하이닉스의 자사주 매매 체결내역입니다.](2026-08-25-d545066865.md) — MarketCommentary
+- [중국이 정유 제품 수출을 유의미하게 늘릴 수 있을지 모니터링 필요 ## 출처 - 원문(https://t.](2026-08-25-d51f26839f.md) — MarketCommentary
+- [📝.](2026-08-25-d5005faeef.md) — MarketCommentary
+- [엔비디아, 실적 기대 높은데 주가 기대 낮아.](2026-08-25-d36c36de31.md) — MarketCommentary
+- [20년 연구 뚝심이 애플 뚫었다 .](2026-08-25-d331d2b7c4.md) — MarketCommentary
+- [심텍 신규 시설투자 소부장 기업들의 수주가 서서히 증가하기 시작하고.](2026-08-25-d007b0392a.md) — MarketCommentary
+- [구글 클라우드, Gemini Enterprise 금융 및 법률 특화 솔루션 동시 공개 : 구글 클라우드는 G](2026-08-25-ccfd18eefa.md) — MarketCommentary
+- [에이피알 주가 관련 최근 수급 코멘트 최근 주가 상승과 함께 외국인·기관 수급이 동시에 개선되는 모습.](2026-08-25-ccb6e9262e.md) — MarketCommentary
+- ["5년 자본에 30년 산업 맡길 수 있나".](2026-08-25-cbdee083f1.md) — MarketCommentary
+- [원 달러 환율이 급락하는 이유 📝 핵심적 본문 요약 원 달러 환율이 두 달 만에 1,380원대까지 하락했다.](2026-08-25-cbc34bcf49.md) — MarketCommentary
+- [📈 요즘 많이 보는 리포트 TOP 10 2026-08-25 20:00 기준 🏆.](2026-08-25-cba084ba0b.md) — MarketCommentary
+- [AI 의존이 코딩 전문성의 성장 경로를 무너뜨릴 수 있음 - AI 코딩 도구는 숙련자가 조정·검토할 때 가장](2026-08-25-cb0e6aac0a.md) — MarketCommentary
+- [공교육 및 일반 상식이라 불리는 오류들을 확실히 뚜둘겨 패주는 책을 찾았다.](2026-08-25-cb0c304d72.md) — MarketCommentary
+- [석학들의 마켓 (인)사이트 pinned «단기예보 기상청 통보문 2026년 08월 25일 (화)요일 11](2026-08-25-c5144431f5.md) — MarketCommentary
+- [sk하이닉스 종가 배팅 승률높은 자리로 보는 이유 오늘 종가배팅 승률 높은자리 나왔다고 생각해서 단기 승부로](2026-08-25-c24b47d9a2.md) — MarketCommentary
+- [아이스크림미디어 2026년 2분기 실적.](2026-08-25-c0dd3601bd.md) — MarketCommentary
+- ["콩고 광산 침수 직격탄".](2026-08-25-c09ee40842.md) — MarketCommentary
+- ["반도체 달라" 빅테크 난리인데.](2026-08-25-bf3a2178b3.md) — MarketCommentary
+- [SK하이닉스 : 자사주 성과급 부결 및 주가 약세 📝 핵심적 본문 요약 SK하이닉스 노조가 성과급 자사주 60% 포함 잠정합의](2026-08-25-bef19697c1.md) — MarketCommentary
+- [📈 요즘 많이 보는 리포트 TOP 10 2026-08-25 14:00 기준 🏆.](2026-08-25-bd88cb511e.md) — MarketCommentary
+- [세계 최초 150년생 산삼 배양근 산업적 대량 생산 성공 https://v.](2026-08-25-b6397bef15.md) — MarketCommentary
+- [암 백신 또한 키트루다SC가 메인(신한투자증권 엄민용연구위원님) 📝 핵심적 본문 요약 모더나와 MSD의 mR](2026-08-25-b256e6251c.md) — MarketCommentary
+- [SK증권 배터리/IT하드웨어 박형우, 정영환 SK이노베이션, SK아이이테크놀로지 흡수합병 결정 공시 ▶️](2026-08-25-b1402bd74b.md) — MarketCommentary
+- [미래 에너지 게임체인저 ‘SMR’.](2026-08-25-abaf14a158.md) — MarketCommentary
+- [삼성에스디에스(1) - 축적과 발산 📝 핵심적 본문 요약 삼성SDS가 1992년 과천 데이터센터를 시작으로](2026-08-25-aa664b8a95.md) — MarketCommentary
+- [참고로 이거 2상 면제임.](2026-08-25-a98c571be1.md) — MarketCommentary
+- [중국정부는 2차전지 증산을 제한하기 시작, 올 하반기 신규 생산 Capa.](2026-08-25-a81b27782b.md) — MarketCommentary
+- [은행 이슈브리핑Issue Briefing 러시아 은행산업 유동성 위기 가능성 점검 출처: 국제금융센터 📜📜📜본문보기📜📜📜 ##](2026-08-25-a3c4164fc8.md) — MarketCommentary
+- [박홍기 작가 TV 삶 테크 트럼프가 한국 경제를 집어삼킨다?](2026-08-25-a3a7b8fc36.md) — MarketCommentary
+- [에이피알, 뷰티 '빅2' 등극까지 '한 달' 남았다 https://naver.](2026-08-25-a394de49e5.md) — MarketCommentary
+- [알테오젠 일본 키트루다SC 심의통과 - 23개 적응증 한번에 https://m.](2026-08-25-a224255a46.md) — MarketCommentary
+- [🔹약세장은 끝났습니다 (Jiang Zhuoer) source 비트코인 채굴 기업 BTC.](2026-08-25-a1df8ff881.md) — MarketCommentary
+- [AI 열풍이 부른 '램 대란', 바퀴 달린 컴퓨터가 된 자동차, 소비자에겐 잔혹사 📝 핵심적 본문 요약 미국 신차 평균 가격이](2026-08-25-9f6ddf59d7.md) — MarketCommentary
+- [오픈AI DevDay 2026에서 큰 거 온다?](2026-08-25-9daab2f745.md) — MarketCommentary
+- [📈 8/25 중화권 마감 시황 전약후강 📊 시장 지수 (16:00 기준) 상해 +0.](2026-08-25-9abfca80fe.md) — MarketCommentary
+- [https://finance.](2026-08-25-9a0547d489.md) — MarketCommentary
+- [IRTV (주)니어스랩 코스닥 상장식 📀📀📀영상보기📀📀📀 ## 출처 - 원문(https://t.](2026-08-25-981754bff0.md) — MarketCommentary
+- [키옥시아, 오전장 막판 양전하며 50,970엔 기록 ## 출처 - 원문(https://t.](2026-08-25-9126f478fc.md) — MarketCommentary
+- [펩트론 PT403 임상 설계 분석 📝 핵심적 본문 요약 PT403의 1a상 임상 설계는 건강한 성인을 대상](2026-08-25-8ff801b372.md) — MarketCommentary
+- [중국계 추정 스텔스 모델 ‘Ox Alpha’ 등장 : OpenCode와 OpenRouter를 통해 미공개 Ox Alpha 모델](2026-08-25-8cdac8edf8.md) — MarketCommentary
+- [dvdprime 주택 거래시 신종 사기 수법이네요.](2026-08-25-89d29cfa36.md) — MarketCommentary
+- [AI 경쟁의 장은 글로벌이지만, 막아서는 건 로컬이다 - Citadel (THE AI RACE IS GLOB](2026-08-25-89026f2aa4.md) — MarketCommentary
+- [오늘의 차트 2026 주도주 폭락에도 시장은 견조.](2026-08-25-8780a213e7.md) — MarketCommentary
+- [제주 아이들이 졸업하고 조금 더 마음에 여유가 생기면 제주에 세컨하우스나 하나 마련해볼까 했는데.](2026-08-25-844f060a54.md) — MarketCommentary
+- [속보 SK하이닉스 잠정합의안 노조 투표 부결.](2026-08-25-8448ece2a2.md) — MarketCommentary
+- [전일, 금일 메디큐브 강세 중입니다.](2026-08-25-828b0aaedc.md) — MarketCommentary
+- [SK증권 최관순, 한동희, 황지우 안녕하세요, SK증권 반도체 한동희입니다.](2026-08-25-8212c0c4f7.md) — MarketCommentary
+- [대신TV 일주일만에 62조 원 증발ᅵ한국계 천재 투자자, 빌 황이 불러온 월가 최악의 오징어게임ᅵ인사이트플러스 📀📀📀영상보기📀](2026-08-25-8142389148.md) — MarketCommentary
+- [펩트론 연 매출 50억 펩트론, 무엇을 믿고 2,225억 원짜리 공장을 짓는가 📝 핵심적 본문 요약 알테오](2026-08-25-7f0e660b02.md) — MarketCommentary
+- [하반기 중간 점검: <시차는 있지만 오차는 없을 원자재 슈퍼 사이클(8/12)> (대신증권 원자재 최진영)](2026-08-25-7de5ab0e96.md) — MarketCommentary
+- [2026.](2026-08-25-7ddbd437bb.md) — MarketCommentary
+- [📈 요즘 많이 보는 리포트 TOP 10 2026-08-25 10:00 기준 🏆.](2026-08-25-7be65bba31.md) — MarketCommentary
+- [❤️ 고려아연 +5% 상승 중 (2026년8월25일) 국내증시 비철금속 대장주!](2026-08-25-7a855663b0.md) — MarketCommentary
+- [키옥시아, 오전장 막판 양전하며 50,970엔 기록 ## 출처 - 원문(https://t.](2026-08-25-7949d9ba83.md) — MarketCommentary
+- [이수페타시스(26.](2026-08-25-770f25beb6.md) — MarketCommentary
+- [Lambda, 최대 30억 달러 조달 추진, ’27년 IPO 가능성 : 엔비디아가 투자한 AI 클라우드 업체 Lambda가 최](2026-08-25-763403d00f.md) — MarketCommentary
+- [📈 요즘 많이 보는 리포트 TOP 10 2026-08-25 12:00 기준 🏆.](2026-08-25-73b8522183.md) — MarketCommentary
+- [생각들(시장) 📝 핵심적 본문 요약 증시는 장초 약세를 보였으나 미 재무장관의 시장 개입 가능성으로 급반등했다.](2026-08-25-713103b0e7.md) — MarketCommentary
+- [금융 AX 성과 격차의 출발점, AI 거버넌스 2026-08-25 출처: Deloitte 📜본문보기📜 ## 출처 - 원문(ht](2026-08-25-6f840f8f90.md) — MarketCommentary
+- [HBM도, 파운드리도 가격 오른다.](2026-08-25-6cc4b4fd16.md) — MarketCommentary
+- [웨스팅하우스 사세요~~ 미국 정부가 한국에 종합 원자력 기업인 웨스팅하우스(WEC) 지분 인수를 제안한 것으로 파악됐다.](2026-08-25-6c7d7d80b7.md) — MarketCommentary
+- ['금값' 다시 불 붙었다.](2026-08-25-6c38b2a648.md) — MarketCommentary
+- [실리콘투 자문자답 투자 시나리오 📝 핵심적 본문 요약 화장품 섹터가 시장 불안 속 실적주로 부각되며 상승세를 보이고 있다.](2026-08-25-6bc0a6c652.md) — MarketCommentary
+- [주식투자 공부의 한계, 발상의 전환이 필요했습니다 (ft.](2026-08-25-6ad1ef3efb.md) — MarketCommentary
+- [글로벌 주요국 아마존 B&P Top 100 브랜드별 SKU 수 1위 메디큐브 6위 바이오던스 12위 셀리맥](2026-08-25-6ac12519f7.md) — MarketCommentary
+- [석학들의 마켓 (인)사이트 pinned «단기예보 기상청 통보문 2026년 08월 25일 (화)요일 17](2026-08-25-6910f2a9ad.md) — MarketCommentary
+- [버크셔 해서웨이의 알파벳 매수 (Feat.](2026-08-25-6846b5112b.md) — MarketCommentary
+- [은행 분석보고서Analysis Report 글로벌 은행산업의 AI-내재화(AI-native) 현황 및 평가](2026-08-25-678606e0e6.md) — MarketCommentary
+- [하반기 중간 점검: <시차는 있지만 오차는 없을 원자재 슈퍼 사이클(8/12)> (대신증권 원자재 최진영)](2026-08-25-64870af1ae.md) — MarketCommentary
+- [📈 요즘 많이 보는 리포트 TOP 10 2026-08-25 18:00 기준 🏆.](2026-08-25-64385cf87c.md) — MarketCommentary
+- [마켓레이더(8월 25일, 오전) 『순환매는 지속 중』 시황 강진혁 ☎02-3772-2329 KOSPI는 1.](2026-08-25-632f59d107.md) — MarketCommentary
+- [삼성선물 천연가스 슈퍼 엘니뇨 바로 다음 겨울은?](2026-08-25-6227a82988.md) — MarketCommentary
+- [IRTV 인제니아테라퓨틱스 코스닥 상장식 📀📀📀영상보기📀📀📀 ## 출처 - 원문(https://t.](2026-08-25-61268ce090.md) — MarketCommentary
+- [머스크 “AI 데이터센터 우주로”.](2026-08-25-5d24cbef2c.md) — MarketCommentary
+- [보잉 시애틀 노조, 계약안 부결.](2026-08-25-59fa8a3348.md) — MarketCommentary
+- [유안타증권 - Yuantakorea NC : 하반기에도 이어질 성장 흐름 - 최지운 연구원 📀📀📀영상보기📀📀📀 ## 출처 - ](2026-08-25-59d1112162.md) — MarketCommentary
+- [(코스닥)펩트론 - 투자판단관련주요경영사항(임상시험계획승인신청) (PT403의 제1상 임상시험계획 승인 신청) http://d](2026-08-25-58d67e3f0e.md) — MarketCommentary
+- [메리츠증권 전기전자/IT부품 양승수 ▶ 2026년 6월 일본 PCB 생산 동향 - 6월 생산액 697억엔 (+44.](2026-08-25-5881e6e7c7.md) — MarketCommentary
+- [660억 달러에서 폭락까지: 유니트리 잔치 끝에 눈물짓는 개미들 📝 핵심적 본문 요약 유니트리(Unitree](2026-08-25-4fca759b0c.md) — MarketCommentary
+- [SK하이닉스, 역대 최대 자사주 소각.](2026-08-25-4fabc48dec.md) — MarketCommentary
+- [내 주변기기를 역공학해 진짜 내 것으로 만들기 - Claude Opus 5로 주변기기 5종의 펌웨어를 역공학](2026-08-25-4c2b099ee0.md) — MarketCommentary
+- [글로벌 주요국 아마존 B&P Top 100 브랜드별 SKU 수 1위 메디큐브 6위 바이오던스 12위 셀리맥](2026-08-25-49127c85e9.md) — MarketCommentary
+- [TrendForce 메모리 가격 급등, 2027년 주요 CSP 자본지출의 68%를 DRAM과 NAND 플래](2026-08-25-476f4e6594.md) — MarketCommentary
+- [단기예보 기상청 통보문 2026년 08월 25일 (화)요일 17:00 발표 □ (종합) 당분간 무더위, 내일 수도권과 강원도,](2026-08-25-450907e744.md) — MarketCommentary
+- [PT403 식약처 임상신청 무슨 말이 필요합니까.](2026-08-25-43a62b39ab.md) — MarketCommentary
+- [디일렉 THEELEC “이익은 났는데 매출은.](2026-08-25-4224bfa190.md) — MarketCommentary
+- [뉴스 읽기는 담배 피우는 것과 같다 - 뉴스를 거의 끊은 뒤 불안과 분노가 줄고, 머릿속이 조용해졌으며 주변](2026-08-25-419bc1a86c.md) — MarketCommentary
+- [메리츠증권 전기전자/IT부품 양승수 ▶ 심텍, 신규시설투자 등 공시 - 투자구분: 신규 시설투자 - 투자목](2026-08-25-410d565e9e.md) — MarketCommentary
+- [중국 시노펙 실적 5배 급증 관련 러시아 정유공장 약 13곳 폭파 현재 러시아 정유능력 심각한 상실 때문인듯.](2026-08-25-3e92c6ac3a.md) — MarketCommentary
+- [안전마진 📝 핵심적 본문 요약 안전마진은 가격보다 시간에서 더 잘 확보된다.](2026-08-25-3de293ef58.md) — MarketCommentary
+- [에이블씨엔씨, 국내 직영점 철수 후 61개국·5만개 매장 진출 https://naver.](2026-08-25-3bfe2f12c3.md) — MarketCommentary
+- [공유 PT403 임상1상설계 쉽게 설명 #라틴카페 #redserpent 📜📜📜본문보기📜📜📜 ## 출처 - 원문(https://](2026-08-25-3b23a4b4f3.md) — MarketCommentary
+- ["하루에 최소 20억 번다" 포스코, 드디어 백색황금 '리튬'서 결실 https://naver.](2026-08-25-3a54645522.md) — MarketCommentary
+- [‘민음사 빵’ 왜 난리야?](2026-08-25-3a1fc3f6d4.md) — MarketCommentary
+- [Visualcapitalist 2030년의 150조 달러 글로벌 경제 The $150 Trillion Gl](2026-08-25-37dfd7033d.md) — MarketCommentary
+- [티보 소티오 × 매튜 버먼: AI 에이전트와 오픈AI의 미래 ■ AI 에이전트의 병목은 모델 성능에서 시스템](2026-08-25-33f57b944b.md) — MarketCommentary
+- [✅ 일간보고 : 투자의 생각 (260825) : https://naver.](2026-08-25-313099b2e1.md) — MarketCommentary
+- [투자자들은 AI가 무서운 것이 아닙니다, AI 투자금이 돌아오는 시점이 보이지 않기 때문입니다 📝 핵심적 본](2026-08-25-2f567596d3.md) — MarketCommentary
+- [좋아하는 방송영상프로그램 - 2026년 8월 #TV #온라인영상서비스 #OTT #김부장 2026-08-25](2026-08-25-2db330e954.md) — MarketCommentary
+- [가스 가격 하락이 유럽을 구원할 가능성 어제 이 글을 올리고 마지막에 이런 말씀을 드렸습니다.](2026-08-25-2d31538048.md) — MarketCommentary
+- [태린이아빠 주식투자 2026.](2026-08-25-2be17f5d66.md) — MarketCommentary
+- [베센트의 진짜 속셈: 미국채 CTA 공매도 압박.](2026-08-25-2acdd6592b.md) — MarketCommentary
+- [📈 요즘 많이 보는 리포트 TOP 10 2026-08-25 16:00 기준 🏆.](2026-08-25-2ac6540a18.md) — MarketCommentary
+- [재미없는 남자 성실한 사람들은 따분한 삶을 산다.](2026-08-25-26b691024b.md) — MarketCommentary
+- [유틸리티 업 웨스팅하우스 지분 투자 제안은 원전 스토리의 실마리 대신증권 허민호 #허민호 #두산에너빌리티](2026-08-25-23b3c386c1.md) — MarketCommentary
+- [삼성전자 자사주 매매 현황 - 금일(8/25) 삼성전자의 자사주 매매 체결내역입니다.](2026-08-25-22256121df.md) — MarketCommentary
+- [📈 요즘 많이 보는 리포트 TOP 10 2026-08-25 22:00 기준 🏆.](2026-08-25-2082e69290.md) — MarketCommentary
+- [태린이아빠 주식투자 2026.](2026-08-25-1f7daf9bb7.md) — MarketCommentary
+- [한국 F-15K는 미국서, 일본 F-15J는 자국서.](2026-08-25-1ef7ba4496.md) — MarketCommentary
+- [오픈AI, Plus 계정 ChatGPT Work·Codex에 5시간 사용 제한 재도입 내일부터 ChatGPT](2026-08-25-1c742e1daf.md) — MarketCommentary
+- [미국은 채권시장의 경고음을 끄고 있다 (Druckenmiller) source 1.](2026-08-25-1b2a07b0ec.md) — MarketCommentary
+- [톰 리 "2026년 주도주는 AI 인프라"  글로벌 IB리포트  https://naver.](2026-08-25-1b199c4232.md) — MarketCommentary
+- [삼성 ‘연산’ SK ‘패키징’.](2026-08-25-19f14bd2d8.md) — MarketCommentary
+- [우선 크게 지지 않는 것.](2026-08-25-17a12bb7bf.md) — MarketCommentary
+- [2030년에도 메모리는 부족할까?](2026-08-25-175a8c8897.md) — MarketCommentary
+- ["플랜 C" 홍콩 상장 나선 쉬인, 초저가 패스트패션 뒤에 숨은 5가지 위험 📝 핵심적 본문 요약 세계 최대 패스트패션 기업 ](2026-08-25-16ead8f59b.md) — MarketCommentary
+- [유가, 금리 하락 중 ## 출처 - 원문(https://t.](2026-08-25-15094f0b65.md) — MarketCommentary
+- [전기차 다음은 AI 인프라 선점 경쟁 데이터센터가 귀해지는 시기.](2026-08-25-14dea43cb9.md) — MarketCommentary
+- [박홍기 작가 TV 삶 테크 앞으로 5년 돈 버는 법 4050 반도체 직군이 뜬다 📀📀📀영상보기📀📀📀 ## 출처 - 원문(htt](2026-08-25-13806e7d35.md) — MarketCommentary
+- [하반기 중간 점검: <시차는 있지만 오차는 없을 원자재 슈퍼 사이클(8/12)> (대신증권 원자재 최진영)](2026-08-25-1284755d75.md) — MarketCommentary
+- [2022년 하락 vs 2026년 여름 하락 📝 핵심적 본문 요약 2026년 8월, 미국 장기 국채 금리 상승](2026-08-25-11507929c8.md) — MarketCommentary
+- [‘사우디 전력청→넥스트에라 에너지’.](2026-08-25-10f9d2e2a6.md) — MarketCommentary
+- [“AI가 전기 먹는다”.](2026-08-25-101c0b03ad.md) — MarketCommentary
+- [한미약품 UCN2 파이프라인 이후 목표가 상향!](2026-08-25-101698a7ff.md) — MarketCommentary
+- [단기예보 기상청 통보문 2026년 08월 25일 (화)요일 11:00 발표 □ (종합) 당분간 무더위, 오늘과 내일 수도권과 ](2026-08-25-0f9948f4bf.md) — MarketCommentary
+- [🤔 https://news.](2026-08-25-0e934e723b.md) — MarketCommentary
+- [PT403 임상시험 1상 쉬운 설명 https://m.](2026-08-25-0e0fea9224.md) — MarketCommentary
+- [K-뷰티 고용도 '세대교체'.](2026-08-25-0a965b03d0.md) — MarketCommentary
+- [오픈AI, GPT-5.](2026-08-25-0a3bd300e6.md) — MarketCommentary
+- [우크라이나-러시아 전쟁과 현대전 - 전략, 전술, 그리고 기술(Written By 미카엘 바이스만 & 니클라](2026-08-25-097b9681e2.md) — MarketCommentary
+- [PT403국내 IND승인 의미 1)( 추후 공지 나올듯) 스마트데포 개량신약의 인정 : FDA pre ind](2026-08-25-061b6086e3.md) — MarketCommentary
+- [유안타증권 - Yuantakorea 미 장기 국채금리 4.](2026-08-25-050d449814.md) — MarketCommentary
+- [📝.](2026-08-25-03127d4d51.md) — MarketCommentary
+- [📍 Daily Comments 전일 미 증시는 베센트의 추가 발언으로 장기채금리가 급락했음에도 불구하고 지난 주에 이어 테크 ](2026-08-25-02cede5a56.md) — MarketCommentary
+- [요격 드론, 드론 위협에 대응할 해법인가?](2026-08-25-00aca4a63a.md) — MarketCommentary
+- [8/24 원유 시장 요약 미래에셋증권 이진호 WTI $85.](2026-08-24-fe3000e62b.md) — MarketCommentary
+- [美 장기 국채금리 상승세에 베선트 속수무책.](2026-08-24-fdf9e54f26.md) — MarketCommentary
+- [하나증권 제약/바이오 김선아 한미약품(128940.](2026-08-24-fd9569af7e.md) — MarketCommentary
+- [📝.](2026-08-24-fbb3f38a09.md) — MarketCommentary
+- [젤렌스키 "전시 선거 불가.](2026-08-24-facb0430a5.md) — MarketCommentary
+- [K-뷰티 유통 플랫폼의 진화: 채널에서 생태계로 2026-08-24 출처: PwC 📜본문보기📜 ## 출처 - 원문(https:](2026-08-24-f65a08cb73.md) — MarketCommentary
+- [2026.](2026-08-24-f57e4b8a1a.md) — MarketCommentary
+- [SK증권 반도체 한동희, 손 건 1.](2026-08-24-f4769e8aea.md) — MarketCommentary
+- [하반기 중간 점검: <시차는 있지만 오차는 없을 원자재 슈퍼 사이클(8/12)> (대신증권 원자재 최진영)](2026-08-24-f42526a4fe.md) — MarketCommentary
+- [SK하이닉스, HBM 과열 방지에 나서다 📝 핵심적 본문 요약 SK하이닉스는 AI 칩 수요 증가에 대응하여 HBM의 발열 문제](2026-08-24-f39406e780.md) — MarketCommentary
+- [온디바이스 AI發 메모리 혁신.](2026-08-24-f319d40b5f.md) — MarketCommentary
+- [📈 요즘 많이 보는 리포트 TOP 10 2026-08-25 08:50 기준 🏆.](2026-08-24-f318891ae2.md) — MarketCommentary
+- [AI 회사채 너무 많아.](2026-08-24-f2faee0bfd.md) — MarketCommentary
+- [마켓레이더(8월 24일, 오전) 리서치본부 주식전략팀 『삼성그룹주 제외 순환매』 시황 김기백 ☎️02-3772-2649 KOS](2026-08-24-f10a334a1d.md) — MarketCommentary
+- [Section 232는 수직계열화된 업체들에 더 강한 수혜 by Solar Power World - 일반적](2026-08-24-eff154c777.md) — MarketCommentary
+- [📝.](2026-08-24-efbd5608ae.md) — MarketCommentary
+- [엔비디아도 못 꺾은 메모리 난.](2026-08-24-ef81eb777d.md) — MarketCommentary
+- [삼성전자 자사주 매매 현황 - 금일 삼성전자의 자사주 매매 체결내역입니다.](2026-08-24-e95724ea10.md) — MarketCommentary
+- [Again 2020~2022?](2026-08-24-e954fc0ec9.md) — MarketCommentary
+- [석학들의 마켓 (인)사이트 pinned «베센트가 발표할 대이란 제재는 어떤 것일까?](2026-08-24-e74f097ead.md) — MarketCommentary
+- [📈 요즘 많이 보는 리포트 TOP 10 2026-08-25 04:00 기준 🏆.](2026-08-24-e53c71819e.md) — MarketCommentary
+- [🔹Anthropic의 최고 성능 모델 ‘Fable 5’ 관련 기업 수요 부진.](2026-08-24-de4d61d0e5.md) — MarketCommentary
+- [한올바이오파마 D2T RA Period2 결과는 어떻게 될까 📝 핵심적 본문 요약 한올바이오파마의 D2T](2026-08-24-dc4ac2a359.md) — MarketCommentary
+- [https://www.](2026-08-24-dbf860d658.md) — MarketCommentary
+- [투자의 무주지(No Man’s Land): 필립 피셔가 전하는 피상적 분석이 부르는 위험 📝 핵심적 본문 요](2026-08-24-dbb77f75d5.md) — MarketCommentary
+- [📈 요즘 많이 보는 리포트 TOP 10 2026-08-24 12:00 기준 🏆.](2026-08-24-d82460d617.md) — MarketCommentary
+- [희귀본 사들여 잘라낸 뒤 스캔.](2026-08-24-d7b15af7b1.md) — MarketCommentary
+- [📈 요즘 많이 보는 리포트 TOP 10 2026-08-24 14:00 기준 🏆.](2026-08-24-d755d695bf.md) — MarketCommentary
+- [8월 18일 USDA 기후작황보고서 2026.](2026-08-24-d751dd97f8.md) — MarketCommentary
+- [펩트론 올 10월 PODD 컨퍼런스 최초 출격의 의미 📝 핵심적 본문 요약 펩트론이 오는 10월 29일부터 30일까지 열리는 ](2026-08-24-d49b3cc9f7.md) — MarketCommentary
+- [SK하이닉스 자사주 매매 현황 - 금일 SK하이닉스의 자사주 매매 체결내역입니다.](2026-08-24-d38c476b75.md) — MarketCommentary
+- [NVIDIA Vera Rubin, Blackwell 대비 와트당 처리량 30배 급증 및 Agentic AI](2026-08-24-d37b31f2da.md) — MarketCommentary
+- [한미약품 제넨텍 3.](2026-08-24-d322029fba.md) — MarketCommentary
+- [📮메리츠증권 ESG 이진아 2026.](2026-08-24-d2b537ad8e.md) — MarketCommentary
+- [칩플레이션 & 클린룸 병목 칩플레이션의 원흉이 메모리가 되면 메모리 3사 역시 부담이 될 수 밖에 없다.](2026-08-24-cfab4fc5a8.md) — MarketCommentary
+- [Micron, HBM 발열 문제 해결을 위해 하이브리드 본딩, 퓨전 본딩에 총력하고 있다 📝 핵심적 본문 요](2026-08-24-ce67ca6179.md) — MarketCommentary
+- [❤️ Dow Jones US Nonferrous Metals Index 주간차트 (2026년8월25일) 1)](2026-08-24-cdf947a686.md) — MarketCommentary
+- [티타임즈TV 3분의1 가격 ‘키미 K3', 오히려 돈 더 많이 들 수 있다 (강수진 박사) 📀📀📀영상보기📀📀📀 ## 출처 - ](2026-08-24-cdc778a18a.md) — MarketCommentary
+- ["美 장기금리 상승에 증시 20%까지 급락 가능성" https://news.](2026-08-24-ccde9fe543.md) — MarketCommentary
+- [📈 요즘 많이 보는 리포트 TOP 10 2026-08-25 02:00 기준 🏆.](2026-08-24-cc9b3cc68c.md) — MarketCommentary
+- [박홍기 작가 TV 삶 테크 8월 27일이 한국이 위험하다.](2026-08-24-cc855472c3.md) — MarketCommentary
+- [비엠티 2026년 2분기 실적 📝 핵심적 본문 요약 비엠티의 2026년 2분기 실적은 매출 486억 원, 영업이익 63억 원으](2026-08-24-c6a269ae68.md) — MarketCommentary
+- [단기예보 기상청 통보문 2026년 08월 24일 (월)요일 17:00 발표 □ (종합) 당분간 무더위, 내일과 모레 수도권과 ](2026-08-24-c4d95f6f21.md) — MarketCommentary
+- [동시에 뛴 美·日·유럽 장기금리.](2026-08-24-c18457395d.md) — MarketCommentary
+
+_외 8526건은 파일 시스템에서 직접 탐색._

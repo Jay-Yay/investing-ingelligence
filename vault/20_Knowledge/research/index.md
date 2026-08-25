@@ -1,0 +1,212 @@
+---
+type: Index
+title: research
+description: research 아래 concept 1610건의 목록
+---
+
+# research
+
+concept 1610건.
+
+- [넥스틴 시간이 필요해](2026-08-25-e5a1aeb32b.md) — ResearchNote
+- [한화엔진 삼위일체 - 신사업, 그룹내 입지, 본업](2026-08-25-d190aa3170.md) — ResearchNote
+- [한미약품 HM17321 가치 증명](2026-08-25-bb1636dcbb.md) — ResearchNote
+- [파크시스템스 외형 성장, 수익성 개선 동반될 하반기](2026-08-25-b967b7ac9b.md) — ResearchNote
+- [시프트업 캡콤 지향점을 위한 길](2026-08-25-aeb0efb06b.md) — ResearchNote
+- [한화 인적 분할: 할인율 축소를 향한 분명한 경로](2026-08-25-9bc41d5676.md) — ResearchNote
+- [한미약품 비만 Next generation: 근육 보존제 UCN-2](2026-08-25-9a56fb8057.md) — ResearchNote
+- [한미약품 초기 개발 물질을 선급금 8%, 3조원 규모로 계약](2026-08-25-8bc7b94c3c.md) — ResearchNote
+- [덕산하이메탈 MSB 확대와 자회사 개선, 이익 레벨업 본격화](2026-08-25-83f64fc508.md) — ResearchNote
+- [LG생활건강 Avon 매각 코멘트: 자신감 붙은 북미 사업](2026-08-25-8146b434bc.md) — ResearchNote
+- [한미약품 Hanmi is BACK !!](2026-08-25-7ee91d37bb.md) — ResearchNote
+- [DB손해보험 현재 주어진 조건으로는 가장 높은 매력](2026-08-25-7d99462a01.md) — ResearchNote
+- [한미약품 3개월 만에 두 번째 조 단위 계약](2026-08-25-754cad27c5.md) — ResearchNote
+- [코리아에프티 P/E 3.7배에 불과. 자기주식 취득까지 진행 중](2026-08-25-72e911d525.md) — ResearchNote
+- [이수페타시스 캐파와 믹스, 이제는 P 사이클까지](2026-08-25-6c17174199.md) — ResearchNote
+- [HD한국조선해양 무적의 손익비, 주주환원 확대의 적기](2026-08-25-6199023180.md) — ResearchNote
+- [한미약품 릴리와 노보를 잡을 무기, 로슈는 한미에서 찾다](2026-08-25-5f0b92a548.md) — ResearchNote
+- [NH투자증권 업종 투심이 부진할 때 최선의 선택지](2026-08-25-3496c03760.md) — ResearchNote
+- [현대해상 잠재적인 가능성으로는 가장 높은 매력](2026-08-25-25b908588d.md) — ResearchNote
+- [E1 실적 정상화 확인](2026-08-25-155eaa0cc6.md) — ResearchNote
+- [멀티캠퍼스 안정적인 캡티브를 기반으로 AX 성장 모멘텀 기대](2026-08-21-d40dfbdd36.md) — ResearchNote
+- [성일하이텍 2Q26 Review: 12분기 만에 영업이익 흑자 전환](2026-08-21-c888ebf42f.md) — ResearchNote
+- [세아홀딩스 나도 실적 성장주, 나도 주주환원에 진심!](2026-08-21-bfcea82e9f.md) — ResearchNote
+- [SK 아직 시작도 안했다](2026-08-21-b106437b8f.md) — ResearchNote
+- [원익머트리얼즈 하반기 수익성 회복 여력 충분](2026-08-21-a0721fe4fc.md) — ResearchNote
+- [에이디테크놀로지 높아진 기대, 가이던스 유지](2026-08-21-9973087b03.md) — ResearchNote
+- [씨엠티엑스 2Q26P Review: 11분기 연속 매출 성장세 지속](2026-08-21-96961a95da.md) — ResearchNote
+- [케이엠더블유 2027년도 이익 급증에 의심을 가질 필요 없어](2026-08-21-9108c7bb5f.md) — ResearchNote
+- [Demond Martin on Purpose, Community, and Giving What You Have](2026-08-21-75523e9479.md) — ResearchNote `stub`
+- [슈프리마 떨어지지 않는 성장 요인](2026-08-21-57e0080716.md) — ResearchNote
+- [인텍플러스 실적보다 수주!](2026-08-21-5615957e4e.md) — ResearchNote
+- [Global AI Investment Is Forecast to Exceed $1 Trillion in 2026](2026-08-21-4f4390fcc0.md) — ResearchNote `stub`
+- [NHN KCP NDR 후기: PG를 넘어 AI 결제 인프라로](2026-08-21-43ec5fccc1.md) — ResearchNote
+- [LG 엔비디아가 LG를 고른 이유](2026-08-21-40a0acc1c1.md) — ResearchNote
+- [Steven Tananbaum: The Evolution of Credit Investing and AI Opportuniti](2026-08-21-2f6d5a5036.md) — ResearchNote `stub`
+- [에스폴리텍 30년 이상 압출 기술로 보안·항공·친환경을 잇는 스페셜티 엔지니어링 플라스틱 전문기업](2026-08-21-1f1c3a709c.md) — ResearchNote
+- [KCC 특별배당금 신설로 시가배당률 2.5~4%p 상향 가능](2026-08-21-1ae1d97765.md) — ResearchNote
+- [한국단자 숫자는 나빴고, 이유는 알았다](2026-08-21-197ba48e26.md) — ResearchNote
+- [신성이엔지 NDR 후기 하반기 실적개선 기대 요인](2026-08-21-0c0be1fded.md) — ResearchNote
+- [이마트 본업 개선 불구, 자회사 불확실성이 아쉬운…](2026-08-20-e93c2b7ebb.md) — ResearchNote
+- [롯데렌탈 아직 끝나지 않았다?](2026-08-20-c6d36d0ae0.md) — ResearchNote
+- [KCC 삼성물산 특별배당 연계, 주주환원 정책 강화](2026-08-20-82706ebbea.md) — ResearchNote
+- [SK하이닉스 40조원은 시작, 대규모 자사주 매입 및 소각 기대](2026-08-20-35757a7ccc.md) — ResearchNote
+- [LS 내러티브가 실적으로 증명되기 시작!](2026-08-19-fea38d15e6.md) — ResearchNote
+- [올릭스 메마른 바이오 시장의 OASIS](2026-08-19-fb01cea517.md) — ResearchNote
+- [인탑스 케이스를 넘어 로봇을 조립하다](2026-08-19-f8d6c64a53.md) — ResearchNote
+- [한세실업 2분기 예상 밖 서프라이즈](2026-08-19-f5753be976.md) — ResearchNote
+- [유한양행 성장의 뿌리는 단단해지고 있다](2026-08-19-f25370515b.md) — ResearchNote
+- [명신산업 실적은 반등, 밸류에이션은 지배구조에 할인](2026-08-19-eeb5076b5f.md) — ResearchNote
+- [태웅 하반기 믹스 개선 확인 필요](2026-08-19-e2ed9dbb6c.md) — ResearchNote
+- [에코프로 2차전지 글로벌 밸류체인을 구축한 사업지주회사](2026-08-19-d8e3a3afa4.md) — ResearchNote
+- [와이씨 내년이 더 기대되는 이유](2026-08-19-cfe48b72d3.md) — ResearchNote
+- [인텔리안테크 해상·지상용 안테나 모두 견조한 성장세](2026-08-19-ca8b49fabd.md) — ResearchNote
+- [테스 양호한 실적과 든든한 수주잔고](2026-08-19-c7488b9b90.md) — ResearchNote
+- [상신이디피 BESS와 데이터센터용 BBU 수요 확대발 성장](2026-08-19-c73da5409b.md) — ResearchNote
+- [How Do Geopolitical Alliances Affect Economic Growth?](2026-08-19-c355593eff.md) — ResearchNote `stub`
+- [에코프로 2차전지 글로벌 밸류체인을 구축한 사업지주회사](2026-08-19-beac24895a.md) — ResearchNote
+- [SAMG엔터 상반기에 씨 뿌렸으니 하반기에 수확하자](2026-08-19-bda017994b.md) — ResearchNote
+- [Arun Gupta on Bringing Silicon Valley’s Spirit to Public Service](2026-08-19-b66c4a1cf6.md) — ResearchNote `stub`
+- [실리콘투 3천억원 유상증자 코멘트](2026-08-19-a8bc7a5f48.md) — ResearchNote
+- [비에이치아이 성장 가시성에 수익성까지](2026-08-19-a675343a47.md) — ResearchNote
+- [티앤엘 관세 환급 없는데도 마진 상승](2026-08-19-99bb1e2279.md) — ResearchNote
+- [토모큐브 오랜 긴 꿈을 향하여](2026-08-19-94427f4af8.md) — ResearchNote
+- [CJ 가치의 무게중심, 올리브영으로 한 걸음 더](2026-08-19-8dd12915af.md) — ResearchNote
+- [인탑스 케이스를 넘어 로봇을 조립하다](2026-08-19-81ec19fdab.md) — ResearchNote
+- [이수페타시스 Capa 확대, 판가 인상과 믹스 개선의 콜라보](2026-08-19-77c3626fcd.md) — ResearchNote
+- [SJG세종 2Q26 Review: 하반기 신차 출시 확대 수혜 기대](2026-08-19-72698c68a3.md) — ResearchNote
+- [이수페타시스 디레이팅 요소 해소, 다시 펴는 날개](2026-08-19-6ef39db390.md) — ResearchNote
+- [와이지-원 2Q 실적의 내재적 의미](2026-08-19-6eebf5c7ce.md) — ResearchNote
+- [영원무역 하반기 호실적, 매력적인 valuation, 높은 배당수익률 3박자](2026-08-19-6ea7e79ef7.md) — ResearchNote
+- [저스템 2Q26 Review: 27년 영익 10배 성장, 27F P/E 7배](2026-08-19-6bc123ebd5.md) — ResearchNote
+- [이수페타시스 디레이팅 요소 해소, 다시 펴는 날개](2026-08-19-617c84868f.md) — ResearchNote
+- [DB손해보험 추세적으로 하락하는 손해율과 기대되는 새로운 밸류업](2026-08-19-560fa84482.md) — ResearchNote
+- [LS 자회사 이익 체력의 구조적 상승](2026-08-19-5543c155dd.md) — ResearchNote
+- [세방전지 ESS 사업 진출로 체급 업그레이드](2026-08-19-5293582973.md) — ResearchNote
+- [현대해상 놀라운 변화!](2026-08-19-4ed3bfa3ae.md) — ResearchNote
+- [태웅 하반기 믹스 개선 확인 필요](2026-08-19-458210d3e7.md) — ResearchNote
+- [올릭스 메마른 바이오 시장의 OASIS](2026-08-19-3e46fc4a46.md) — ResearchNote
+- [대한제강 업황은 바닥을 확인했으나](2026-08-19-3e4603e2e6.md) — ResearchNote
+- [CJ 가치의 무게중심, 올리브영으로 한 걸음 더](2026-08-19-2c0092bb5b.md) — ResearchNote
+- [세방전지 ESS 사업 진출로 체급 업그레이드](2026-08-19-2ad2f85b00.md) — ResearchNote
+- [토모큐브 오랜 긴 꿈을 향하여](2026-08-19-27e454f25e.md) — ResearchNote
+- [신흥에스이씨 데이터센터용 BBU가 이익 증가 주원인](2026-08-19-20dc680d49.md) — ResearchNote
+- [LS 확산되는 이익 모멘텀](2026-08-19-1cf97217b1.md) — ResearchNote
+- [The Mine-to-Magnet Strategy Is Spurring M&A in Rare Earths](2026-08-19-1c794f418d.md) — ResearchNote `stub`
+- [유한양행 성장의 뿌리는 단단해지고 있다](2026-08-19-1b3c1b8dba.md) — ResearchNote
+- [인텔리안테크 빠질만큼 빠졌다](2026-08-19-14db405e6f.md) — ResearchNote
+- [대성하이텍 온탕과 냉탕, 다음은 온탕이다!](2026-08-19-1108bb3ab4.md) — ResearchNote
+- [How AI Debt Is Reshaping Credit Markets](2026-08-19-0c87dd7d02.md) — ResearchNote `stub`
+- [한스바이오메드 외형 성장 지속, 수익성은 재정비 국면](2026-08-18-fb66c9ed92.md) — ResearchNote
+- [삼양식품 예상대로 순항 중](2026-08-18-f07391307d.md) — ResearchNote
+- [미스토홀딩스 2Q26 Review: 원래 효자+돌아온 효자](2026-08-18-ee2bc804bc.md) — ResearchNote
+- [실리콘투 실적으로 증명한 성장성](2026-08-18-e03c9a13ef.md) — ResearchNote
+- [코오롱인더 다시 10만원에 도전할 것이다!](2026-08-18-df39ccad86.md) — ResearchNote
+- [제닉 일회성 인기가 아니다!](2026-08-18-d166eff4ed.md) — ResearchNote
+- [후성 본업에 의한 어닝스 서프라이즈 첫 시현](2026-08-18-cbbfec1a4c.md) — ResearchNote
+- [서진시스템 조금씩, 그러나 확실히 나아지고 있다](2026-08-18-c2a54677eb.md) — ResearchNote
+- [파마리서치 아시아 견문록: 다각화의 힘은 더 강해질 것](2026-08-18-b4e57ab1ef.md) — ResearchNote
+- [씨어스 밸류에이션 리레이팅 테스트가 시작된다](2026-08-18-a7e2112b74.md) — ResearchNote
+- [농심 해외 성장의 질이 달라졌다](2026-08-18-a1ec9a4cff.md) — ResearchNote
+- [티엘비 공급자 우위 업황은 수주잔고로 갈음합니다](2026-08-18-861cf64de2.md) — ResearchNote
+- [현대해상 긴 터널의 끝](2026-08-18-825889e1a3.md) — ResearchNote
+- [코윈테크 2Q26 Review: 로봇 부문 비즈니스 비중 확대 중](2026-08-18-6db3c5ade9.md) — ResearchNote
+- [기가비스 예상보다 가파르게 증가하는 수주잔고](2026-08-18-686d8b1878.md) — ResearchNote
+- [시프트업 멀티 IP 기반 레벨업](2026-08-18-46a22a0329.md) — ResearchNote
+- [아이티센엔텍 2Q26 Review: PER 2.1배, 절대적 저평가주](2026-08-18-449e6e2a94.md) — ResearchNote
+- [현대해상 미운 오리새끼는 백조가 될 수 있는가](2026-08-18-440f86cc7a.md) — ResearchNote
+- [농심 辛 브랜드의 확장](2026-08-18-3a38fdc075.md) — ResearchNote
+- [LS에코에너지 탈중국화 공급망 수혜 ⇒ 희토류 금속사업 성장성 가속화](2026-08-18-2fbc8e2811.md) — ResearchNote
+- [웹케시 2Q26 Review: 금융 AI 사업의 매출 본격화 기대](2026-08-18-28dafda608.md) — ResearchNote
+- [삼양식품 더 이상 할인할 이유가 없다](2026-08-18-25b6987341.md) — ResearchNote
+- [농심 해외가 답했다, 실적 성장 재개](2026-08-18-21392a89ba.md) — ResearchNote
+- [비에이치아이 어닝 서프라이즈, 하반기도 순항](2026-08-18-11e63bbeb5.md) — ResearchNote
+- [휴메딕스 리투오 성장 및 필러 회복으로 사상 최대 실적 가시화](2026-08-18-0e8e5aee2a.md) — ResearchNote
+- [하이비젼시스템 2Q26 Review: 하반기 인도공장 가동 확대 기대](2026-08-18-0e200c5148.md) — ResearchNote
+- [SFA 완전 무인화를 선도하는 AI 자율제조 로보틱스 기업](2026-08-18-0d03ca54c9.md) — ResearchNote
+- [삼양식품 Special One](2026-08-18-0aef98e28e.md) — ResearchNote
+- [클래시스 실적 컨센서스 하회, 가이던스 하향 조정](2026-08-18-09a5080e42.md) — ResearchNote
+- [AJ네트웍스 2Q26 Review: 로봇 사업의 본격적인 시장 확대 중](2026-08-18-053abb3a88.md) — ResearchNote
+- [크라우드웍스 AI 데이터 구축 역량 기반 사업영역을 확장하는 통합 AI 데이터 파운드리 기업](2026-08-14-f664169f1f.md) — ResearchNote
+- [이마트 2Q26 Review: 본업 개선세 확인, 중장기 방향성은 유효](2026-08-14-f03172c6e0.md) — ResearchNote
+- [삼성화재 2Q26 Review: 보험손익 및 투자손익 개선세 유지](2026-08-14-ef8604a4fa.md) — ResearchNote
+- [삼성화재 전자가 채워줄 곳간](2026-08-14-ef8374901a.md) — ResearchNote
+- [한국공항 저평가 업체의 실적 개선세와 추가 모멘텀 주목](2026-08-14-ef3a8a6c16.md) — ResearchNote
+- [클래시스 브라질 정상화가 관건](2026-08-14-ecef0846d9.md) — ResearchNote
+- [달바글로벌 북미와 유럽이 견인한 실적](2026-08-14-ec77240d3a.md) — ResearchNote
+- [태광 쉬어간 실적, 다시 차오르는 수주](2026-08-14-eb514f2f98.md) — ResearchNote
+- [HMM 운임 상승과 비용 증가의 줄다리기](2026-08-14-e9a16022d7.md) — ResearchNote
+- [달바글로벌 역대급 실적, 그런데…?](2026-08-14-e5c1af1f8c.md) — ResearchNote
+- [삼성생명 2Q26 Review: 견조한 이익을 바탕으로 한 배당 기대](2026-08-14-d96039cd9b.md) — ResearchNote
+- [삼성SDI 중국 점유율을 뺏어오기 시작할 것](2026-08-14-d75d64470f.md) — ResearchNote
+- [삼익제약 재도약(Re)으로 더 높이 비상(Leap)하는 3대 만성질환·CMO 전문 헬스케어 기업](2026-08-14-d22604839a.md) — ResearchNote
+- [DB손해보험 2Q26 Review: 눈에 띄는 보험손익 개선, 기대되는 배당](2026-08-14-d1e505e713.md) — ResearchNote
+- [삼성화재 2Q26 Re - 하반기에도 이어질 배당 모멘텀](2026-08-14-ccda6ba312.md) — ResearchNote
+- [현대해상 손에 잡힐 것도 같은 배당](2026-08-14-bd19bfabc4.md) — ResearchNote
+- [한국금융지주 KDB생명 인수 우선협상대상자 선정](2026-08-14-aa30e5ad12.md) — ResearchNote
+- [이마트 본업 반등 본격화에 위안](2026-08-14-a877e05625.md) — ResearchNote
+- [이마트 2Q26 Review : 아쉬움은 뒤로하고, 내일을 볼 때](2026-08-14-a7784d69df.md) — ResearchNote
+- [테스 신규 수주 급증](2026-08-14-a43de5509a.md) — ResearchNote
+- [JYP Ent. 저연차 IP의 수익화 역량 증명 필요](2026-08-14-a2828b2dc6.md) — ResearchNote
+- [하이트진로 비용 절감은 우수, 판매량 회복은 과제](2026-08-14-a212474798.md) — ResearchNote
+- [삼성생명 사업가치 감소로 목표주가 하향](2026-08-14-a0a3a10836.md) — ResearchNote
+- [타조이엔터테인먼트 K-POP 공연기획 역량 기반의 숏폼 콘텐츠 사업을 확대하며 종합 엔터테인먼트사로 도약](2026-08-14-96312c914b.md) — ResearchNote
+- [HMM 운임 상승으로 3Q 이익 증가 예상](2026-08-14-923122d7ad.md) — ResearchNote
+- [롯데관광개발 실적도 주가도 올라갈 일만 남았다](2026-08-14-9060bfa887.md) — ResearchNote
+- [삼성생명 2Q26 Re - 2027년 DPS를 바라보며](2026-08-14-8778beac5c.md) — ResearchNote
+- [금강공업 강관에서 모듈러까지, 건설·산업 소재의 전 과정을 아우르는 종합 소재·솔루션 메이커](2026-08-14-813a5b621a.md) — ResearchNote
+- [SK하이닉스 단번에 풀려가는 매듭들](2026-08-14-80c2e3e95b.md) — ResearchNote
+- [NAVER 프런티어 업체와 제휴 필요](2026-08-14-7ddc88c716.md) — ResearchNote
+- [LG 제도로 뒷받침될 매력](2026-08-14-7bab2299b8.md) — ResearchNote
+- [현대건설 2Q26 NDR 후기: 서명은 늦어졌지만 판이 커졌다](2026-08-14-72f3887fe8.md) — ResearchNote
+- [실리콘투 사상 최대 실적 기록](2026-08-14-7176e6f829.md) — ResearchNote
+- [메리츠금융지주 화재가 견인한 2분기 서프](2026-08-14-6c97b7102c.md) — ResearchNote
+- [HMM 난리통 속 공존하는 위기와 기회](2026-08-14-67605ff090.md) — ResearchNote
+- [넥센타이어 저평가의 이유는 줄고, 재평가의 조건은 쌓인다](2026-08-14-66aa87b854.md) — ResearchNote
+- [아이에스동서 아쉬운 지식산업센터, 긍정적인 콘크리트](2026-08-14-5f66e218dc.md) — ResearchNote
+- [덴티움 2차 VBP 개시 카운트 다운 시작](2026-08-14-5f311d08b5.md) — ResearchNote
+- [제닉 매 분기 최고치 경신 중](2026-08-14-59ee73303e.md) — ResearchNote
+- [실리콘투 새로운 성장 단계로 진입](2026-08-14-57e92e7b09.md) — ResearchNote
+- [롯데관광개발 과도했던 우려가 만든 역사적 저평가 구간](2026-08-14-4055fce00e.md) — ResearchNote
+- [삼성생명 입금은 확정인데 출금은 아직 미확정](2026-08-14-3df28e53ce.md) — ResearchNote
+- [달바글로벌 높아졌던 시장 눈높이](2026-08-14-3af2874ad1.md) — ResearchNote
+- [HMM 2Q26 Re: 글로벌 정세가 불안정하면 물류는 돈을 번다](2026-08-14-31a0fe687d.md) — ResearchNote
+- [삼성전자 사방에서 울리는 낭보들](2026-08-14-30b0192392.md) — ResearchNote
+- [LG 전자계열사 실적 개선. 로봇사업 기대도 여전히 진행형](2026-08-14-2f39284b61.md) — ResearchNote
+- [현대리바트 2Q26 NDR 후기: 외형 성장 필요](2026-08-14-2e5c976b47.md) — ResearchNote
+- [이마트 실적 불확실성이 너무 크다](2026-08-14-2be04327d3.md) — ResearchNote
+- [SK이터닉스 실적 리미트 해제 가능성](2026-08-14-11d1de2639.md) — ResearchNote
+- [달바글로벌 중화권 진출, 브랜드 확장 전략 긍정적](2026-08-14-0f12fab7cd.md) — ResearchNote
+- [DB손해보험 대규모 환입이 만든 어닝 서프라이즈](2026-08-14-0803c31e07.md) — ResearchNote
+- [SK오션플랜트 하반기 매출 감소 예상. 다만 전방 시장은 확대 중](2026-08-13-ef3cdf6af4.md) — ResearchNote
+- [한화생명 2Q26Review: 본업 경쟁력 강화 속, 사업 포트폴리오 다각화 기대](2026-08-13-e1d4608718.md) — ResearchNote
+- [한국전력 특이사항 없이 부진했던 실적](2026-08-13-b43ff10422.md) — ResearchNote
+- [한화손해보험 2Q26 Re - 계리가정 반영에도 견조한 CSM](2026-08-13-ae5374963a.md) — ResearchNote
+- [클래시스 2Q26 Review; 잠시 숨고르기](2026-08-13-a95c7b36d3.md) — ResearchNote
+- [SK오션플랜트 당분간 가시밭길](2026-08-13-a12f89b7ff.md) — ResearchNote
+- [한국콜마 선케어 글로벌 1위를 향해!](2026-08-13-9cc96fcc2d.md) — ResearchNote
+- [GC메디아이 Medical OS를 통한 플랫폼 기업으로의 도약](2026-08-13-99a67fcc36.md) — ResearchNote
+- [한국콜마 하반기는 더 크다](2026-08-13-934b4241ec.md) — ResearchNote
+- [한화손해보험 2Q26 Review: 2026년에도 여성 특화 보험은 성장 지속 중](2026-08-13-8076ec1aca.md) — ResearchNote
+- [LG전자 시황을 사는 주식에서 수주를 사는 주식으로](2026-08-13-705d6c2857.md) — ResearchNote
+- [저스템 압도적 실적 성장 지속될 것](2026-08-13-6ff2aebe86.md) — ResearchNote
+- [JYP Ent. 남들은 다 겪었던 시간이 뒤늦게 다가오고 있다](2026-08-13-6d926852ab.md) — ResearchNote
+- [JYP Ent. 2Q26 Review: 하반기 실적 모멘텀 유효](2026-08-13-6d463ea273.md) — ResearchNote
+- [한국전력 원전의 빈자리가 느껴진 2Q26](2026-08-13-583c19b14d.md) — ResearchNote
+- [미래에셋증권 2Q26 Review: 역대급 실적. 하반기 변동성 관리가 필요](2026-08-13-51cdc94ea6.md) — ResearchNote
+- [JYP Ent. 2Q26 시장 컨센서스 하회](2026-08-13-4e444b9014.md) — ResearchNote
+- [ISC AI 수요 확대와 함께 성장의 축도 넓어진다](2026-08-13-454e98b03e.md) — ResearchNote
+- [한국전력 어려운 하반기를 앞두고 예상 밖의 부진](2026-08-13-4420c592c4.md) — ResearchNote
+- [KT AI 요금제 시도 긍정적, 이제 장기 매수는 괜찮습니다](2026-08-13-3f1873aee5.md) — ResearchNote
+- [더블유게임즈 환율 대비 아쉬운 실적](2026-08-13-39caab4170.md) — ResearchNote
+- [클래시스 가이던스 하향 조정과 함께 먼 길 가는 중](2026-08-13-37e5d2e389.md) — ResearchNote
+- [한화생명 2Q26 Re - 가려진 성장에 주목할 때](2026-08-13-2ffa7e66a6.md) — ResearchNote
+- [한미약품 비만 파이프라인 성과와 MSD의 반전을 기다리며](2026-08-13-18bee136fe.md) — ResearchNote
+- [한국콜마 3Q26은 더 좋대요!](2026-08-13-13d2afc895.md) — ResearchNote
+- [미래에셋증권 2026년 2분기 컨퍼런스 콜 요약](2026-08-13-135a7850d5.md) — ResearchNote
+- [SK오션플랜트 2Q26 Review: 골짜기 앞에서 확인한 수주 체력](2026-08-13-0bbb02ab52.md) — ResearchNote
+- [미래에셋증권 2Q26 Review: 2026년 수익구조 고도화의 시작](2026-08-13-0b882ac384.md) — ResearchNote
+- [펄어비스 채널 믹스와 성과급으로 실적 부진](2026-08-13-06bfa033b9.md) — ResearchNote
+- [JYP Ent. 트와이스 불확실성 반영, 관건은 저연차 IP](2026-08-13-02c0b3c488.md) — ResearchNote
+
+_외 1410건은 파일 시스템에서 직접 탐색._
