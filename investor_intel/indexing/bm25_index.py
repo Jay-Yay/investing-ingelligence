@@ -23,12 +23,29 @@ CREATE TABLE IF NOT EXISTS chunk_meta (
     capture_mode   TEXT,
     heading_path   TEXT,
     kind           TEXT,
+    okf_type       TEXT,
+    entity_key     TEXT,
+    period_year    TEXT,
+    pub_year       TEXT,
+    okf_status     TEXT,
     n_chars        INTEGER NOT NULL,
     raw_text       TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_chunk_doc ON chunk_meta(doc_id);
 CREATE INDEX IF NOT EXISTS idx_chunk_source ON chunk_meta(source_type, published_at);
 CREATE INDEX IF NOT EXISTS idx_chunk_capture ON chunk_meta(capture_mode);
+"""
+
+# 이미 만들어둔 옛 스키마의 인덱스 파일이 남아 있으면 CREATE TABLE IF NOT EXISTS는 컬럼을
+# 추가해주지 않는다. 새 컬럼을 참조하는 인덱스는 컬럼이 실제로 생긴 뒤에만 만들 수 있어
+# 분리해 둔다.
+_OKF_COLUMNS = {"okf_type": "TEXT", "entity_key": "TEXT", "period_year": "TEXT",
+                "pub_year": "TEXT", "okf_status": "TEXT"}
+_OKF_INDEXES = """
+-- OKF 메타데이터로 '검색 전에 후보를 좁히는' 경로. 이게 있어야 지식 레이어의
+-- entities/period가 실제로 검색에 쓰인다 - 없으면 OKF는 사람만 읽는 문서로 남는다.
+CREATE INDEX IF NOT EXISTS idx_chunk_entity ON chunk_meta(entity_key, period_year);
+CREATE INDEX IF NOT EXISTS idx_chunk_okf ON chunk_meta(okf_type, okf_status);
 """
 
 # FTS5 컬럼을 셋으로 나눈 이유: bm25()가 컬럼별 가중치를 받기 때문에, 같은 토큰이라도
@@ -51,6 +68,10 @@ class Hit:
     heading_path: str
     text: str
     capture_mode: str
+    okf_type: str = ""
+    entity_key: str = ""
+    period_year: str = ""
+    okf_status: str = ""
 
 
 @dataclass
@@ -80,6 +101,11 @@ class Bm25Index:
         self.conn = sqlite3.connect(self.db_path)
         self.conn.row_factory = sqlite3.Row
         self.conn.executescript(_SCHEMA)
+        existing = {r[1] for r in self.conn.execute("PRAGMA table_info(chunk_meta)")}
+        for col, decl in _OKF_COLUMNS.items():
+            if col not in existing:
+                self.conn.execute(f"ALTER TABLE chunk_meta ADD COLUMN {col} {decl}")
+        self.conn.executescript(_OKF_INDEXES)
         self.conn.executescript(_FTS)
 
     # --- Store -------------------------------------------------------------
@@ -95,11 +121,12 @@ class Bm25Index:
             cur.execute(
                 """INSERT INTO chunk_meta (chunk_uid, doc_id, ord, doc_path, source_type,
                    source_name, published_at, title, filing_type, capture_mode, heading_path,
-                   kind, n_chars, raw_text)
+                   kind, okf_type, entity_key, period_year, pub_year, okf_status, n_chars, raw_text)
                    VALUES (:chunk_uid,:doc_id,:ord,:doc_path,:source_type,:source_name,
                    :published_at,:title,:filing_type,:capture_mode,:heading_path,:kind,
-                   :n_chars,:raw_text)""",
-                meta,
+                   :okf_type,:entity_key,:period_year,:pub_year,:okf_status,:n_chars,:raw_text)""",
+                {"okf_type": "", "entity_key": "", "period_year": "", "pub_year": "",
+                 "okf_status": "stable", **meta},
             )
             rid = cur.lastrowid
             cur.execute(
@@ -134,6 +161,10 @@ class Bm25Index:
         source_types: Sequence[str] | None = None,
         published_after: str | None = None,
         exclude_metadata_only: bool = False,
+        entity_key: str | None = None,
+        period_year: str | None = None,
+        okf_types: Sequence[str] | None = None,
+        exclude_status: Sequence[str] | None = None,
     ) -> list[Hit]:
         match = to_fts_query(query, self.korean_ngram, self.korean_keep_word)
         if not match:
@@ -151,6 +182,22 @@ class Bm25Index:
             params.append(published_after)
         if exclude_metadata_only:
             where.append("m.capture_mode != 'metadata_only'")
+        # --- OKF 메타데이터 프리필터 ---
+        if entity_key:
+            where.append("(m.entity_key = ? OR m.entity_key LIKE ?)")
+            params.extend([entity_key, f"%|{entity_key}|%"])
+        if period_year:
+            # 질의의 '2026년'이 회계연도인지 제출연도인지는 사용자가 말해주지 않는다.
+            # 10-K는 2026년에 제출돼도 2025 회계연도를 다룬다. 한쪽만 보면 정답이 통째로
+            # 사라진다(실측: E 계열 160건 중 7건이 전부 이 이유로 소실).
+            where.append("(m.period_year = ? OR m.pub_year = ?)")
+            params.extend([period_year, period_year])
+        if okf_types:
+            where.append("m.okf_type IN (%s)" % ",".join("?" * len(okf_types)))
+            params.extend(okf_types)
+        if exclude_status:
+            where.append("m.okf_status NOT IN (%s)" % ",".join("?" * len(exclude_status)))
+            params.extend(exclude_status)
         sql = f"""
             SELECT m.*, bm25(chunk_fts, ?, ?, ?) AS score
             FROM chunk_fts JOIN chunk_meta m ON m.rowid_ref = chunk_fts.rowid
@@ -176,6 +223,7 @@ class Bm25Index:
         pool: int = 300,
         top_chunks_per_doc: int = 1,
         exclude_metadata_only: bool = False,
+        **filters,
     ) -> list[Hit]:
         """청크로 검색하되 결과는 문서 단위로 집계해 돌려준다.
 
@@ -189,7 +237,7 @@ class Bm25Index:
         '강한 매칭 하나인 짧은 문서'를 이겨서 자동 평가셋 recall@10이 0.978 -> 0.885로 떨어졌다.
         기본값을 1(=문서당 최고 청크 점수)로 두는 근거다.
         """
-        wide = self.search(query, k=pool, exclude_metadata_only=exclude_metadata_only)
+        wide = self.search(query, k=pool, exclude_metadata_only=exclude_metadata_only, **filters)
         by_doc: dict[str, list[Hit]] = {}
         for h in wide:
             by_doc.setdefault(h.doc_id, []).append(h)
@@ -200,7 +248,8 @@ class Bm25Index:
             best = hits[0]
             scored.append((doc_score, Hit(best.chunk_uid, best.doc_id, doc_score,
                                           best.source_type, best.title, best.heading_path,
-                                          best.text, best.capture_mode)))
+                                          best.text, best.capture_mode, best.okf_type,
+                                          best.entity_key, best.period_year, best.okf_status)))
         scored.sort(key=lambda x: x[0])
         return [h for _, h in scored[:k]]
 

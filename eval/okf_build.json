@@ -1,0 +1,42 @@
+{
+  "written": 5997,
+  "folders": {
+    "investors": 5,
+    "sources": 30,
+    "holdings": 198,
+    "filings/dart": 1362,
+    "essays": 1,
+    "research": 324,
+    "blog": 517,
+    "filings/sec": 396,
+    "commentary": 1990,
+    "securities": 839,
+    "companies": 335
+  },
+  "by_type": {
+    "Investor": 5,
+    "SourceChannel": 30,
+    "HoldingsSnapshot": 198,
+    "DartFiling": 1362,
+    "Essay": 1,
+    "ResearchNote": 324,
+    "BlogPost": 517,
+    "SecFiling": 396,
+    "MarketCommentary": 1990,
+    "Security": 839,
+    "Company": 335
+  },
+  "status": {
+    "stable": 4238,
+    "stub": 1534,
+    "corrupt": 211,
+    "superseded": 14
+  },
+  "mentions_recovered": 1849,
+  "analyst_houses_split": 764,
+  "docs_with_subject": 4788,
+  "duplicate_ids_skipped": 30,
+  "superseded": 14,
+  "corrupt": 211,
+  "companies": 335
+}

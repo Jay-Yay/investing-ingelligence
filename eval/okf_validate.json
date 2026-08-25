@@ -1,0 +1,26 @@
+{
+  "files": 6010,
+  "types": {
+    "MarketCommentary": 1990,
+    "DartFiling": 1362,
+    "Security": 839,
+    "BlogPost": 517,
+    "SecFiling": 396,
+    "Company": 335,
+    "ResearchNote": 324,
+    "HoldingsSnapshot": 198,
+    "SourceChannel": 30,
+    "Index": 11,
+    "Investor": 5,
+    "Essay": 1,
+    "Bundle": 1,
+    "Log": 1
+  },
+  "required_field_violations": 0,
+  "bundle_contract_missing": {},
+  "links_total": 14649,
+  "links_broken": 0,
+  "dirs_without_index": [],
+  "issues_sample": [],
+  "ok": true
+}

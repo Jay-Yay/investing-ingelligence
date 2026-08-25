@@ -1,0 +1,506 @@
+[
+  {
+    "name": "A. 메타데이터가 하나도 없던 텔레그램 리서치 메시지",
+    "query": "교보증권이 제시한 에이피알 목표주가",
+    "doc_id": "3494cb6766ad0d82",
+    "stage1_source": {
+      "path": "../vault/10_Sources/Telegram/kyobofnbcosmetic/2026/2026-07-08-3494cb6766ad0d82.md",
+      "bytes": 2445,
+      "frontmatter": "id: 3494cb6766ad0d82\nsource_type: telegram\nsource_name: kyobofnbcosmetic\nauthor: 교보 음식료/화장품 권우정\ntitle: null\nsource_url: https://t.me/kyobofnbcosmetic/2082\nsource_specific_id: '2082'\npublished_at: '2026-07-08T23:21:31Z'\ncollected_at: '2026-07-26T15:17:03.468272Z'\nupdated_at: null\nlanguage: ko\ncontent_hash: f6ec3778e0b9008523985dd039647e36de42d269c1fed67d9bc495c46a74d34d\ncontent_capture:\n  mode: full\n  reason: null\nassets: []\ncompanies: []\nthemes: []\ndocument_type: telegram_message\nfiling_type: null\nreporting_period: null\naccession_number: null\nllm_processed: false\nllm_model: null\nllm_prompt_version: null",
+      "body_head": "## 원문\n\nkyobofnbcosmetic (@kyobofnbcosmetic) — 2026-07-08T23:21:31+00:00\n\n[교보증권 음식료/화장품 권우정]\n\n에이피알\n* 벌써 매출액 7,500억원, 속도 미쳤는데요?\n\n■ 2Q26 Preview: 벌써 매출액 7,500억원, 속도 미쳤는데요?\n2분기 연결 매출액 7,521억원 (YoY 130%, QoQ 27%), 영업이익 1,843억원 (YoY 118%, QoQ 21%)으로 매우 호실적을 기록할 것으로 전망. 특히 매출액은 시장기대치를 +14% 상회할 것으로 예상되는데, 이는 미국/유럽 중심의 고성장 효과에 기인함.\n1)미국 매출액 3.2천억원 (YoY 235%, QoQ 30%) 추정. 2분기 오프라인 채널 확대에도 불구하고, 아마존/틱톡샵 온라인 채널도 견조한 흐름을 보이며 온오프라인 동반 성장. 아마존 프라임데이 행사에서도 역대 최대 매출을 기록. 최근 오프라인 리테일러들의 K-뷰티에 대한 스탠스가 적극적으로 변화해 긍정적. 특히 최근 입점한 타깃 채널은 얼타 대비 현재 셀아웃 트렌드가 견조한 것으로 파악되며, 얼타 초기 성과 대비 아웃퍼폼하며 QoQ로 빠르게 성장하며 기여할 전망임. 2분기 월마트 입점에 이어, 3분기 코스트코 입점이 추가적으로 예정되어 있어 올해 하반기도 탄탄한 매출 성장 흐름을 이어나갈 것으로 전망. 2)일본 매출액 560억원 (YoY 28%, QoQ -5%) 전망. 매출이 QoQ로 다소 둔화된 이유는 부스터프로에서 X2 버전으로 전환되는 과정에서 일부 출고 제한이 있었기 때문으로 파악됨. 또한, 큐텐 채널 자체의 GMV 감소도 일부 영향. 3)B2B 및 기타는 2,850억원 (YoY 258%, QoQ 50%)으로 매우 견조한 실적. 영국 아마존/틱톡샵과 유럽/중남미 B2B 매출이 크게 증가한 것으로 파악됨. 벤더사를 통해 현지 로컬 화장품샵 매출 증가 중인 것으로 파악됨. 4)마케팅비 및 물류비 비중은 외형 확대 및 마케팅 확대 기조로 QoQ 증가했을 것으로 추정됨. 유럽향 에어 비중은 QoQ로 플랫 수준을 유지한 것으로 파악됨. 관세 환급은 2~4분기에 걸쳐 인식될 예정임.\n\n■ 투자의견 BUY 및 목표주가 550,000원 유지\n동사의 미국 사업은 온라인에서 오프라인으로 확장되는 과정에서도 카니발라이제이션 없이 온오프라인 모두 고성장 흐름을 유지하고 있는 것으로 파악됨. 특히 최근 입점한 매스 채널은 신규 수요 창출 측면에서",
+      "body_chars": 1824
+    },
+    "stage2_okf": {
+      "path": "20_Knowledge/commentary/2026-07-08-3494cb6766.md",
+      "frontmatter": "type: MarketCommentary\ntitle: 교보증권 음식료/화장품 권우정] 에이피알 * 벌써 매출액 7,500억원, 속도 미쳤는데요?\ndescription: 텔레그램 채널 교보 음식료/화장품 권우정의 2026-07-08 메시지. 교보증권 음식료/화장품 권우정] 에이피알 * 벌써 매출액 7,500억원, 속도 미쳤는데요?\nresource: https://t.me/kyobofnbcosmetic/2082\ntags:\n- telegram\n- ch-telegram-kyobofnbcosmetic\n- ko\ntimestamp: '2026-07-08T23:21:31Z'\nstatus: stable\nlanguage: ko\ncapture: full\nperiod:\n  published: '2026-07-08'\nstale_after: '2026-10-06'\nentities:\n  subject:\n    kind: channel\n    key: ch-telegram-kyobofnbcosmetic\n    name: 교보 음식료/화장품 권우정\n  mentions:\n  - kr-278470\n  analyst_house:\n  - kr-030610\nprovenance:\n  system: telegram\n  content_hash: 3494cb6766ad0d82\n  source_path: ../vault/10_Sources/Telegram/kyobofnbcosmetic/2026/2026-07-08-3494cb6766ad0d82.md",
+      "relations": "- 발행 채널: [교보 음식료/화장품 권우정](../sources/ch-telegram-kyobofnbcosmetic.md)\n- 언급 종목: [에이피알](../companies/kr-278470.md)\n- 분석 주체: [교보증권](../companies/kr-030610.md)",
+      "description": "텔레그램 채널 교보 음식료/화장품 권우정의 2026-07-08 메시지. 교보증권 음식료/화장품 권우정] 에이피알 * 벌써 매출액 7,500억원, 속도 미쳤는데요?",
+      "status": "stable",
+      "entity_keys": [
+        "ch-telegram-kyobofnbcosmetic",
+        "kr-278470"
+      ],
+      "period_year": "2026",
+      "okf_type": "MarketCommentary"
+    },
+    "stage3_chunks": {
+      "v6_count": 4,
+      "v7_count": 3,
+      "v7_preview": [
+        {
+          "ord": 0,
+          "kind": "prose",
+          "chars": 122,
+          "head": "## 원문\nkyobofnbcosmetic (@kyobofnbcosmetic) — 2026-07-08T23:21:31+00:00\n[교보증권 음식료/화장품 권우정]\n에이피알\n* 벌써 매출액 7,500억원, 속도 미쳤는데요?"
+        },
+        {
+          "ord": 1,
+          "kind": "prose",
+          "chars": 1050,
+          "head": "원문\nkyobofnbcosmetic (@kyobofnbcosmetic) — 2026-07-08T23:21:31+00:00\n[교보증권 음식료/화장품 권우정]\n에이피알\n* 벌써 매출액 7,500억원, 속도 미쳤는데요?\n■ 2Q26 Preview: 벌써 매출액 7,500억원, 속도 미쳤는데요?\n2분기 연결 매출액 7,521억원"
+        },
+        {
+          "ord": 2,
+          "kind": "prose",
+          "chars": 636,
+          "head": "파악됨. 4)마케팅비 및 물류비 비중은 외형 확대 및 마케팅 확대 기조로 QoQ 증가했을 것으로 추정됨. 유럽향 에어 비중은 QoQ로 플랫 수준을 유지한 것으로 파악됨. 관세 환급은 2~4분기에 걸쳐 인식될 예정임.\n■ 투자의견 BUY 및 목표주가 550,000원 유지\n동사의 미국 사업은 온라인에서 오프라인으로 확장되는 "
+        }
+      ]
+    },
+    "stage4_context": {
+      "v6_header": "출처 telegram · kyobofnbcosmetic · 발행 2026-07-08 · 섹션 원문",
+      "v7_header": "텔레그램 채널 교보 음식료/화장품 권우정의 2026-07-08 메시지. 교보증권 음식료/화장품 권우정] 에이피알 * 벌써 매출액 7,500억원, 속도 미쳤는데요? [telegram ch-telegram-kyobofnbcosmetic ko]",
+      "indexed_text_head": "텔레그램 채널 교보 음식료/화장품 권우정의 2026-07-08 메시지. 교보증권 음식료/화장품 권우정] 에이피알 * 벌써 매출액 7,500억원, 속도 미쳤는데요? [telegram ch-telegram-kyobofnbcosmetic ko]\n## 원문\nkyobofnbcosmetic (@kyobofnbcosmetic) — 2026-07-08T23:21:31+00:00\n[교보증권 음식료/화장품 권우정]\n에이피알\n* 벌써 매출액 7,500억원, 속도 미쳤는데요?"
+    },
+    "stage5_tokens": {
+      "chunk_head": "## 원문\nkyobofnbcosmetic (@kyobofnbcosmetic) — 2026-07-08T23:21:31+00:00\n[교보증권 음식료/화장품 권우정]\n에이피알\n* 벌써 매출액 7,500억원, 속도 미쳤는데",
+      "word_tokens": [
+        "원문",
+        "kyobofnbcosmetic",
+        "kyobofnbcosmetic",
+        "2026-07-08t23",
+        "2026",
+        "07",
+        "08t23",
+        "21",
+        "31",
+        "00",
+        "00",
+        "교보증권",
+        "음식료",
+        "화장품",
+        "권우정",
+        "에이피알",
+        "벌써",
+        "매출액",
+        "7",
+        "500",
+        "억원",
+        "속도",
+        "미쳤는데"
+      ],
+      "ngram_tokens": [
+        "원문",
+        "kyobofnbcosmetic",
+        "kyobofnbcosmetic",
+        "2026-07-08t23",
+        "2026",
+        "07",
+        "08t23",
+        "21",
+        "31",
+        "00",
+        "00",
+        "교보",
+        "보증",
+        "증권",
+        "교보증권",
+        "음식",
+        "식료",
+        "음식료",
+        "화장",
+        "장품",
+        "화장품",
+        "권우",
+        "우정",
+        "권우정",
+        "에이",
+        "이피",
+        "피알",
+        "에이피알",
+        "벌써",
+        "매출",
+        "출액",
+        "매출액",
+        "7",
+        "500",
+        "억원",
+        "속도",
+        "미쳤",
+        "쳤는",
+        "는데",
+        "미쳤는데"
+      ],
+      "query_fts_word": "\"교보증권이\" OR \"목표주가\" OR \"에이피알\" OR \"제시한\"",
+      "query_fts_ngram": "\"교보\" OR \"교보증권이\" OR \"권이\" OR \"목표\" OR \"목표주가\" OR \"보증\" OR \"시한\" OR \"에이\" OR \"에이피알\" OR \"이피\" OR \"제시\" OR \"제시한\" OR \"주가\" OR \"증권\" OR \"표주\" OR \"피알\""
+    },
+    "stage6_index_row": {
+      "chunk_uid": "2026-07-08-3494cb6766#0",
+      "doc_id": "2026-07-08-3494cb6766",
+      "okf_type": "MarketCommentary",
+      "entity_key": "|ch-telegram-kyobofnbcosmetic|kr-278470|",
+      "period_year": "2026",
+      "pub_year": "2026",
+      "okf_status": "stable",
+      "n_chars": 122
+    },
+    "stage7_plan": {
+      "describe": "entity=에이피알(kr-278470) · analyst_house=교보증권(필터 아님) · type∈{ResearchNote,MarketCommentary}",
+      "entity_key": "kr-278470",
+      "entity_name": "에이피알",
+      "period_year": null,
+      "okf_types": [
+        "ResearchNote",
+        "MarketCommentary"
+      ]
+    },
+    "stage8_results": {
+      "before": [
+        {
+          "rank": 1,
+          "doc_id": "048001342debb59a",
+          "title": "[현대위아] 2Q26 Review: 아쉬운 실적, 방향성은 유효",
+          "chars": 495,
+          "head": "배 율 3.6 4.2 4.8 5.5 5.7 자료: 현대위아, 교보증권 리서치센터\n현대\n위아 \n[\n0\n11210\n] \n2\nQ\n2\n6 \nReview: \n아쉬운 \n실적\n, \n방향성은 \n유효\n5 Research Center\n202\n6\n/\n07\n/\n29 \n현대위아 최근 2 년간",
+          "is_gold": false
+        },
+        {
+          "rank": 2,
+          "doc_id": "a7ce5a62bb85109f",
+          "title": "[하이브] 2Q26 Review: 보고 있는 것과 봐야 할 것",
+          "chars": 641,
+          "head": "11.8 자료: 하이브, 교보증권 리서치센터\n하이브 [352820] \n2Q26 Review: 보고 있는 것과 봐야 할 것\n6 Research Center\n2026/07/29 \n하이브 최근 2 년간 목표주가 변동추이\n하이브 최근 2 년간 목표주가 및 괴리율 추이 \n일자 ",
+          "is_gold": false
+        },
+        {
+          "rank": 3,
+          "doc_id": "be6c7f38e754e7b6",
+          "title": "[LS ELECTRIC] 2Q26 Review: 납기의 속도가 실적을 결정할 때",
+          "chars": 587,
+          "head": ".9 8.2 19.2 31.6 45.2 자료: LS ELECTRIC, 교보증권 리서치센터\nLS ELECTRIC [010120] \n2Q26 Review: 납기의 속도가 실적을 결정할 때\n7 Research Center\n2026/7/24 \nLS ELECTRIC 최근 2 년",
+          "is_gold": false
+        },
+        {
+          "rank": 4,
+          "doc_id": "a11b2e3657f3c0fd",
+          "title": "[HD현대일렉트릭] 2Q26 Review: 무난함 속에 숨겨진 저력",
+          "chars": 556,
+          "head": "배 율 22.6 59.3 75.0 196.3 298.3 자료: HD현대일렉트릭, 교보증권 리서치센터\nHD현대일렉트릭 [267260] \n2Q26 Review: 무난함 속에 숨겨진 저력\n5 Research Center\n2026/7/29 \nHD현대일렉트릭 최근 2 년간 목표",
+          "is_gold": false
+        },
+        {
+          "rank": 5,
+          "doc_id": "42b4e00f8a5e60e6",
+          "title": "[두산에너빌리티] 2Q26 Review: 수주는 가이던스 초과를 향해",
+          "chars": 556,
+          "head": "이 자 보 상 배 율 3.1 2.3 3.4 4.9 6.0 자료: 두산에너빌리티, 교보증권 리서치센터\n두산에너빌리티 [034020] \n2Q26 Review: 수주는 가이던스 초과를 향해\n7 Research Center\n2026/7/29 \n두산에너빌리티 최근 2 년간 목표",
+          "is_gold": false
+        }
+      ],
+      "after": [
+        {
+          "rank": 1,
+          "doc_id": "2026-07-08-3494cb6766",
+          "title": "교보증권 음식료/화장품 권우정] 에이피알 * 벌써 매출액 7,500억원, 속도 미쳤는데요?",
+          "chars": 636,
+          "head": "파악됨. 4)마케팅비 및 물류비 비중은 외형 확대 및 마케팅 확대 기조로 QoQ 증가했을 것으로 추정됨. 유럽향 에어 비중은 QoQ로 플랫 수준을 유지한 것으로 파악됨. 관세 환급은 2~4분기에 걸쳐 인식될 예정임.\n■ 투자의견 BUY 및 목표주가 550,000원 유지",
+          "status": "",
+          "is_gold": true
+        },
+        {
+          "rank": 2,
+          "doc_id": "2026-07-06-154394c3ed",
+          "title": "교보증권 음식료/화장품 권우정] 코스맥스 * 해외 Good + 좋아질 일만 남은 한국 ■ 2Q26 Previ",
+          "chars": 548,
+          "head": "GT채널, 수출 등 채널별 고른 성장. 수익성도 QoQ 큰 폭 개선 흐름. 태국은 YoY 10% 증가 전망. 대형 고객사 주문 볼륨 증가와 신제품 효과로 긍정적임. 수익성은 본사 로열티 비용 인식으로 YoY 감소.\n■ 투자의견 BUY 및 목표주가 260,000원 유지\n",
+          "status": "",
+          "is_gold": false
+        },
+        {
+          "rank": 3,
+          "doc_id": "2026-07-29-f5dd1f334e",
+          "title": "교보증권 음식료/화장품 권우정] *음식료/화장품 강세 코멘트 금일 음식료/화장품 업종이 전반적으로 강세를 시현 중입니다.",
+          "chars": 169,
+          "head": "비 높은 수준을 유지하고 있습니다. 3분기 역시 미국 오프라인 및 유럽 채널 성장이 이벤트 공백을 충분히 상쇄할 것으로 판단합니다.\n현재 에이피알 12개월 Fwd p/e는 퀀티 기준으로 18배까지 하락한 상황입니다.\n## 출처\n- [원문](https://t.me/kyo",
+          "status": "",
+          "is_gold": false
+        },
+        {
+          "rank": 4,
+          "doc_id": "2026-05-31-c0bffecaeb",
+          "title": "안녕하세요, 교보증권 권우정입니다!",
+          "chars": 563,
+          "head": "테고리 확대 중\n-유럽은 영국 중심으로 브랜드사 직접 진출 본격화\n-글로벌 화장품 시장 내 K-뷰티 침투율 4% 내외로 중장기 성장 여력 충분\n-4월 화장품 수출액 11.2억달러(YoY +31%)로 사상 최대치 기록\n▶️ 음식료: 라면 글로벌 수요 확대 지속\n-26년 ",
+          "status": "",
+          "is_gold": false
+        },
+        {
+          "rank": 5,
+          "doc_id": "2026-07-25-eb819a244d",
+          "title": "에이피알 주가와 대한민국 화장품 수출실적 (ft.",
+          "chars": 532,
+          "head": "## 원문\ngetfeed (@getfeed) — 2026-07-25T12:54:49+00:00\n에이피알 주가와 대한민국 화장품 수출실적 (ft. 관세청 무역수출입통계)\n에이피알 주가와 대한민국 화장품 수출실적 (ft. 관세청 무역수출입통계) 에이피알 주가와 국내 화장품",
+          "status": "",
+          "is_gold": false
+        }
+      ],
+      "steps": [
+        {
+          "action": "retrieve",
+          "detail": "필터 entity=에이피알(kr-278470) · analyst_house=교보증권(필터 아님) · type∈{ResearchNote,MarketCommentary}",
+          "n": 5,
+          "coverage": 0.833
+        }
+      ]
+    }
+  },
+  {
+    "name": "B. 같은 회사 공시 482건 중 하나를 특정하기",
+    "query": "SK하이닉스 2003년 분기보고서",
+    "doc_id": "03e099f7f6d575a2",
+    "stage1_source": {
+      "path": "../vault/10_Sources/DART/000660/2003/2003-05-15-03e099f7f6d575a2.md",
+      "bytes": 9417,
+      "frontmatter": "id: 03e099f7f6d575a2\nsource_type: dart\nsource_name: '000660'\nauthor: SK하이닉스\ntitle: '[분기보고서] SK하이닉스 분기보고서 (2003.03) (2003-05-15)'\nsource_url: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20030515000386\nsource_specific_id: '20030515000386'\npublished_at: '2003-05-15T00:00:00Z'\ncollected_at: '2026-07-26T15:14:05.177284Z'\nupdated_at: null\nlanguage: ko\ncontent_hash: 9ca2a2ed343de8591d7050b2ac837d23f049e28518d4e3f84f80092b7ab0e50c\ncontent_capture:\n  mode: full\n  reason: null\nassets: []\ncompanies:\n- '000660'\nthemes: []\ndocument_type: dart_filing\nfiling_type: 분기보고서 (2003.03)\nreporting_period: '2003-05-15'\naccession_number: '20030515000386'\nllm_processed: false\nllm_model: null\nllm_prompt_version: null",
+      "body_head": "## 원문\n\nSK하이닉스 분기보고서 (2003.03) — 접수일 2003-05-15, 접수번호 20030515000386, 제출인 SK하이닉스\n(document.xml 원문에서 추출한 전체 텍스트)\n\n�б⺸����(�Ϲݹ���) 3.2 (��)���̴н��ݵ�ü �� �� �� �� �� (�� 56 �� 1 �б�) \n\n| ������� | 2003�� 01�� 01�� | ���� |\n| --- | --- | --- |\n| 2003�� 03�� 31�� | ���� | |\n\n ������������ȸ �����ѱ����ǰŷ��� ���� ���ǰŷ��� ��186����3�� ������ ���Ͽ� �б⺸������ �����մϴ�. 2003�� 05�� 15�� ȸ �� �� : �ֽ�ȸ�� ���̴н��ݵ�ü �� ǥ �� �� : �� �� �� (��)���������� : ��⵵ ��õ�� �ι��� �ƹ̸� �� 136-1 (��ȭ��ȣ) 031 - 630 - 4114 �ۼ�å���� : (��å) IR���� (��ȭ��ȣ) 02 - 3459 - 5541~4 �� �� \n\n| ��. ȸ���� ��Ȳ | 1-24 |\n| --- | --- |\n| 1. ȸ���� ���� | |\n| ��. ȸ�簡 �����ϴ� ������� | 1 |\n| ��. ȸ�簡 �������� �ƴ��ϴ� ������� | 1 |\n| ��. ��ȸ�簡 �����ϴ� ������� | 1 |\n| ��. ���� �����ϰ��� �ϴ� ��� | 1 |\n| 2. ȸ���� ���� | |\n| ��. ����ȸ���� ���� | 2 |\n| ��. ȸ�簡 ���� �ִ� ������� | 6 |\n| 3. �ں��� ������Ȳ | |\n| ��. �ں��� ������Ȳ | 7 |\n| ��. �ں��� ������������ �� | 12 |\n| ��. ��ȯ��ä | 12 |\n| ��. �����μ��Ǻλ�ä | 12 |\n| ��. �������� | 12 |\n| 4. �ֽ��� �Ѽ� �� | |\n| ��. �ֽ��� �Ѽ� | 13 |\n| ��. ������ �ֽ��� ���� | 14 |\n| ��. �ڱ��ֽ� | 14 |\n| ��. �ڻ����ݵ� | 16 |\n| ��. �ֽĸż����ñ� | 16 |\n| ��. �츮���������� ������Ȳ | 23 |\n| 5. �ǰ�� ��Ȳ | 23 |\n| 6. ��翡 �",
+      "body_chars": 8706
+    },
+    "stage2_okf": {
+      "path": "20_Knowledge/filings/dart/2003-05-15-03e099f7f6.md",
+      "frontmatter": "type: DartFiling\ntitle: '[분기보고서] SK하이닉스 분기보고서 (2003.03) (2003-05-15)'\ndescription: SK하이닉스가 2003-05-15 DART에 접수한 분기보고서 (2003.03). 보고 기준일 2003-05-15\nresource: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20030515000386\ntags:\n- dart\n- 분기보고서 (2003.03)\n- kr-000660\n- ko\ntimestamp: '2003-05-15T00:00:00Z'\nstatus: corrupt\nlanguage: ko\ncapture: full\nperiod:\n  published: '2003-05-15'\n  as_of: '2003-05-15'\n  fiscal: 2003-Q2\nstale_after: '2004-06-18'\nentities:\n  subject:\n    kind: company\n    key: kr-000660\n    name: SK하이닉스\nquality:\n  readable_ratio: 0.565\n  flags:\n  - encoding_corrupt\n  note: 원본 저장 시점에 인코딩이 깨져 본문을 신뢰할 수 없다. 재수집 전까지 근거로 인용하지 말 것.\nprovenance:\n  system: dart\n  native_id: '20030515000386'\n  content_hash: 03e099f7f6d575a2\n  source_path: ../vault/10_Sources/DART/000660/2003/2003-05-15-03e099f7f6d575a2.md",
+      "relations": "- 대상 종목: [SK하이닉스](../../companies/kr-000660.md)",
+      "description": "SK하이닉스가 2003-05-15 DART에 접수한 분기보고서 (2003.03). 보고 기준일 2003-05-15",
+      "status": "corrupt",
+      "entity_keys": [
+        "kr-000660"
+      ],
+      "period_year": "2003",
+      "okf_type": "DartFiling"
+    },
+    "stage3_chunks": {
+      "v6_count": 13,
+      "v7_count": 12,
+      "v7_preview": [
+        {
+          "ord": 0,
+          "kind": "prose",
+          "chars": 145,
+          "head": "## 원문\nSK하이닉스 분기보고서 (2003.03) — 접수일 2003-05-15, 접수번호 20030515000386, 제출인 SK하이닉스\n(document.xml 원문에서 추출한 전체 텍스트)\nб⺸ ( Σݹ ) 3.2 ( ) ̴н ݵ ü ( 56 1 б )"
+        },
+        {
+          "ord": 1,
+          "kind": "table",
+          "chars": 57,
+          "head": "| | 2003 01 01 | |\n| --- | --- | --- |\n| 2003 03 31 | | |"
+        },
+        {
+          "ord": 2,
+          "kind": "prose",
+          "chars": 140,
+          "head": "ȸ ѱ ǰŷ ǰŷ 186 3 Ͽ б⺸ մΘ . 2003 05 15 ȸ : ֽ ȸ ̴н ݵ ü ǥ : ( ) : ⵵ õ ι ƹ̸ 136-1 ( ȭ ȣ) 031 - 630 - 4114 ۼ å : ( å) IR ( ȭ ȣ) 02 - 3459 - 5541~4"
+        },
+        {
+          "ord": 3,
+          "kind": "table",
+          "chars": 1198,
+          "head": "| . ȸ Ȳ | 1-24 |\n| --- | --- |\n| 1. ȸ | |\n| . ȸ 簡 Θ | 1 |\n| . ȸ 簡 ƴ Θ | 1 |\n| . ȸ 簡 Θ | 1 |\n| . κ Θ | 1 |\n| 2. ȸ | |\n| . ȸ | 2 |\n| . ȸ 簡 ִ | 6 |\n| 3. ں Ȳ | |\n| . ں Ȳ | 7 |\n| . ں | "
+        }
+      ]
+    },
+    "stage4_context": {
+      "v6_header": "출처 dart · 000660 · 종목 000660 · 분기보고서 (2003.03) · 기준일 2003-05-15 · 발행 2003-05-15 · [분기보고서] SK하이닉스 분기보고서 (2003.03) (2003-05-15) · 섹션 원문",
+      "v7_header": "SK하이닉스가 2003-05-15 DART에 접수한 분기보고서 (2003.03). 보고 기준일 2003-05-15 [dart 분기보고서 (2003.03) kr-000660 ko]",
+      "indexed_text_head": "SK하이닉스가 2003-05-15 DART에 접수한 분기보고서 (2003.03). 보고 기준일 2003-05-15 [dart 분기보고서 (2003.03) kr-000660 ko]\n## 원문\nSK하이닉스 분기보고서 (2003.03) — 접수일 2003-05-15, 접수번호 20030515000386, 제출인 SK하이닉스\n(document.xml 원문에서 추출한 전체 텍스트)\nб⺸ ( Σݹ ) 3.2 ( ) ̴н ݵ ü ( 56 1 б )"
+    },
+    "stage5_tokens": {
+      "chunk_head": "## 원문\nSK하이닉스 분기보고서 (2003.03) — 접수일 2003-05-15, 접수번호 20030515000386, 제출인 SK하이닉스\n(document.xml 원문에서 추출한 전체 텍스트)\nб⺸ ( Σݹ ) ",
+      "word_tokens": [
+        "원문",
+        "sk",
+        "하이닉스",
+        "분기보고서",
+        "2003.03",
+        "2003",
+        "03",
+        "접수일",
+        "2003-05-15",
+        "2003",
+        "05",
+        "15",
+        "접수번호",
+        "20030515000386",
+        "제출인",
+        "sk",
+        "하이닉스",
+        "document.xml",
+        "document",
+        "xml",
+        "원문에서",
+        "추출한",
+        "전체",
+        "텍스트"
+      ],
+      "ngram_tokens": [
+        "원문",
+        "sk",
+        "하이",
+        "이닉",
+        "닉스",
+        "하이닉스",
+        "분기",
+        "기보",
+        "보고",
+        "고서",
+        "분기보고서",
+        "2003.03",
+        "2003",
+        "03",
+        "접수",
+        "수일",
+        "접수일",
+        "2003-05-15",
+        "2003",
+        "05",
+        "15",
+        "접수",
+        "수번",
+        "번호",
+        "접수번호",
+        "20030515000386",
+        "제출",
+        "출인",
+        "제출인",
+        "sk",
+        "하이",
+        "이닉",
+        "닉스",
+        "하이닉스",
+        "document.xml",
+        "document",
+        "xml",
+        "원문",
+        "문에",
+        "에서",
+        "원문에서",
+        "추출",
+        "출한",
+        "추출한",
+        "전체",
+        "텍스",
+        "스트",
+        "텍스트"
+      ],
+      "query_fts_word": "\"2003\" OR \"sk\" OR \"년\" OR \"분기보고서\" OR \"하이닉스\"",
+      "query_fts_ngram": "\"2003\" OR \"sk\" OR \"고서\" OR \"기보\" OR \"년\" OR \"닉스\" OR \"보고\" OR \"분기\" OR \"분기보고서\" OR \"이닉\" OR \"하이\" OR \"하이닉스\""
+    },
+    "stage6_index_row": {
+      "chunk_uid": "2003-05-15-03e099f7f6#0",
+      "doc_id": "2003-05-15-03e099f7f6",
+      "okf_type": "DartFiling",
+      "entity_key": "|kr-000660|",
+      "period_year": "2003",
+      "pub_year": "2003",
+      "okf_status": "corrupt",
+      "n_chars": 145
+    },
+    "stage7_plan": {
+      "describe": "entity=SK하이닉스(kr-000660) · year=2003 · type∈{DartFiling,SecFiling}",
+      "entity_key": "kr-000660",
+      "entity_name": "SK하이닉스",
+      "period_year": "2003",
+      "okf_types": [
+        "DartFiling",
+        "SecFiling"
+      ]
+    },
+    "stage8_results": {
+      "before": [
+        {
+          "rank": 1,
+          "doc_id": "03e099f7f6d575a2",
+          "title": "[분기보고서] SK하이닉스 분기보고서 (2003.03) (2003-05-15)",
+          "chars": 26,
+          "head": "SK하이닉스 분기보고서 (2003.03) 공시.",
+          "is_gold": true
+        },
+        {
+          "rank": 2,
+          "doc_id": "2393be4e1891e978",
+          "title": "[분기보고서] SK하이닉스 분기보고서 (2003.09) (2003-11-14)",
+          "chars": 26,
+          "head": "SK하이닉스 분기보고서 (2003.09) 공시.",
+          "is_gold": false
+        },
+        {
+          "rank": 3,
+          "doc_id": "615f8e0c536f4f19",
+          "title": "[분기보고서] SK하이닉스 분기보고서 (2004.03) (2004-05-14)",
+          "chars": 227,
+          "head": "| 1949. 10 | Ǽ ֽ ȸ |\n| --- | --- |\n| ǥ ̻ | |\n| 2002. 06 | ִ ( ) ѱ ȯ |\n| 2002. 07 | ǥ ̻ ̻ 2 , 2 |\n| 2002. 11 | ' ÷ ũ ' TFT-LCD ι Ű ü |\n| 2003. 01 | ( Ǵ",
+          "is_gold": false
+        },
+        {
+          "rank": 4,
+          "doc_id": "6f509b2ed0a44032",
+          "title": "[분기보고서] SK하이닉스 분기보고서 (2004.09) (2004-11-15)",
+          "chars": 321,
+          "head": "| 1949. 10 | Ǽ ֽ ȸ |\n| --- | --- |\n| ǥ ̻ | |\n| 2002. 06 | ִ ( ) ѱ ȯ |\n| 2002. 07 | ǥ ̻ ̻ 2 , 2 |\n| 2002. 11 | ' ÷ ũ ' TFT-LCD ι Ű ü |\n| 2003. 01 | ( Ǵ",
+          "is_gold": false
+        },
+        {
+          "rank": 5,
+          "doc_id": "a8f036316e4faa44",
+          "title": "[분기보고서] SK하이닉스 [기재정정]분기보고서 (2004.03) (2004-06-23)",
+          "chars": 227,
+          "head": "| 1949. 10 | Ǽ ֽ ȸ |\n| --- | --- |\n| ǥ ̻ | |\n| 2002. 06 | ִ ( ) ѱ ȯ |\n| 2002. 07 | ǥ ̻ ̻ 2 , 2 |\n| 2002. 11 | ' ÷ ũ ' TFT-LCD ι Ű ü |\n| 2003. 01 | ( Ǵ",
+          "is_gold": false
+        }
+      ],
+      "after": [
+        {
+          "rank": 1,
+          "doc_id": "2003-05-15-03e099f7f6",
+          "title": "[분기보고서] SK하이닉스 분기보고서 (2003.03) (2003-05-15)",
+          "chars": 9,
+          "head": ". ȸ 簡 ƴ Θ",
+          "status": "",
+          "is_gold": true
+        },
+        {
+          "rank": 2,
+          "doc_id": "2003-11-14-2393be4e18",
+          "title": "[분기보고서] SK하이닉스 분기보고서 (2003.09) (2003-11-14)",
+          "chars": 9,
+          "head": ". ȸ 簡 ƴ Θ",
+          "status": "",
+          "is_gold": false
+        },
+        {
+          "rank": 3,
+          "doc_id": "2003-08-13-919caad4a5",
+          "title": "[반기보고서] SK하이닉스 반기보고서 (2003.06) (2003-08-13)",
+          "chars": 143,
+          "head": "## 원문\nSK하이닉스 반기보고서 (2003.06) — 접수일 2003-08-13, 접수번호 20030813000044, 제출인 SK하이닉스\n(document.xml 원문에서 추출한 전체 텍스트)\nݱ⺸ ( Σݹ ) 3.3 ( ) ̴н ݵ ü ( 56 ݱ )",
+          "status": "",
+          "is_gold": false
+        },
+        {
+          "rank": 4,
+          "doc_id": "2003-01-29-10f310d87c",
+          "title": "SK하이닉스 감자결정 (2003-01-29)",
+          "chars": 186,
+          "head": "## 원문\nSK하이닉스 감자결정 — 접수일 2003-01-29, 접수번호 20030128000275, 제출인 SK하이닉스\n(본문 미제공 - 원문 링크 참고)\n## 언급 자산\nSK하이닉스 감자결정 공시.\n## 출처\n- [원문](https://dart.fss.or.kr/d",
+          "status": "",
+          "is_gold": false
+        },
+        {
+          "rank": 5,
+          "doc_id": "2003-01-29-541c5e5d3f",
+          "title": "SK하이닉스 사업목적변경 (2003-01-29)",
+          "chars": 190,
+          "head": "## 원문\nSK하이닉스 사업목적변경 — 접수일 2003-01-29, 접수번호 20030128000276, 제출인 SK하이닉스\n(본문 미제공 - 원문 링크 참고)\n## 언급 자산\nSK하이닉스 사업목적변경 공시.\n## 출처\n- [원문](https://dart.fss.or.",
+          "status": "",
+          "is_gold": false
+        }
+      ],
+      "steps": [
+        {
+          "action": "retrieve",
+          "detail": "필터 entity=SK하이닉스(kr-000660) · year=2003 · type∈{DartFiling,SecFiling}",
+          "n": 5,
+          "coverage": 1.0
+        }
+      ]
+    }
+  }
+]

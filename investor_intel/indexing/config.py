@@ -53,4 +53,11 @@ V5 = V3.evolve(name="V5", label="+ 메타데이터 가중만 (본문없음 유�
 # 어절 원형 토큰을 함께 색인해 정밀도를 되찾는지 확인한다.
 V6 = V5.evolve(name="V6", label="+ 어절 원형 토큰 병기 (권장)", korean_keep_word=True)
 
+# V7부터는 색인 입력이 10_Sources 원본이 아니라 20_Knowledge OKF 번들이다.
+# 청킹·토크나이징 설정은 V6와 완전히 동일하게 두어, 차이가 '지식 레이어와 그 메타데이터'
+# 에서만 오도록 통제한다.
+V7 = V6.evolve(name="V7", label="OKF 번들에서 색인 (메타데이터 필터 가능)")
+
 VARIANTS = [V0, V1, V2, V3, V4, V5, V6]
+OKF_VARIANTS = [V7]
+ALL_VARIANTS = VARIANTS + OKF_VARIANTS
