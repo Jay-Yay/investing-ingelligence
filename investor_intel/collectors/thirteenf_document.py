@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from investor_intel.collectors.thirteenf_changes import concentration_ratio, top_holdings
+from investor_intel.collectors.thirteenf_changes import (
+    concentration_ratio,
+    position_count,
+    top_holdings,
+)
 from investor_intel.models.config import InvestorConfig
 from investor_intel.models.thirteenf import HoldingChange, ThirteenFFiling
 
@@ -16,8 +20,8 @@ THIRTEENF_LIMITATIONS_NOTE = (
 
 def _render_holdings_table(changes: list[HoldingChange]) -> str:
     lines = [
-        "| 종목 | CUSIP | 수량 | 보고가치($천) | 비중 | 변화 | Put/Call |",
-        "| --- | --- | ---: | ---: | ---: | --- | --- |",
+        "| 종목 | CUSIP | 수량 | 보고가치($) | 비중 | 변화 | Put/Call | 원문행수 |",
+        "| --- | --- | ---: | ---: | ---: | --- | --- | ---: |",
     ]
     for change in changes:
         weight = (
@@ -29,14 +33,14 @@ def _render_holdings_table(changes: list[HoldingChange]) -> str:
             change.current_shares if change.current_shares is not None else change.previous_shares
         )
         value = (
-            change.current_value_usd_thousands
-            if change.current_value_usd_thousands is not None
-            else change.previous_value_usd_thousands
+            change.current_value_usd
+            if change.current_value_usd is not None
+            else change.previous_value_usd
         )
         lines.append(
             f"| {change.issuer} | {change.cusip} | {shares:,} "
             f"| {value:,} | {weight} | {change.change_type.value} "
-            f"| {change.put_call or '-'} |"
+            f"| {change.put_call or '-'} | {change.row_count} |"
         )
     return "\n".join(lines)
 
@@ -61,8 +65,12 @@ def render_thirteenf_body(
         f"제출일 {filing.filing_date.isoformat()}, "
         f"accession {filing.accession_number}",
         "",
-        f"총 보고 가치: {filing.total_value_usd_thousands:,}천 달러 / "
-        f"보유 종목 수: {len(filing.holdings)} / "
+        # 단위는 달러로 정규화돼 있다(2023-01-03 이후 제출본은 원문도 원 달러, 그 전은
+        # 천 달러 단위라 파서가 1,000을 곱한다). "보유 포지션 수"는 합산된 포지션 수이고
+        # 원문 행 수와 다른 것이 정상이므로 둘을 함께 적어 대조가 되게 한다.
+        f"총 보고 가치: {filing.total_value_usd:,} 달러 / "
+        f"보유 포지션 수: {position_count(filing.holdings)} "
+        f"(원문 {len(filing.holdings)}행) / "
         f"상위 5종목 집중도: {concentration:.2f}%",
         "",
         _render_holdings_table(changes),

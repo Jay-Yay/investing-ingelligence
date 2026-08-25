@@ -34,10 +34,11 @@ def main() -> None:
         print(f"concept {stats['written']:,}건 -> {out}")
         print(f"  타입: {stats['by_type']}")
         print(f"  status: {stats['status']}")
-        print(f"  본문에서 복원한 종목 관계 {stats['mentions_recovered']:,}건 "
+        print(f"  종목 관계: frontmatter에서 {stats['mentions_from_frontmatter']:,}건 "
+              f"· 본문 매칭으로 복원 {stats['mentions_recovered']:,}건 "
               f"(분석 주체로 분리 {stats['analyst_houses_split']:,}건)")
         print(f"  인코딩 손상 {stats['corrupt']:,}건 · 재제출로 대체된 문서 {stats['superseded']:,}건 "
-              f"· 중복 id {stats['duplicate_doc_ids_skipped']}건 스킵")
+              f"· 중복 id {stats['duplicate_ids_skipped']}건 스킵")
         if args.stats_json:
             args.stats_json.write_text(json.dumps(stats, ensure_ascii=False, indent=2),
                                        encoding="utf-8")

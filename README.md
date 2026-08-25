@@ -61,6 +61,7 @@ uv run python -m investor_intel portfolio            # 포트폴리오 평가금
 uv run python -m investor_intel report               # 현재 상태로 리포트만 생성
 uv run python -m investor_intel reindex              # vault 기준으로 SQLite 인덱스 재구축
 uv run python -m investor_intel dedupe-vault         # 같은 문서 id의 중복 사본 정리 (--apply 없으면 dry-run)
+uv run python -m investor_intel enrich-vault         # 기존 문서에 본문 품질·종목 관계 채우기 (--apply 없으면 dry-run)
 
 # 매크로 가설 지표 트래킹 (config/macro_theses.yaml에 가설/지표 정의 필요)
 uv run python -m investor_intel record-indicators <가설id> --data-file snapshot.json

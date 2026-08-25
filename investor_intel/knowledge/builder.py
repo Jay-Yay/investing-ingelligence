@@ -6,7 +6,8 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from investor_intel.indexing.loader import LoadedDocument, load_vault
-from investor_intel.knowledge.registry import CompanyRegistry, load_dart_names
+from investor_intel.ingest.quality import is_corrupt, readable_ratio
+from investor_intel.knowledge.registry import ANALYST_HOUSE, CompanyRegistry, load_dart_names
 from investor_intel.knowledge.schema import Concept, EntityRef, Period, Provenance
 
 # source_type -> (concept type, 번들 내 디렉터리)
@@ -28,9 +29,23 @@ _STALE_DAYS = {
 }
 
 _SLUG = re.compile(r"[^a-z0-9가-힣]+")
-_CORRUPT_RATIO = 0.05   # 본문의 5% 이상이 치환문자면 읽을 수 없는 문서로 본다
-# 본문에 나오는 이 이름들은 '분석 대상 종목'이 아니라 '리포트를 쓴 곳'이다.
-_ANALYST_HOUSE = re.compile(r"(증권|투자증권|자산운용|캐피탈|금융투자)$")
+
+
+def _ref_for(reg: CompanyRegistry, key: str) -> EntityRef | None:
+    """frontmatter의 관계 키를 번들의 EntityRef로 되돌린다.
+
+    레지스트리에 없는 키(사전에 있었지만 아직 concept으로 승격되지 않은 종목)는 사전에서
+    승격해 링크 대상이 실제로 존재하게 만든다 - 그러지 않으면 끊어진 링크가 된다.
+
+    수집기가 밝힌 종목은 시장 접두어 없이 코드만 온다(`028050`). 번들의 키는 시장을 붙인
+    형태(`kr-028050`)이므로 접두어를 씌워 한 번 더 찾는다 - 그러지 않으면 그 관계가 조용히
+    사라진다(실측: concept 11개, 링크 75개가 이 이유로 빠졌다).
+    """
+    for candidate in (key, f"kr-{key}", f"us-{key}"):
+        company = reg.get(candidate) or reg.promote_key(candidate)
+        if company is not None:
+            return company.ref()
+    return None
 
 
 def slug(s: str) -> str:
@@ -152,7 +167,8 @@ def build_concepts(vault: Path, db_path: Path) -> tuple[list[Concept], CompanyRe
     reg = CompanyRegistry()
     dart_names = load_dart_names(db_path)
     stats: dict = {"by_type": Counter(), "status": Counter(),
-                   "mentions_recovered": 0, "analyst_houses_split": 0, "docs_with_subject": 0, "corrupt": 0,
+                   "mentions_recovered": 0, "mentions_from_frontmatter": 0,
+                   "analyst_houses_split": 0, "docs_with_subject": 0, "corrupt": 0,
                    "duplicate_ids_skipped": 0, "superseded": 0}
 
     docs: list[LoadedDocument] = []
@@ -223,10 +239,19 @@ def build_concepts(vault: Path, db_path: Path) -> tuple[list[Concept], CompanyRe
                     "essay": "essay"}[d.source_type]
             key = f"ch-{kind}-{slug(d.source_name)}"
             subject = EntityRef("channel", key, channels[key][0])
-            found = reg.find_mentions(d.body, limit=10)
-            mentions = [m for m in found if not _ANALYST_HOUSE.search(m.name)]
-            houses = [m for m in found if _ANALYST_HOUSE.search(m.name)]
-            stats["mentions_recovered"] += len(mentions)
+            # 수집 시점에 이미 해소된 관계가 있으면 그것을 쓴다. 같은 판정을 여기서 다시
+            # 하면 사전이 달라진 순간 frontmatter와 번들이 서로 다른 답을 갖게 된다.
+            if d.mentions or d.analyst_house:
+                mentions = [_ref_for(reg, key) for key in d.mentions]
+                houses = [_ref_for(reg, key) for key in d.analyst_house]
+                mentions = [m for m in mentions if m is not None]
+                houses = [h for h in houses if h is not None]
+                stats["mentions_from_frontmatter"] += len(mentions)
+            else:
+                found = reg.find_mentions(d.body, limit=10)
+                mentions = [m for m in found if not ANALYST_HOUSE.search(m.name)]
+                houses = [m for m in found if ANALYST_HOUSE.search(m.name)]
+                stats["mentions_recovered"] += len(mentions)
             stats["analyst_houses_split"] += len(houses)
 
         period = Period(published=(d.published_at or "")[:10] or None,
@@ -235,14 +260,17 @@ def build_concepts(vault: Path, db_path: Path) -> tuple[list[Concept], CompanyRe
             q = (int(period.as_of[5:7]) - 1) // 3 + 1
             period.fiscal = f"{period.as_of[:4]}-Q{q}"
 
-        raw_body = Path(d.path).read_text(encoding="utf-8")
-        n_bad = raw_body.count("\ufffd")
-        ratio = n_bad / max(1, len(raw_body))
+        # 가독 비율은 수집 시점에 측정돼 frontmatter에 있다. 없으면(옛 문서) 원문에서
+        # 직접 잰다 - `enrich-vault`를 돌리면 이 폴백이 필요 없어진다.
+        ratio_ok = d.readable_ratio
+        if ratio_ok == 1.0:
+            raw_body = Path(d.path).read_text(encoding="utf-8")
+            ratio_ok = readable_ratio(raw_body)
         quality = None
         status = "stub" if d.capture_mode == "metadata_only" else "stable"
-        if ratio >= _CORRUPT_RATIO:
+        if is_corrupt(ratio_ok):
             status = "corrupt"
-            quality = {"readable_ratio": round(1 - ratio, 3),
+            quality = {"readable_ratio": round(ratio_ok, 3),
                        "flags": ["encoding_corrupt"],
                        "note": "원본 저장 시점에 인코딩이 깨져 본문을 신뢰할 수 없다. "
                                "재수집 전까지 근거로 인용하지 말 것."}
@@ -366,6 +394,7 @@ def build_bundle(vault: Path, db_path: Path, out_root: Path) -> dict:
     return {"written": written, "folders": {k: len(v) for k, v in by_folder.items()},
             "by_type": dict(stats["by_type"]), "status": dict(stats["status"]),
             "mentions_recovered": stats["mentions_recovered"],
+            "mentions_from_frontmatter": stats["mentions_from_frontmatter"],
             "analyst_houses_split": stats["analyst_houses_split"],
             "docs_with_subject": stats["docs_with_subject"],
             "duplicate_ids_skipped": stats["duplicate_ids_skipped"],

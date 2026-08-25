@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import sqlite3
 from pathlib import Path
 from typing import cast
@@ -163,12 +164,37 @@ def upsert_document(
         ),
     )
     conn.execute("DELETE FROM document_assets WHERE document_id = ?", (doc.id,))
-    for asset in doc.assets:
-        conn.execute(
-            "INSERT INTO document_assets (document_id, ticker, asset_type) VALUES (?, ?, ?)",
-            (doc.id, asset.ticker, asset.asset_type),
-        )
+    conn.executemany(
+        "INSERT INTO document_assets (document_id, ticker, asset_type) VALUES (?, ?, ?)",
+        [(doc.id, ticker, asset_type) for ticker, asset_type in _asset_rows(doc)],
+    )
     conn.commit()
+
+
+# 관계 키는 `kr-278470` / `us-NBIS`처럼 시장 접두어를 달고 저장된다. `document_assets.ticker`는
+# 티커·종목코드 그대로여야 하므로(예: `latest_filing_for_ticker`가 티커로 조회한다) 접두어를
+# 떼어 넣는다.
+_MARKET_PREFIX = re.compile(r"^(?:kr|us)-")
+
+
+def _asset_rows(doc: SourceDocument) -> list[tuple[str, str]]:
+    """이 문서로부터 만들 `document_assets` 행.
+
+    예전에는 `doc.assets`만 넣었고, 그 필드를 채우는 수집기가 하나도 없어서 테이블이 0행이었다
+    - 티커로 문서를 찾는 조회가 모두 빈 결과를 냈다. 실제 종목 관계는 `companies`(수집기가
+    확정한 값)와 `entities`(본문에서 복원한 값)에 있으므로 셋을 함께 넣는다.
+    """
+    rows: list[tuple[str, str]] = [(asset.ticker, asset.asset_type) for asset in doc.assets]
+    # `entities`가 없는 옛 문서(2026-08-25 이전 수집분)는 `companies`가 유일한 관계 정보다.
+    # 이 폴백이 있어야 재색인만으로 기존 4,818건의 티커 조회가 살아난다.
+    mentions = doc.entities.mentions or doc.companies
+    for ticker in mentions:
+        rows.append((_MARKET_PREFIX.sub("", ticker), "mention"))
+    for ticker in doc.entities.analyst_house:
+        # 분석 주체는 분석 대상과 같은 이름표를 달면 안 된다 - 섞이면 증권사로 필터링해
+        # 정답 문서를 지우게 된다.
+        rows.append((_MARKET_PREFIX.sub("", ticker), "analyst_house"))
+    return list(dict.fromkeys(rows))
 
 
 def get_document_by_id(conn: sqlite3.Connection, doc_id: str) -> sqlite3.Row | None:

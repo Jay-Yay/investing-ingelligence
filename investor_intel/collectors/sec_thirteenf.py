@@ -16,7 +16,10 @@ from investor_intel.collectors.sec_urls import (
 from investor_intel.collectors.sec_urls import (
     filing_index_url as _filing_index_url,
 )
-from investor_intel.collectors.thirteenf_changes import compute_holding_changes
+from investor_intel.collectors.thirteenf_changes import (
+    compute_holding_changes,
+    distinct_issuers,
+)
 from investor_intel.collectors.thirteenf_document import render_thirteenf_body
 from investor_intel.collectors.thirteenf_parser import (
     FilingRef,
@@ -60,7 +63,8 @@ class ThirteenFCollector:
             doc_url = _document_url(self._investor.cik, filing.accession_number, candidate)
             xml_text = self._client.get_text(doc_url)
             try:
-                holdings = parse_information_table_xml(xml_text)
+                # 제출일을 넘겨야 금액 단위(천 달러 vs 원 달러)가 제대로 정규화된다.
+                holdings = parse_information_table_xml(xml_text, filing.filing_date)
                 break
             except ValueError:
                 continue
@@ -122,7 +126,7 @@ class ThirteenFCollector:
             language="en",
             body_text=body,
             content_capture_mode="full",
-            companies=[h.issuer for h in current_holdings],
+            companies=distinct_issuers(current_holdings),
             document_type="13f_filing",
             filing_type=filing.form,
             reporting_period=filing.period_of_report.isoformat(),

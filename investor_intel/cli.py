@@ -19,6 +19,7 @@ from investor_intel.config.loaders import (
     load_portfolio_yaml,
 )
 from investor_intel.config.settings import AppSettings
+from investor_intel.ingest.enrich import enrich_vault
 from investor_intel.llm.client import AnthropicClient
 from investor_intel.llm.cost_tracker import CostTracker
 from investor_intel.llm.daily_report import synthesize_daily_narrative
@@ -742,6 +743,52 @@ def dedupe_vault_cmd(
         )
     finally:
         conn.close()
+
+
+@app.command(name="enrich-vault")
+def enrich_vault_cmd(
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    sqlite_path: Annotated[Path, typer.Option(help="SQLite index path")] = Path(
+        "./data/index.sqlite3"
+    ),
+    apply: Annotated[
+        bool, typer.Option("--apply", help="실제로 파일을 갱신한다 (기본은 dry-run)")
+    ] = False,
+) -> None:
+    """이미 수집된 문서의 frontmatter에 본문 품질 측정값과 종목 관계를 채운다.
+
+    수집 시점 처리(`ingest`)가 생기기 전에 모은 문서에는 `readable_ratio`, `truncated`,
+    `entities`가 없다. 이 세 값은 본문만 있으면 다시 계산할 수 있으므로 재수집 없이 채운다.
+    본문과 `content_hash`는 건드리지 않는다. 기본은 dry-run이다.
+
+    부산물로 재수집이 필요한 문서 수(인코딩이 깨진 원문, 절단된 본문)를 함께 보고한다.
+    """
+    conn = connect(sqlite_path)
+    try:
+        init_db(conn)
+        stats = enrich_vault(vault_path, conn, apply=apply)
+    finally:
+        conn.close()
+
+    for error in stats.errors[:10]:
+        typer.echo(f"파싱 실패(건너뜀): {error}")
+    typer.echo(
+        f"본문 품질: 인코딩 깨짐 {stats.corrupt}건 / 절단 {stats.truncated}건 "
+        f"(둘 다 재수집 대상)"
+    )
+    typer.echo(
+        f"종목 관계: 메타데이터에서 {stats.mentions_from_metadata}건 / "
+        f"본문 매칭으로 복원 {stats.mentions_recovered}건 "
+        f"(문서 {stats.docs_with_recovered_mentions}건) / "
+        f"분석 주체 분리 {stats.analyst_houses_split}건"
+    )
+    for label, n in sorted(stats.by_source.items()):
+        typer.echo(f"  {label}: {n}")
+    prefix = "" if apply else "[dry-run] "
+    verb = "갱신 완료" if apply else "갱신 대상"
+    typer.echo(f"{prefix}문서 {stats.scanned}건 확인 / {verb} {stats.updated}건")
+    if not apply and stats.updated:
+        typer.echo("실제로 반영하려면 --apply를 붙여라.")
 
 
 @app.command(name="web-research")

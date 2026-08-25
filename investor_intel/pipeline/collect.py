@@ -28,8 +28,15 @@ from investor_intel.config.loaders import (
     load_sources_yaml,
 )
 from investor_intel.config.settings import AppSettings
+from investor_intel.ingest.entities import EntityResolver, merge_mentions
+from investor_intel.ingest.quality import readable_ratio, truncation_of
 from investor_intel.models.common import ContentCaptureMode, SourceType
-from investor_intel.models.source_document import AssetMention, ContentCapture, SourceDocument
+from investor_intel.models.source_document import (
+    AssetMention,
+    ContentCapture,
+    DocumentEntities,
+    SourceDocument,
+)
 from investor_intel.storage.content_hash import compute_content_hash, compute_stable_id
 from investor_intel.storage.obsidian_repo import (
     resolve_document_path,
@@ -61,9 +68,19 @@ class SourceRunResult:
 
 
 def collect_item_to_source_document(
-    item: CollectItem, source_type: SourceType, source_name: str
+    item: CollectItem,
+    source_type: SourceType,
+    source_name: str,
+    resolver: EntityResolver | None = None,
 ) -> tuple[SourceDocument, str]:
+    """수집 결과 한 건을 저장 가능한 문서로 만든다.
+
+    여기서 품질 측정과 종목 관계 해소를 함께 한다. 예전에는 둘 다 하류의 OKF 번들 빌더에서만
+    했고, 그래서 vault 원문에는 "본문이 깨졌다", "이 문서는 어느 종목 얘기다"가 기록되지
+    않았다 - 번들을 거치지 않는 소비자(`analyze`, 브리핑 작성)는 그 사실을 알 수 없었다.
+    """
     content_hash = compute_content_hash(item.body_text)
+    truncated, original_chars = truncation_of(item.body_text)
     stable_id = compute_stable_id(
         source_type.value, source_name, item.source_specific_id, item.canonical_url
     )
@@ -86,13 +103,35 @@ def collect_item_to_source_document(
         ),
         assets=[AssetMention(**asset) for asset in item.assets],
         companies=item.companies,
+        entities=_resolve_entities(item, source_name, resolver),
         themes=item.themes,
         document_type=item.document_type,
+        readable_ratio=readable_ratio(item.body_text),
+        truncated=truncated,
+        original_chars=original_chars,
         filing_type=item.filing_type,
         reporting_period=item.reporting_period,
         accession_number=item.accession_number,
     )
     return doc, item.body_text
+
+
+def _resolve_entities(
+    item: CollectItem, source_name: str, resolver: EntityResolver | None
+) -> DocumentEntities:
+    """본문에서 종목 관계를 복원한다.
+
+    수집기가 밝힌 종목(`companies`)이 앞에 오고, 본문에서 찾은 종목이 뒤에 붙는다. 수집기가
+    종목을 밝혔더라도 본문 매칭을 생략하지 않는다 - 원본에 종목 정보가 아예 없는 문서가
+    2,860건이고, 하나만 밝혀 둔 문서(IB 리서치 107건)도 본문에는 여러 종목이 나온다.
+    """
+    declared = list(dict.fromkeys(item.companies))
+    if resolver is None or resolver.is_empty:
+        return DocumentEntities(subject=source_name, mentions=declared)
+    resolved = resolver.resolve(item.body_text, subject=source_name)
+    return resolved.model_copy(
+        update={"mentions": merge_mentions(declared, resolved.mentions)}
+    )
 
 
 def persist_collect_result(
@@ -101,14 +140,21 @@ def persist_collect_result(
     source_name: str,
     vault_path: Path,
     conn: sqlite3.Connection,
+    resolver: EntityResolver | None = None,
 ) -> PersistResult:
+    # 사전 구축은 상장법인 명부 전체를 읽으므로 문서마다 다시 하면 안 된다. 호출부가
+    # 넘겨주지 않으면(단일 소스 파이프라인) 여기서 한 번만 만든다.
+    if resolver is None:
+        resolver = EntityResolver.from_connection(conn)
     count = 0
     skipped = 0
     errors: list[str] = []
 
     for item in result.items:
         try:
-            doc, body = collect_item_to_source_document(item, source_type, source_name)
+            doc, body = collect_item_to_source_document(
+                item, source_type, source_name, resolver
+            )
 
             existing_id = find_duplicate(
                 conn,
@@ -165,6 +211,8 @@ def run_collectors(
     on_source_result: Callable[[SourceRunResult], None] | None = None,
 ) -> list[SourceRunResult]:
     results: list[SourceRunResult] = []
+    # 수집 실행당 한 번만 만든다(소스 42개마다 다시 만들면 명부를 42번 읽는다).
+    resolver = EntityResolver.from_connection(conn)
 
     for collector, source_type, source_name in entries:
         errors: list[str] = []
@@ -178,7 +226,7 @@ def run_collectors(
             )
             errors.extend(collect_result.errors)
             persist_result = persist_collect_result(
-                collect_result, source_type, source_name, vault_path, conn
+                collect_result, source_type, source_name, vault_path, conn, resolver
             )
             persisted = persist_result.count
             skipped = persist_result.skipped

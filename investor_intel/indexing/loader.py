@@ -43,6 +43,12 @@ class LoadedDocument:
     companies: list[str]
     capture_mode: str
     source_url: str
+    # 수집 시점에 확정된 값들(`ingest` 계층). 옛 문서에는 없어서 기본값이 쓰인다 -
+    # `enrich-vault`로 채울 수 있다.
+    readable_ratio: float = 1.0
+    truncated: bool = False
+    mentions: list[str] = field(default_factory=list)
+    analyst_house: list[str] = field(default_factory=list)
     sections: list[Section] = field(default_factory=list)
     dropped_boilerplate_chars: int = 0
 
@@ -93,6 +99,9 @@ def parse_markdown(path: Path, strip_boilerplate: bool) -> LoadedDocument | None
 
     capture = fm.get("content_capture") or {}
     capture_mode = capture.get("mode", "unknown") if isinstance(capture, dict) else str(capture)
+    entities = fm.get("entities") or {}
+    if not isinstance(entities, dict):
+        entities = {}
 
     return LoadedDocument(
         doc_id=str(fm.get("id") or path.stem),
@@ -110,6 +119,10 @@ def parse_markdown(path: Path, strip_boilerplate: bool) -> LoadedDocument | None
         companies=list(fm.get("companies") or []),
         capture_mode=capture_mode,
         source_url=str(fm.get("source_url") or ""),
+        readable_ratio=float(fm.get("readable_ratio", 1.0) or 1.0),
+        truncated=bool(fm.get("truncated") or False),
+        mentions=list(entities.get("mentions") or []),
+        analyst_house=list(entities.get("analyst_house") or []),
         sections=sections,
         dropped_boilerplate_chars=dropped,
     )

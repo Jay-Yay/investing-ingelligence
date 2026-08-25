@@ -14,7 +14,7 @@ def _holding(cusip: str, issuer: str, value: int, shares: int) -> ThirteenFHoldi
         issuer=issuer,
         title_of_class="COM",
         cusip=cusip,
-        value_usd_thousands=value,
+        value_usd=value,
         shares_or_principal_amount=shares,
         shares_or_principal_type="SH",
         investment_discretion="SOLE",

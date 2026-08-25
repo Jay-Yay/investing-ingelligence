@@ -231,11 +231,20 @@ class HoldingsTool:
             return ToolResult(False, note="해당 기관·기간의 13F 스냅샷을 찾지 못했습니다",
                               tool="query_holdings")
         metric = next((m for m, pat in _METRICS if pat.search(query)), "count")
-        note = None
+        notes: list[str] = []
         if snap["truncated"]:
-            note = (f"이 스냅샷은 보고서가 밝힌 보유 종목 {snap['reported_count']}개 중 "
-                    f"{snap['captured_rows']}개만 본문 표에 저장돼 있습니다. "
-                    f"개수·총액은 보고서 머리글 값을, 종목별 순위는 확보된 행만 사용합니다.")
+            notes.append(
+                f"이 스냅샷은 보고서가 밝힌 보유 종목 {snap['reported_count']}개 중 "
+                f"{snap['captured_rows']}개만 본문 표에 저장돼 있습니다. "
+                f"개수·총액은 보고서 머리글 값을, 종목별 순위는 확보된 행만 사용합니다.")
+        if snap["legacy_units"]:
+            # 값을 보정할 방법이 없다(원문 재수집이 필요하다). 근거가 부실하면 한계를
+            # 함께 알린다는 원칙에 따라 답은 내되 경고를 반드시 붙인다.
+            notes.append(
+                "이 스냅샷은 옛 수집 형식으로 저장돼 금액과 종목별 비중을 신뢰할 수 없습니다"
+                " (2023-01-03 이후 제출본의 단위 오류, 같은 종목의 여러 행 누락). "
+                "재수집 후 다시 확인하십시오.")
+        note = " / ".join(notes) if notes else None
         ev = [{"concept_id": snap["concept_id"], "investor": snap["investor"],
                "as_of": snap["as_of"], "published": snap["published"]}]
 
@@ -244,12 +253,13 @@ class HoldingsTool:
                                     f"{snap['reported_count']}개", ev, note, "query_holdings")
         if metric == "total":
             return ToolResult(True, f"{snap['investor']} {snap['as_of']} 총 보고 가치 "
-                                    f"{snap['total_value_k']:,}천 달러", ev, note, "query_holdings")
+                                    f"{snap['total_value_usd']:,} 달러", ev, note,
+                              "query_holdings")
         if metric == "top5":
             return ToolResult(True, f"{snap['investor']} {snap['as_of']} 상위 5종목 집중도 "
                                     f"{snap['top5_pct']}%", ev, note, "query_holdings")
         row = self.conn.execute(
-            "SELECT security, weight_pct, value_k FROM holdings WHERE concept_id = ? "
+            "SELECT security, weight_pct, value_usd FROM holdings WHERE concept_id = ? "
             "ORDER BY weight_pct DESC LIMIT 1", (snap["concept_id"],)).fetchone()
         if row is None:
             return ToolResult(False, note="표에 종목 행이 없습니다", tool="query_holdings")

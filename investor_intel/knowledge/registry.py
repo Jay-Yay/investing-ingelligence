@@ -7,6 +7,10 @@ from pathlib import Path
 
 from investor_intel.knowledge.schema import EntityRef
 
+# 본문에 나오는 이 이름들은 '분석 대상 종목'이 아니라 '리포트를 쓴 곳'이다. 둘을 한 목록에
+# 섞으면 분석 주체로 필터링해 정답 문서를 지우게 된다.
+ANALYST_HOUSE = re.compile(r"(증권|투자증권|자산운용|캐피탈|금융투자)$")
+
 # 회사명으로 오탐이 나기 쉬운 짧은/일반적인 이름. 본문 언급 매칭에서 제외한다.
 _STOP_NAMES = {"대한", "한국", "미래", "삼성", "현대", "신세계", "이지", "아이", "우리",
                "케이", "에스", "디에스", "지에스", "제이", "네오", "코리아", "글로벌"}
@@ -37,6 +41,8 @@ class CompanyRegistry:
         self.by_key: dict[str, Company] = {}
         self._alias_index: dict[str, str] = {}
         self._lexicon: dict[str, tuple[str, str, str, str]] = {}
+        # 관계 키로 사전을 되찾기 위한 역인덱스. 사전이 10만 건이라 선형 탐색은 못 한다.
+        self._lexicon_by_key: dict[str, tuple[str, str, str, str]] = {}
 
     def add(self, key: str, name: str, market: str, code: str, aliases: list[str] | None = None) -> Company:
         c = self.by_key.get(key)
@@ -52,6 +58,11 @@ class CompanyRegistry:
     def get(self, key: str) -> Company | None:
         return self.by_key.get(key)
 
+    @property
+    def lexicon_size(self) -> int:
+        """매칭 사전에 올라 있는 이름 수. 사전이 비면 관계 복원이 불가능하다."""
+        return len(self._lexicon)
+
     def add_lexicon(self, name: str, market: str, code: str) -> None:
         """매칭 사전에만 등록한다(concept 파일은 만들지 않는다).
 
@@ -62,7 +73,21 @@ class CompanyRegistry:
         name = name.strip()
         if len(name) < 4 or name in _STOP_NAMES:
             return
-        self._lexicon.setdefault(name, (company_key(market, code), name, market, code))
+        entry = (company_key(market, code), name, market, code)
+        self._lexicon.setdefault(name, entry)
+        self._lexicon_by_key.setdefault(entry[0], entry)
+
+    def promote_key(self, key: str) -> Company | None:
+        """관계 키(`kr-278470`)로 사전을 뒤져 concept으로 승격한다.
+
+        수집 시점에 해소된 관계는 이름이 아니라 키로 저장된다. 그 키를 번들에서 다시 링크로
+        쓰려면 대상 concept이 실제로 있어야 한다 - 없으면 끊어진 링크가 된다.
+        """
+        entry = self._lexicon_by_key.get(key)
+        if entry is None:
+            return None
+        _, name, market, code = entry
+        return self.add(key, name, market, code)
 
     def promote(self, name: str) -> Company | None:
         entry = self._lexicon.get(name)
@@ -83,7 +108,11 @@ class CompanyRegistry:
         # 한글 어절을 뽑아 원형과 조사 1~2자를 뗀 형태까지 사전에서 찾는다.
         # 사전이 10만 건이라 전체 문자열 스캔은 못 하고, 반대로 문서에서 후보를 만들어
         # 사전을 조회한다(어절당 조회 3회).
-        for run in set(re.findall(r"[가-힣A-Za-z0-9]{4,20}", head)):
+        # 후보를 set으로 돌면 파이썬 문자열 해시가 실행마다 달라져(PYTHONHASHSEED) 후보가
+        # limit를 넘는 문서에서 매번 다른 종목이 살아남는다. 수집 시점에 확정해 frontmatter에
+        # 적는 값이 실행마다 달라지면 안 되므로, 본문에 먼저 나온 순서로 고정한다
+        # (앞에 나온 종목이 그 문서의 주제일 가능성도 더 높다).
+        for run in dict.fromkeys(re.findall(r"[가-힣A-Za-z0-9]{4,20}", head)):
             for cand in (run, run[:-1], run[:-2]):
                 if len(cand) < 4:
                     break

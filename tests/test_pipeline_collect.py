@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 
 from investor_intel.collectors.base import CollectItem, CollectResult
+from investor_intel.ingest.entities import EntityResolver
 from investor_intel.models.common import SourceType
 from investor_intel.pipeline.collect import collect_item_to_source_document, persist_collect_result
 from investor_intel.storage.sqlite_index import connect, get_document_by_id, init_db
@@ -188,3 +189,94 @@ def test_recollected_document_with_changed_content_is_updated_in_place(tmp_path)
     assert updated["file_path"] == original_path
     assert updated["llm_processed"] == 0
     assert "개정된 본문입니다." in (vault_path / original_path).read_text(encoding="utf-8")
+
+
+# --- 수집 시점 품질 측정 / 종목 관계 해소 ------------------------------------------------
+# 예전에는 두 판정을 하류의 OKF 번들 빌더에서만 했다. 그래서 vault 원문에는 "본문이 깨졌다",
+# "이 문서는 어느 종목 얘기다"가 기록되지 않았고, 번들을 거치지 않는 소비자(analyze, 브리핑
+# 작성)는 깨진 문서를 근거로 인용할 수 있었다.
+
+
+def test_document_records_readable_ratio_at_collect_time() -> None:
+    doc, _ = collect_item_to_source_document(
+        _item(body_text="ab��"), source_type=SourceType.DART, source_name="278470"
+    )
+    assert doc.readable_ratio == 0.5
+
+
+def test_clean_document_has_full_readable_ratio() -> None:
+    doc, _ = collect_item_to_source_document(
+        _item(), source_type=SourceType.NAVER, source_name="engineerinvestor"
+    )
+    assert doc.readable_ratio == 1.0
+    assert doc.truncated is False
+    assert doc.original_chars is None
+
+
+def test_document_records_truncation_as_structured_metadata() -> None:
+    body = "앞부분\n\n[...이하 생략, 원문 총 132,450자 중 40,000자까지만 캡처됨. 참고...]"
+    doc, _ = collect_item_to_source_document(
+        _item(body_text=body), source_type=SourceType.SEC_FILING, source_name="NBIS"
+    )
+    assert doc.truncated is True
+    assert doc.original_chars == 132_450
+
+
+def test_collector_declared_companies_become_the_documents_mentions() -> None:
+    doc, _ = collect_item_to_source_document(
+        _item(companies=["000660"]), source_type=SourceType.DART, source_name="000660"
+    )
+    assert doc.entities.mentions == ["000660"]
+    assert doc.entities.subject == "000660"
+
+
+def test_body_matching_recovers_mentions_when_the_source_provides_none() -> None:
+    resolver = EntityResolver({"278470": "에이피알", "030610": "교보증권"})
+    doc, _ = collect_item_to_source_document(
+        _item(body_text="교보증권 리서치: 에이피알 목표주가 상향"),
+        source_type=SourceType.TELEGRAM,
+        source_name="kyobofnbcosmetic",
+        resolver=resolver,
+    )
+    assert doc.entities.mentions == ["kr-278470"]
+    assert doc.entities.analyst_house == ["kr-030610"]
+
+
+def test_persist_populates_document_assets_from_the_resolved_entities(tmp_path) -> None:
+    """`document_assets`가 0행이라 티커로 문서를 찾는 모든 조회가 빈 결과를 냈다.
+
+    수집기가 `assets`를 채우는 곳이 하나도 없었기 때문이다 - 실제 종목 정보는 `companies`와
+    본문에 있었다.
+    """
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    result = CollectResult(source_id="dart_000660", success=True, items=[
+        _item(companies=["000660"])], errors=[])
+    persist_collect_result(result, SourceType.DART, "000660", tmp_path, conn)
+
+    rows = conn.execute(
+        "SELECT ticker, asset_type FROM document_assets ORDER BY ticker"
+    ).fetchall()
+    conn.close()
+    assert [(r["ticker"], r["asset_type"]) for r in rows] == [("000660", "mention")]
+
+
+def test_analyst_house_is_labelled_separately_in_document_assets(tmp_path) -> None:
+    """분석 주체와 분석 대상이 같은 이름표를 달면 증권사로 필터링해 정답을 지운다."""
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    resolver = EntityResolver({"278470": "에이피알", "030610": "교보증권"})
+    result = CollectResult(source_id="telegram_kyobo", success=True, items=[
+        _item(body_text="교보증권 리서치: 에이피알 목표주가 상향")], errors=[])
+    persist_collect_result(
+        result, SourceType.TELEGRAM, "kyobofnbcosmetic", tmp_path, conn, resolver
+    )
+
+    rows = conn.execute(
+        "SELECT ticker, asset_type FROM document_assets ORDER BY ticker"
+    ).fetchall()
+    conn.close()
+    assert [(r["ticker"], r["asset_type"]) for r in rows] == [
+        ("030610", "analyst_house"),
+        ("278470", "mention"),
+    ]

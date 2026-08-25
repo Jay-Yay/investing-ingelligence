@@ -25,6 +25,25 @@ class AssetMention(BaseModel):
     asset_type: str
 
 
+class DocumentEntities(BaseModel):
+    """이 문서가 누구에 대한 것인지.
+
+    `companies`가 평평한 목록 하나였을 때는 "리포트를 쓴 증권사"와 "리포트가 다루는 종목"이
+    구분되지 않았다. 그 둘을 섞으면 분석 주체로 필터링해 정답을 지우게 된다(교보증권으로
+    필터링해 에이피알 목표주가 문서를 제거한 실패 사례).
+
+    - `subject`:       이 문서를 발행한 주체 (공시 제출인, 채널, 투자자)
+    - `mentions`:      본문이 다루는 종목
+    - `analyst_house`: 리포트를 쓴 증권사·운용사
+    """
+
+    subject: str | None = None
+    mentions: list[str] = []
+    analyst_house: list[str] = []
+    # 어떤 사전으로 뽑은 관계인지. 사전이 바뀌면 결과도 바뀌므로 재현에 필요하다.
+    lexicon_version: str | None = None
+
+
 class SourceDocument(BaseModel):
     id: str
     source_type: SourceType
@@ -41,8 +60,13 @@ class SourceDocument(BaseModel):
     content_capture: ContentCapture
     assets: list[AssetMention] = []
     companies: list[str] = []
+    entities: DocumentEntities = DocumentEntities()
     themes: list[str] = []
     document_type: str
+    # --- 본문 품질 측정값 (판정이 아니라 관측값이다 - `ingest.quality` 참고) ---
+    readable_ratio: float = 1.0
+    truncated: bool = False
+    original_chars: int | None = None
     filing_type: str | None = None
     reporting_period: str | None = None
     accession_number: str | None = None
