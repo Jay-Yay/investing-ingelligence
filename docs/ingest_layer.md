@@ -144,9 +144,6 @@ concept 5,996건 · 링크 14,655 · 깨진 링크 0 · 필수 필드 위반 0
 
 ## 남은 작업
 
-`docs/rag_readiness_review.md`의 우선순위 중 이 변경으로 처리된 것은 1~3번이다. 남은 것:
-
-4. `index_state` 테이블 + 증분 upsert (`Bm25Index.build()`가 지금은 전량 재구축뿐)
-5. stub 역방향 refetch (`capture_mode != full` 1,534건 — SEC 355/396, DART 1,059/1,362)
-6. 청크·임베딩 캐시 물질화
-7. `index build|update|status` CLI + `run-daily` 연결 + CI 게이트
+`docs/rag_readiness_review.md`의 우선순위 중 이 변경으로 처리된 것은 1~3번이다.
+4~7번(증분 색인, stub 재수집, 임베딩 캐시, CLI·run-daily·CI 게이트)은
+[`docs/index_maintenance.md`](index_maintenance.md)에서 이어서 다뤘다.

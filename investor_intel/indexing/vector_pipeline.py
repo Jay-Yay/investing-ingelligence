@@ -34,6 +34,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable, Sequence
 
+from investor_intel.indexing.bm25_index import Bm25Index
 from investor_intel.indexing.config import IndexConfig
 from investor_intel.indexing.embedding import Encoder
 from investor_intel.indexing.okf_loader import OkfConcept, load_bundle
@@ -138,6 +139,77 @@ def iter_vector_records(
                 "n_chars": len(ch.text),
                 "raw_text": ch.text,
             }
+
+
+def iter_records_from_chunk_store(
+    index: Bm25Index,
+    scope: VectorScope | None = None,
+    doc_ids: Sequence[str] | None = None,
+) -> Iterable[dict]:
+    """이미 색인된 청크를 그대로 벡터 입력으로 쓴다.
+
+    번들을 다시 파싱해 다시 청킹하지 않는 이유는 비용이 아니라 **정합성**이다. 같은 청킹을
+    두 곳에서 따로 하면 설정이 어긋난 순간 `chunk_uid`가 달라지고, 그러면 두 검색 결과를
+    RRF로 합칠 때 같은 조각이 서로 다른 것으로 취급된다. 청크 저장소를 하나로 두면 그
+    가능성 자체가 없어진다.
+
+    `scope`의 status 조건은 여기서도 그대로 적용한다 - 깨진 문서와 본문 없는 문서는
+    벡터로 만들지 않는다(BM25 인덱스에는 그대로 남아 있으므로 정답이 사라지지 않는다).
+    """
+    scope = scope or VectorScope()
+    for row in index.chunk_records(doc_ids):
+        if row["okf_status"] not in scope.statuses:
+            continue
+        if row["kind"] == "metadata" and scope.require_body:
+            continue
+        if (row["n_chars"] or 0) < scope.min_chars:
+            continue
+        ctx = row["ctx_text"] or ""
+        body = row["raw_text"] or ""
+        yield {
+            "embed_text": f"{ctx}\n\n{body}".strip() if ctx and body else (ctx or body),
+            "chunk_uid": row["chunk_uid"], "doc_id": row["doc_id"], "ord": row["ord"],
+            "title": row["title"] or "", "source_type": row["source_type"] or "",
+            "okf_type": row["okf_type"] or "", "entity_key": row["entity_key"] or "",
+            "period_year": row["period_year"] or "", "pub_year": row["pub_year"] or "",
+            "okf_status": row["okf_status"] or "", "heading": row["heading_path"] or "",
+            "n_chars": row["n_chars"] or 0, "raw_text": body,
+        }
+
+
+def build_vector_index_from_chunk_store(
+    bm25_db: Path,
+    vec_db: Path,
+    encoder: Encoder,
+    scope: VectorScope | None = None,
+    *,
+    batch_size: int = 256,
+) -> tuple[VectorIndex, VectorBuildStats, ScopeReport]:
+    """BM25 청크 저장소를 입력으로 벡터 인덱스를 만든다.
+
+    행렬(.npy)은 행 번호로 접근하므로 부분 갱신이 까다롭다. 대신 **인코딩을 캐시**하고
+    행렬 조립만 매번 다시 한다 - 조립은 인코딩 비용의 수천분의 1이다. `encoder`를
+    `CachedEncoder`로 감싸 넘기면 바뀐 조각만 실제로 인코딩된다.
+    """
+    scope = scope or VectorScope()
+    index = Bm25Index(bm25_db)
+    report = ScopeReport()
+    try:
+        records = list(iter_records_from_chunk_store(index, scope))
+        for row in index.chunk_records():
+            report.native_index.setdefault(row["doc_id"], row["doc_id"])
+        embedded_docs = {r["doc_id"] for r in records}
+        all_docs = {row["doc_id"] for row in index.chunk_records()}
+        report.accepted_docs = len(embedded_docs)
+        report.skipped_docs = len(all_docs - embedded_docs)
+        report.covered_doc_ids = embedded_docs
+    finally:
+        index.close()
+
+    vec = VectorIndex(vec_db)
+    stats = vec.build(iter(records), encoder, batch_size=batch_size)
+    stats.docs_skipped = report.skipped_docs
+    return vec, stats, report
 
 
 def build_vector_index(

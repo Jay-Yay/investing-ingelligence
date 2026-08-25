@@ -5,6 +5,7 @@ import sqlite3
 from pathlib import Path
 from typing import cast
 
+from investor_intel.ingest.quality import readable_ratio, truncation_of
 from investor_intel.models.source_document import SourceDocument
 from investor_intel.storage.obsidian_repo import list_documents, read_document
 
@@ -26,6 +27,11 @@ CREATE TABLE IF NOT EXISTS documents (
     reporting_period TEXT,
     is_transcript INTEGER NOT NULL DEFAULT 0,
     llm_processed INTEGER NOT NULL DEFAULT 0,
+    -- 본문 확보 상태와 품질. 카탈로그에 없으면 "본문을 못 가져온 문서가 몇 건인가",
+    -- "재수집이 필요한 문서가 어느 것인가"를 물어볼 방법이 vault 전체 재파싱뿐이다.
+    capture_mode TEXT NOT NULL DEFAULT 'full',
+    readable_ratio REAL NOT NULL DEFAULT 1.0,
+    truncated INTEGER NOT NULL DEFAULT 0,
     file_path TEXT NOT NULL
 );
 
@@ -82,9 +88,21 @@ def _migrate_documents_columns(conn: sqlite3.Connection) -> None:
         conn.execute("ALTER TABLE documents ADD COLUMN reporting_period TEXT")
     if "is_transcript" not in existing:
         conn.execute("ALTER TABLE documents ADD COLUMN is_transcript INTEGER NOT NULL DEFAULT 0")
+    for column, decl in (
+        ("capture_mode", "TEXT NOT NULL DEFAULT 'full'"),
+        ("readable_ratio", "REAL NOT NULL DEFAULT 1.0"),
+        ("truncated", "INTEGER NOT NULL DEFAULT 0"),
+    ):
+        if column not in existing:
+            conn.execute(f"ALTER TABLE documents ADD COLUMN {column} {decl}")
     conn.execute(
         "CREATE INDEX IF NOT EXISTS idx_documents_transcript "
         "ON documents(source_name, reporting_period, is_transcript)"
+    )
+    # 재수집 대상을 고르는 질의(`refetch`)와 건강 지표(`index status`)가 쓴다.
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_documents_capture "
+        "ON documents(capture_mode, source_type)"
     )
 
 
@@ -123,8 +141,8 @@ def upsert_document(
             id, source_type, source_name, source_specific_id, canonical_url,
             title, author, published_at, collected_at, content_hash,
             document_type, filing_type, accession_number, reporting_period,
-            is_transcript, llm_processed, file_path
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            is_transcript, llm_processed, capture_mode, readable_ratio, truncated, file_path
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
             source_type=excluded.source_type,
             source_name=excluded.source_name,
@@ -141,6 +159,9 @@ def upsert_document(
             reporting_period=excluded.reporting_period,
             is_transcript=excluded.is_transcript,
             llm_processed=excluded.llm_processed,
+            capture_mode=excluded.capture_mode,
+            readable_ratio=excluded.readable_ratio,
+            truncated=excluded.truncated,
             file_path=excluded.file_path
         """,
         (
@@ -160,6 +181,9 @@ def upsert_document(
             doc.reporting_period,
             int(is_transcript),
             int(doc.llm_processed),
+            doc.content_capture.mode.value,
+            doc.readable_ratio,
+            int(doc.truncated),
             file_path,
         ),
     )
@@ -291,15 +315,28 @@ def find_duplicate(
 
 
 def reindex(conn: sqlite3.Connection, vault_path: Path) -> int:
+    """vault의 마크다운을 기준으로 카탈로그를 다시 만든다.
+
+    품질 측정값(`readable_ratio` / `truncated`)은 frontmatter에 적힌 값을 쓰지 않고 **본문에서
+    다시 잰다.** 본문이 그 측정값의 원본이고 frontmatter는 캐시일 뿐이며, `enrich-vault`를
+    아직 돌리지 않은 vault에서는 frontmatter에 기본값(1.0/false)만 들어 있다. 그 값을 그대로
+    믿으면 카탈로그가 "깨진 문서 0건"이라고 보고하고, 그 위에 얹은 품질 게이트가 조용히
+    무력해진다.
+    """
     conn.execute("DELETE FROM document_assets")
     conn.execute("DELETE FROM documents")
     conn.commit()
     count = 0
     for path in list_documents(vault_path):
-        doc, _ = read_document(path)
+        doc, body = read_document(path)
+        truncated, original_chars = truncation_of(body)
         upsert_document(
             conn,
-            doc,
+            doc.model_copy(update={
+                "readable_ratio": readable_ratio(body),
+                "truncated": truncated,
+                "original_chars": original_chars,
+            }),
             str(path.relative_to(vault_path)),
             source_specific_id=doc.source_specific_id,
         )

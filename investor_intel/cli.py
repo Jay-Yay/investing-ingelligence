@@ -19,6 +19,9 @@ from investor_intel.config.loaders import (
     load_portfolio_yaml,
 )
 from investor_intel.config.settings import AppSettings
+from investor_intel.indexing.config import ALL_VARIANTS, IndexConfig
+from investor_intel.indexing.health import Thresholds, collect_health
+from investor_intel.indexing.okf_pipeline import build_okf_index, update_okf_index
 from investor_intel.ingest.enrich import enrich_vault
 from investor_intel.llm.client import AnthropicClient
 from investor_intel.llm.cost_tracker import CostTracker
@@ -47,6 +50,13 @@ from investor_intel.pipeline.orchestrator import (
     load_prompt,
     run_daily,
     run_portfolio_stage,
+)
+from investor_intel.pipeline.refetch import (
+    REASONS,
+    collector_source_ids,
+    plan_refetch,
+    refetch_dart_documents,
+    rewind_checkpoints,
 )
 from investor_intel.pipeline.regime import (
     load_current_observations,
@@ -791,6 +801,256 @@ def enrich_vault_cmd(
         typer.echo("실제로 반영하려면 --apply를 붙여라.")
 
 
+index_app = typer.Typer(
+    help=(
+        "검색 인덱스 관리. `build`는 통째로 다시 만들고, `update`는 바뀐 문서만 다시 색인하며, "
+        "`status`는 수집·색인·품질 지표를 함께 보여준다."
+    )
+)
+app.add_typer(index_app, name="index")
+
+
+def _index_config(variant: str) -> IndexConfig:
+    for cfg in ALL_VARIANTS:
+        if cfg.name == variant:
+            return cfg
+    raise typer.BadParameter(f"알 수 없는 변형: {variant}")
+
+
+@index_app.command(name="build")
+def index_build_cmd(
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    search_db: Annotated[Path, typer.Option(help="검색 인덱스 경로")] = Path(
+        "./data/search_index.sqlite3"
+    ),
+    variant: Annotated[str, typer.Option(help="인덱스 구성 (기본 V7 = OKF 번들 + 필터)")] = "V7",
+) -> None:
+    """OKF 번들에서 검색 인덱스를 통째로 다시 만든다.
+
+    `update`와 달리 기존 색인을 전부 버리고 다시 만든다. 청킹 규칙이나 토크나이저를 바꿨을 때,
+    또는 인덱스 파일이 손상됐을 때 쓴다. 평소 갱신은 `update`가 훨씬 싸다.
+    """
+    bundle = vault_path / "20_Knowledge"
+    if not bundle.exists():
+        typer.echo(f"OKF 번들이 없다: {bundle}")
+        typer.echo(
+            "먼저 `uv run python scripts/build_knowledge_bundle.py --vault <vault>`를 실행하라."
+        )
+        raise typer.Exit(code=1)
+
+    cfg = _index_config(variant)
+    index, stats, tel = build_okf_index(bundle, search_db, cfg)
+    index.close()
+    typer.echo(f"[{cfg.name}] {cfg.label}")
+    typer.echo(
+        f"  문서 {stats.n_docs:,} / 청크 {stats.n_chunks:,} / 색인 {stats.n_chars_indexed:,}자"
+    )
+    typer.echo(
+        f"  본문 없는 concept {tel['stubs']:,} / 종목 관계 있음 {tel['with_entity']:,} / "
+        f"기간 있음 {tel['with_period']:,}"
+    )
+    typer.echo(f"  소요 {stats.build_seconds}s / DB {stats.db_bytes / 1e6:.1f}MB -> {search_db}")
+
+
+@index_app.command(name="update")
+def index_update_cmd(
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    search_db: Annotated[Path, typer.Option(help="검색 인덱스 경로")] = Path(
+        "./data/search_index.sqlite3"
+    ),
+    variant: Annotated[str, typer.Option(help="인덱스 구성")] = "V7",
+) -> None:
+    """바뀐 문서만 다시 색인한다.
+
+    concept 파일 해시를 기록해 두고 비교하므로, 문서 한 건이 늘면 그 한 건만 다시 청킹·색인한다
+    (전량 재구축은 4,818건을 다시 훑는다). 인덱스 설정이나 빌더 버전이 바뀌었으면 자동으로
+    전량 재구축으로 떨어진다.
+    """
+    bundle = vault_path / "20_Knowledge"
+    if not bundle.exists():
+        typer.echo(f"OKF 번들이 없다: {bundle}")
+        raise typer.Exit(code=1)
+
+    cfg = _index_config(variant)
+    index, stats = update_okf_index(bundle, search_db, cfg)
+    index.close()
+
+    if stats.full_rebuild:
+        typer.echo(f"전량 재구축: {stats.rebuild_reason}")
+        typer.echo(f"  문서 {stats.added:,} / 청크 {stats.chunks_written:,} / {stats.seconds}s")
+        return
+    typer.echo(
+        f"증분 갱신: 추가 {stats.added} / 갱신 {stats.updated} / 삭제 {stats.removed} / "
+        f"변화 없음 {stats.unchanged:,}"
+    )
+    typer.echo(f"  다시 색인한 청크 {stats.chunks_written:,}개 / {stats.seconds}s")
+
+
+@index_app.command(name="status")
+def index_status_cmd(
+    sqlite_path: Annotated[Path, typer.Option(help="수집 카탈로그 경로")] = Path(
+        "./data/index.sqlite3"
+    ),
+    search_db: Annotated[Path, typer.Option(help="검색 인덱스 경로")] = Path(
+        "./data/search_index.sqlite3"
+    ),
+    structured_db: Annotated[Path, typer.Option(help="표 데이터 인덱스 경로")] = Path(
+        "./data/structured.sqlite3"
+    ),
+    max_corrupt: Annotated[int, typer.Option(help="인코딩 손상 허용 건수 (초과 시 실패)")] = -1,
+    max_not_indexed: Annotated[int, typer.Option(help="미색인 허용 건수 (초과 시 실패)")] = -1,
+    max_stub_ratio: Annotated[float, typer.Option(help="본문 미확보 허용 비율")] = -1.0,
+) -> None:
+    """수집·색인·품질 지표를 한 번에 본다. 임계값을 주면 CI 게이트로 쓸 수 있다.
+
+    임계값 옵션은 기본적으로 꺼져 있다(-1). 하나라도 넘기면 그 항목을 검사하고, 위반이 있으면
+    종료 코드 1로 끝난다.
+    """
+    conn = connect(sqlite_path)
+    try:
+        init_db(conn)
+        health = collect_health(conn, search_db=search_db, structured_db=structured_db)
+    finally:
+        conn.close()
+
+    typer.echo(f"수집 문서 {health.documents:,}건")
+    header = f"  {'소스':<20}{'문서':>8}{'본문미확보':>12}{'인코딩손상':>12}{'절단':>8}"
+    typer.echo(header)
+    for source in health.by_source:
+        typer.echo(
+            f"  {source.source_type:<20}{source.documents:>8,}"
+            f"{source.stub:>12,}{source.corrupt:>12,}{source.truncated:>8,}"
+        )
+    typer.echo(
+        f"  {'합계':<20}{health.documents:>8,}{health.stub:>12,}"
+        f"{health.corrupt:>12,}{health.truncated:>8,}"
+    )
+
+    if health.index_present:
+        typer.echo(
+            f"\n검색 인덱스: 문서 {health.indexed_docs:,} / 청크 {health.indexed_chunks:,} / "
+            f"구성 {health.signature or '?'}"
+        )
+        typer.echo(f"  마지막 색인 {health.newest_indexed_at or '?'}")
+    else:
+        typer.echo(f"\n검색 인덱스 없음 ({search_db}) - `index build`를 실행하라")
+    typer.echo(f"  마지막 수집 {health.newest_collected_at or '?'}")
+    typer.echo(f"  색인 안 된 문서 {health.not_indexed:,}건")
+    if health.legacy_unit_snapshots:
+        typer.echo(
+            f"  옛 형식 13F 스냅샷 {health.legacy_unit_snapshots:,}건 "
+            "(금액·비중 신뢰 불가, 재수집 필요)"
+        )
+
+    thresholds = Thresholds(
+        max_corrupt=max_corrupt if max_corrupt >= 0 else 10**9,
+        max_not_indexed=max_not_indexed if max_not_indexed >= 0 else None,
+        max_stub_ratio=max_stub_ratio if max_stub_ratio >= 0 else None,
+    )
+    failures = thresholds.failures(health)
+    if failures:
+        typer.echo("")
+        for failure in failures:
+            typer.echo(f"[FAIL] {failure}")
+        raise typer.Exit(code=1)
+
+
+@app.command(name="refetch")
+def refetch_cmd(
+    vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
+    sqlite_path: Annotated[Path, typer.Option(help="수집 카탈로그 경로")] = Path(
+        "./data/index.sqlite3"
+    ),
+    reason: Annotated[
+        str, typer.Option(help="stub | corrupt | truncated | all")
+    ] = "all",
+    source_type: Annotated[
+        str | None, typer.Option(help="특정 소스만 (dart, sec_filing, ...)")
+    ] = None,
+    limit: Annotated[int | None, typer.Option(help="최대 처리 건수")] = None,
+    apply: Annotated[
+        bool, typer.Option("--apply", help="실제로 재수집한다 (기본은 dry-run)")
+    ] = False,
+) -> None:
+    """본문이 불완전한 문서를 다시 가져온다.
+
+    수집기는 증분 체크포인트로 앞으로만 가므로, 과거에 불완전하게 저장된 문서는 collect를
+    다시 돌려도 손대지 않는다. 그 문서를 인덱스에서 골라 되돌아가는 경로다.
+
+    DART는 접수번호만 있으면 원문을 다시 받을 수 있어 제자리에서 갱신한다(DART_API_KEY 필요).
+    그 외 소스는 수집 로직을 복제하지 않고 해당 수집기의 체크포인트를 되감아, 다음
+    `collect --backfill-days`가 과거를 다시 훑게 한다.
+    """
+    reasons = REASONS if reason == "all" else (reason,)
+    unknown = [r for r in reasons if r not in REASONS]
+    if unknown:
+        raise typer.BadParameter(f"알 수 없는 이유: {unknown} (가능: {', '.join(REASONS)}, all)")
+
+    settings = AppSettings()
+    conn = connect(sqlite_path)
+    try:
+        init_db(conn)
+        plan = plan_refetch(
+            conn, reasons=reasons,
+            source_types=[source_type] if source_type else None, limit=limit,
+        )
+        if not plan.targets:
+            typer.echo("재수집 대상이 없다.")
+            return
+
+        typer.echo(f"재수집 대상 {len(plan.targets):,}건")
+        for name, count in sorted(plan.by_reason().items()):
+            typer.echo(f"  이유 {name}: {count:,}건")
+        for name, count in sorted(plan.by_source_type().items()):
+            typer.echo(f"  소스 {name}: {count:,}건")
+
+        in_place = plan.in_place()
+        rewind = plan.needs_rewind()
+
+        if in_place:
+            if not settings.dart_api_key:
+                typer.echo(
+                    f"\nDART {len(in_place):,}건은 제자리 재수집 대상이지만 DART_API_KEY가 없어 "
+                    "건너뛴다."
+                )
+            else:
+                client = DartClient(api_key=settings.dart_api_key)
+                try:
+                    result = refetch_dart_documents(
+                        in_place, vault_path, conn, client, settings.dart_api_key, apply=apply
+                    )
+                finally:
+                    client.close()
+                prefix = "" if apply else "[dry-run] "
+                typer.echo(
+                    f"\n{prefix}DART 제자리 재수집: 시도 {result.attempted:,} / "
+                    f"갱신 {result.updated:,} / 내용 동일 {result.unchanged:,} / "
+                    f"실패 {result.failed:,}"
+                )
+                if result.attempted:
+                    typer.echo(
+                        f"  가독 비율 평균 {result.readable_before / result.attempted:.3f} -> "
+                        f"{result.readable_after / result.attempted:.3f}"
+                    )
+                for error in result.errors[:10]:
+                    typer.echo(f"  실패: {error}")
+
+        if rewind:
+            source_ids = collector_source_ids(rewind)
+            rewind_checkpoints(conn, source_ids, apply=apply)
+            prefix = "" if apply else "[dry-run] "
+            typer.echo(
+                f"\n{prefix}체크포인트 되감기 대상 수집기 {len(source_ids)}개 "
+                f"(문서 {len(rewind):,}건)"
+            )
+            typer.echo("  되감은 뒤 아래를 실행하면 수집기가 과거를 다시 훑는다:")
+            typer.echo("    uv run python -m investor_intel collect --backfill-days 3650")
+    finally:
+        conn.close()
+
+    if not apply:
+        typer.echo("\n실제로 반영하려면 --apply를 붙여라.")
+
 @app.command(name="web-research")
 def web_research_cmd(
     vault_path: Annotated[Path, typer.Option(help="Obsidian vault root")] = Path("./vault"),
@@ -1334,6 +1594,8 @@ def run_daily_cmd(
         typer.echo(f"[collect 오류] {error}")
     for error in result.analyze_errors:
         typer.echo(f"[analyze 오류] {error}")
+    if result.index_summary:
+        typer.echo(result.index_summary)
     if result.report_path:
         typer.echo(f"리포트 생성 완료: {result.report_path}")
 

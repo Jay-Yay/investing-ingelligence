@@ -62,6 +62,13 @@ uv run python -m investor_intel report               # 현재 상태로 리포�
 uv run python -m investor_intel reindex              # vault 기준으로 SQLite 인덱스 재구축
 uv run python -m investor_intel dedupe-vault         # 같은 문서 id의 중복 사본 정리 (--apply 없으면 dry-run)
 uv run python -m investor_intel enrich-vault         # 기존 문서에 본문 품질·종목 관계 채우기 (--apply 없으면 dry-run)
+uv run python -m investor_intel refetch              # 본문 불완전한 문서 재수집 (--apply 없으면 dry-run)
+
+# 검색 인덱스 (OKF 번들 -> BM25 청크 인덱스)
+uv run python scripts/build_knowledge_bundle.py --vault <vault>   # 지식 번들 생성 (선행 단계)
+uv run python -m investor_intel index build          # 인덱스 전량 재구축
+uv run python -m investor_intel index update         # 바뀐 문서만 증분 색인 (run-daily가 자동 실행)
+uv run python -m investor_intel index status         # 수집·색인·품질 지표 (--max-corrupt 0으로 게이트)
 
 # 매크로 가설 지표 트래킹 (config/macro_theses.yaml에 가설/지표 정의 필요)
 uv run python -m investor_intel record-indicators <가설id> --data-file snapshot.json

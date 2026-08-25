@@ -10,6 +10,8 @@ from investor_intel.collectors.http_client import SimpleHttpClient
 from investor_intel.collectors.sec_client import SECClient
 from investor_intel.config.loaders import load_companies_yaml, load_portfolio_yaml
 from investor_intel.config.settings import AppSettings
+from investor_intel.indexing.config import V7 as PRODUCTION_INDEX_CONFIG
+from investor_intel.indexing.okf_pipeline import update_okf_index
 from investor_intel.llm.client import AnthropicClient
 from investor_intel.llm.cost_tracker import CostTracker
 from investor_intel.llm.daily_report import synthesize_daily_narrative
@@ -164,6 +166,8 @@ def _filter_out_held_candidates(
 class RunDailyResult(BaseModel):
     collect_errors: list[str] = []
     analyze_errors: list[str] = []
+    # 검색 인덱스 갱신 결과 한 줄. 인덱스가 밀렸는지가 리포트에서 바로 보여야 한다.
+    index_summary: str | None = None
     report_path: str | None = None
     success: bool = False
 
@@ -201,6 +205,28 @@ def run_portfolio_stage(
     return position_rows, violations
 
 
+def update_search_index(vault_path: Path, sqlite_path: Path) -> str | None:
+    """OKF 번들 -> 검색 인덱스 증분 갱신. 번들이 없으면 건너뛴다.
+
+    번들 자체를 여기서 만들지는 않는다(번들 생성은 vault 전체를 훑는 별도 단계다). 번들이
+    최신이 아니면 그 사실이 `index status`의 "색인 안 된 문서" 수로 드러난다.
+    """
+    bundle = vault_path / "20_Knowledge"
+    if not bundle.exists():
+        return None
+    search_db = sqlite_path.parent / "search_index.sqlite3"
+    try:
+        index, stats = update_okf_index(bundle, search_db, PRODUCTION_INDEX_CONFIG)
+        index.close()
+    except Exception as exc:  # noqa: BLE001
+        return f"검색 인덱스 갱신 실패: {exc}"
+    if stats.full_rebuild:
+        return (f"검색 인덱스 전량 재구축 ({stats.rebuild_reason}): "
+                f"문서 {stats.added:,} / 청크 {stats.chunks_written:,}")
+    return (f"검색 인덱스 증분 갱신: 추가 {stats.added} / 갱신 {stats.updated} / "
+            f"삭제 {stats.removed} / 변화 없음 {stats.unchanged:,}")
+
+
 def run_daily(
     config_dir: Path,
     vault_path: Path,
@@ -225,6 +251,11 @@ def run_daily(
         collect_errors.extend(setup_errors)
         for result in run_collectors(entries, vault_path, conn):
             collect_errors.extend(result.errors)
+
+        # 수집 직후 검색 인덱스를 증분 갱신한다. 이 호출이 없던 동안 색인은 손으로만 돌았고,
+        # 그래서 한 달 가까이 밀린 채 아무도 몰랐다. 번들이 없으면(검색 계층을 안 쓰는 설정)
+        # 조용히 건너뛴다 - 수집 자체를 실패시킬 이유는 없다.
+        index_summary = update_search_index(vault_path, sqlite_path)
 
         portfolio_path = vault_path / "30_Portfolio" / "portfolio.yaml"
         portfolio_positions = (
@@ -461,6 +492,7 @@ def run_daily(
         return RunDailyResult(
             collect_errors=collect_errors,
             analyze_errors=analyze_errors,
+            index_summary=index_summary,
             report_path=report_path,
             success=report_path is not None,
         )

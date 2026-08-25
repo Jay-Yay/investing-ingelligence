@@ -29,6 +29,14 @@ CREATE TABLE IF NOT EXISTS chunk_meta (
     pub_year       TEXT,
     okf_status     TEXT,
     n_chars        INTEGER NOT NULL,
+    -- 청크에 붙인 문맥(concept의 description)을 토큰화 전 원문으로 함께 보관한다.
+    -- chunk_fts.ctx는 토큰화된 형태라 되읽을 수 없다. 이 컬럼이 있어야 벡터 인덱스가
+    -- 번들을 다시 파싱해 다시 청킹하지 않고 같은 청크를 그대로 쓸 수 있다 - 청킹을 두 곳에서
+    -- 따로 하면 chunk_uid가 어긋나 RRF가 같은 조각을 다른 것으로 취급한다.
+    ctx_text       TEXT NOT NULL DEFAULT '',
+    -- 원본 vault 문서의 id. concept id와 다르다. 이게 있어야 "수집은 됐는데 색인 안 된
+    -- 문서가 몇 건인가"를 카탈로그와 조인해서 정확히 셀 수 있다.
+    native_doc_id  TEXT NOT NULL DEFAULT '',
     raw_text       TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_chunk_doc ON chunk_meta(doc_id);
@@ -40,12 +48,15 @@ CREATE INDEX IF NOT EXISTS idx_chunk_capture ON chunk_meta(capture_mode);
 # 추가해주지 않는다. 새 컬럼을 참조하는 인덱스는 컬럼이 실제로 생긴 뒤에만 만들 수 있어
 # 분리해 둔다.
 _OKF_COLUMNS = {"okf_type": "TEXT", "entity_key": "TEXT", "period_year": "TEXT",
-                "pub_year": "TEXT", "okf_status": "TEXT"}
+                "pub_year": "TEXT", "okf_status": "TEXT",
+                "ctx_text": "TEXT NOT NULL DEFAULT ''",
+                "native_doc_id": "TEXT NOT NULL DEFAULT ''"}
 _OKF_INDEXES = """
 -- OKF 메타데이터로 '검색 전에 후보를 좁히는' 경로. 이게 있어야 지식 레이어의
 -- entities/period가 실제로 검색에 쓰인다 - 없으면 OKF는 사람만 읽는 문서로 남는다.
 CREATE INDEX IF NOT EXISTS idx_chunk_entity ON chunk_meta(entity_key, period_year);
 CREATE INDEX IF NOT EXISTS idx_chunk_okf ON chunk_meta(okf_type, okf_status);
+CREATE INDEX IF NOT EXISTS idx_chunk_native ON chunk_meta(native_doc_id);
 """
 
 # FTS5 컬럼을 셋으로 나눈 이유: bm25()가 컬럼별 가중치를 받기 때문에, 같은 토큰이라도
@@ -109,41 +120,46 @@ class Bm25Index:
         self.conn.executescript(_FTS)
 
     # --- Store -------------------------------------------------------------
+    def _insert(self, cur: sqlite3.Cursor, record: tuple[dict, str, str, str]) -> int:
+        meta, ctx, title, body = record
+        cur.execute(
+            """INSERT INTO chunk_meta (chunk_uid, doc_id, ord, doc_path, source_type,
+               source_name, published_at, title, filing_type, capture_mode, heading_path,
+               kind, okf_type, entity_key, period_year, pub_year, okf_status, n_chars,
+               ctx_text, native_doc_id, raw_text)
+               VALUES (:chunk_uid,:doc_id,:ord,:doc_path,:source_type,:source_name,
+               :published_at,:title,:filing_type,:capture_mode,:heading_path,:kind,
+               :okf_type,:entity_key,:period_year,:pub_year,:okf_status,:n_chars,
+               :ctx_text,:native_doc_id,:raw_text)""",
+            {"okf_type": "", "entity_key": "", "period_year": "", "pub_year": "",
+             "okf_status": "stable", "ctx_text": ctx, "native_doc_id": "", **meta},
+        )
+        rid = cur.lastrowid
+        cur.execute(
+            "INSERT INTO chunk_fts(rowid, ctx, title, body) VALUES (?,?,?,?)",
+            (
+                rid,
+                to_fts_document(ctx, self.korean_ngram, self.korean_keep_word) if ctx else "",
+                to_fts_document(title, self.korean_ngram, self.korean_keep_word) if title else "",
+                to_fts_document(body, self.korean_ngram, self.korean_keep_word),
+            ),
+        )
+        return int(meta["n_chars"])
+
     def build(self, records: Iterable[tuple[dict, str, str, str]]) -> IndexStats:
-        """records: (meta, ctx_text, title_text, body_text)"""
+        """records: (meta, ctx_text, title_text, body_text). 인덱스를 통째로 다시 만든다."""
         t0 = time.time()
         cur = self.conn.cursor()
         cur.execute("DELETE FROM chunk_meta")
         cur.execute("DELETE FROM chunk_fts")
         n_chunks = n_chars = 0
         docs: set[str] = set()
-        for meta, ctx, title, body in records:
-            cur.execute(
-                """INSERT INTO chunk_meta (chunk_uid, doc_id, ord, doc_path, source_type,
-                   source_name, published_at, title, filing_type, capture_mode, heading_path,
-                   kind, okf_type, entity_key, period_year, pub_year, okf_status, n_chars, raw_text)
-                   VALUES (:chunk_uid,:doc_id,:ord,:doc_path,:source_type,:source_name,
-                   :published_at,:title,:filing_type,:capture_mode,:heading_path,:kind,
-                   :okf_type,:entity_key,:period_year,:pub_year,:okf_status,:n_chars,:raw_text)""",
-                {"okf_type": "", "entity_key": "", "period_year": "", "pub_year": "",
-                 "okf_status": "stable", **meta},
-            )
-            rid = cur.lastrowid
-            cur.execute(
-                "INSERT INTO chunk_fts(rowid, ctx, title, body) VALUES (?,?,?,?)",
-                (
-                    rid,
-                    to_fts_document(ctx, self.korean_ngram, self.korean_keep_word) if ctx else "",
-                    to_fts_document(title, self.korean_ngram, self.korean_keep_word) if title else "",
-                    to_fts_document(body, self.korean_ngram, self.korean_keep_word),
-                ),
-            )
+        for record in records:
+            n_chars += self._insert(cur, record)
             n_chunks += 1
-            n_chars += meta["n_chars"]
-            docs.add(meta["doc_id"])
+            docs.add(record[0]["doc_id"])
         self.conn.commit()
-        self.conn.execute("INSERT INTO chunk_fts(chunk_fts) VALUES('optimize')")
-        self.conn.commit()
+        self.optimize()
         return IndexStats(
             n_docs=len(docs),
             n_chunks=n_chunks,
@@ -151,6 +167,91 @@ class Bm25Index:
             build_seconds=round(time.time() - t0, 2),
             db_bytes=self.db_path.stat().st_size,
         )
+
+    def upsert_document(
+        self, doc_id: str, records: Iterable[tuple[dict, str, str, str]]
+    ) -> tuple[int, int]:
+        """한 문서의 청크를 통째로 갈아끼운다. (청크 수, 색인 글자수)를 돌려준다.
+
+        청킹은 결정론적이라 같은 입력이면 같은 청크가 나온다. 그래서 문서 단위로 지우고
+        다시 넣는 것이 안전하다 - 청크별로 비교해 부분 갱신하는 것보다 단순하고, 청크
+        경계가 바뀌는 경우(본문이 조금 길어지면 뒤쪽 청크가 전부 밀린다)도 자동으로 맞는다.
+        """
+        cur = self.conn.cursor()
+        self._delete_doc_rows(cur, doc_id)
+        n_chunks = n_chars = 0
+        for record in records:
+            n_chars += self._insert(cur, record)
+            n_chunks += 1
+        self.conn.commit()
+        return n_chunks, n_chars
+
+    def delete_documents(self, doc_ids: Iterable[str]) -> int:
+        cur = self.conn.cursor()
+        removed = 0
+        for doc_id in doc_ids:
+            removed += self._delete_doc_rows(cur, doc_id)
+        self.conn.commit()
+        return removed
+
+    def _delete_doc_rows(self, cur: sqlite3.Cursor, doc_id: str) -> int:
+        """chunk_meta와 chunk_fts를 함께 지운다.
+
+        chunk_fts는 외부 컨텐츠 테이블이 아니라 자기 데이터를 들고 있으므로, chunk_meta만
+        지우면 FTS 쪽에 고아 행이 남아 지운 문서가 검색 결과에 계속 나온다.
+        """
+        rows = cur.execute(
+            "SELECT rowid_ref FROM chunk_meta WHERE doc_id = ?", (doc_id,)
+        ).fetchall()
+        if not rows:
+            return 0
+        ids = [(int(r["rowid_ref"]),) for r in rows]
+        cur.executemany("DELETE FROM chunk_fts WHERE rowid = ?", ids)
+        cur.executemany("DELETE FROM chunk_meta WHERE rowid_ref = ?", ids)
+        return len(ids)
+
+    def indexed_native_ids(self) -> set[str]:
+        """색인된 청크가 가리키는 원본 vault 문서 id 집합."""
+        return {
+            str(row[0])
+            for row in self.conn.execute(
+                "SELECT DISTINCT native_doc_id FROM chunk_meta WHERE native_doc_id != ''")
+        }
+
+    def optimize(self) -> None:
+        self.conn.execute("INSERT INTO chunk_fts(chunk_fts) VALUES('optimize')")
+        self.conn.commit()
+
+    def stats(self) -> IndexStats:
+        row = self.conn.execute(
+            "SELECT COUNT(DISTINCT doc_id) AS docs, COUNT(*) AS chunks, "
+            "COALESCE(SUM(n_chars), 0) AS chars FROM chunk_meta"
+        ).fetchone()
+        return IndexStats(
+            n_docs=row["docs"], n_chunks=row["chunks"], n_chars_indexed=row["chars"],
+            build_seconds=0.0,
+            db_bytes=self.db_path.stat().st_size if self.db_path.exists() else 0,
+        )
+
+    def chunk_records(self, doc_ids: Sequence[str] | None = None) -> list[sqlite3.Row]:
+        """색인된 청크를 그대로 돌려준다.
+
+        벡터 인덱스가 번들을 다시 파싱해 다시 청킹하지 않고 이걸 쓴다. 같은 청킹을 두 곳에서
+        따로 하면 `chunk_uid`가 어긋날 수 있고, 그러면 두 검색 결과를 RRF로 합칠 때 같은
+        조각이 서로 다른 것으로 취급된다.
+        """
+        if doc_ids is None:
+            return self.conn.execute(
+                "SELECT * FROM chunk_meta ORDER BY doc_id, ord").fetchall()
+        out: list[sqlite3.Row] = []
+        for i in range(0, len(doc_ids), 500):
+            batch = doc_ids[i : i + 500]
+            placeholders = ",".join("?" * len(batch))
+            out += self.conn.execute(
+                f"SELECT * FROM chunk_meta WHERE doc_id IN ({placeholders}) ORDER BY doc_id, ord",
+                list(batch),
+            ).fetchall()
+        return out
 
     # --- Retrieve ----------------------------------------------------------
     def search(

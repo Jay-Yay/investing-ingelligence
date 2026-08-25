@@ -32,3 +32,50 @@ jobs:
 
       - name: Type check
         run: uv run mypy investor_intel
+
+  # 데이터 품질 게이트. 검색 품질의 상한은 원문 품질이므로, 인코딩이 깨진 문서가 늘거나
+  # 색인이 밀리는 것을 코드 변경과 같은 급으로 막는다. `data` 브랜치의 vault/data를 읽고
+  # 아무것도 쓰지 않는다.
+  data-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # PR에서는 돌리지 않는다 - 포크에서는 data 브랜치를 못 읽고, 데이터 상태는 코드 변경과
+    # 무관하게 바뀌므로 PR을 막을 근거가 되지 않는다.
+    if: github.event_name == 'push'
+    continue-on-error: true
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Check out data branch into state/
+        id: data
+        run: |
+          git fetch origin data || true
+          if git show-ref --verify --quiet refs/remotes/origin/data; then
+            git worktree add state origin/data
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "data 브랜치가 없어 품질 게이트를 건너뛴다"
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # 카탈로그는 커밋되지 않는 파생 캐시라 vault에서 다시 만든다. `reindex`가 본문에서
+      # 품질을 직접 재므로, vault에 enrich-vault를 적용했는지와 무관하게 정확한 수치가 나온다.
+      - name: Rebuild catalog and check quality
+        if: steps.data.outputs.present == 'true'
+        run: |
+          uv run python -m investor_intel reindex \
+            --vault-path state/vault --sqlite-path state/data/index.sqlite3
+          uv run python -m investor_intel index status \
+            --sqlite-path state/data/index.sqlite3 \
+            --search-db state/data/search_index.sqlite3 \
+            --structured-db state/data/structured.sqlite3 \
+            --max-corrupt 0

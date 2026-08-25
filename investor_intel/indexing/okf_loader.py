@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -42,6 +43,10 @@ class OkfConcept:
     source_system: str
     native_id: str
     content_hash: str = ""
+    # concept 파일 원문 전체의 해시. 증분 색인이 "이 문서가 바뀌었나"를 판단하는 키다.
+    # 원본 문서의 content_hash로는 부족하다 - 색인되는 것은 본문만이 아니라 description
+    # (청크 문맥)과 entities(필터 컬럼)까지이고, 그것들은 본문이 그대로여도 바뀔 수 있다.
+    raw_hash: str = ""
     sections: list[tuple[str, str]] = field(default_factory=list)
 
     @property
@@ -116,6 +121,7 @@ def parse_concept(path: Path, root: Path) -> OkfConcept | None:
         # content_hash는 이 저장소가 원본 문서에 매긴 id다. 평가셋이 정답을 이 값으로
         # 적어 두어서, 지식 레이어 파일과 이어 붙이려면 따로 들고 있어야 한다.
         content_hash=str(prov.get("content_hash") or ""),
+        raw_hash=hashlib.sha256(raw.encode("utf-8")).hexdigest()[:32],
         sections=sections,
     )
 
