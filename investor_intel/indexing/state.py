@@ -36,7 +36,7 @@ from datetime import UTC, datetime
 # TABLE 자체를 바꾸는 스키마 변경은 `index build`가 하는 DELETE FROM으로는 반영되지 않는다
 # (테이블 구조는 그대로 두고 행만 지우기 때문) - `data/search_index.sqlite3` 파일 자체를
 # 지우고 다시 만들어야 한다.
-BUILDER_VERSION = "2026-08-26.1"
+BUILDER_VERSION = "2026-08-26.2"
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS index_state (
