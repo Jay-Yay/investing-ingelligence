@@ -61,10 +61,20 @@ CREATE INDEX IF NOT EXISTS idx_chunk_native ON chunk_meta(native_doc_id);
 
 # FTS5 컬럼을 셋으로 나눈 이유: bm25()가 컬럼별 가중치를 받기 때문에, 같은 토큰이라도
 # 제목/문맥헤더에서 맞았을 때와 본문에서 맞았을 때 점수를 다르게 줄 수 있다.
+#
+# content='' (contentless)인 이유: 기본(non-contentless) FTS5는 INSERT한 컬럼 원문을
+# chunk_fts_content 섀도 테이블에 통째로 한 벌 더 보관한다. 여기 넣는 값은 이미 bigram으로
+# 펼쳐 공백으로 이어 붙인 토큰 스트림(원문의 약 3배 크기, tokenizer.to_fts_document 참고)이라
+# 그 사본이 raw_text를 들고 있는 chunk_meta보다도 컸다(실측 4.3GB 중 chunk_fts_content가
+# 1.4GB). search()는 항상 chunk_meta.raw_text에서 본문을 읽고 chunk_fts 컬럼을 직접
+# SELECT하지 않으므로 그 사본은 애초에 쓸모가 없다. contentless_delete=1은 콘텐츠 없이도
+# rowid로 DELETE할 수 있게 해준다(SQLite 3.43+) - 없으면 삭제할 때마다 원래 컬럼값을 다시
+# 넘겨야 해서 _delete_doc_rows가 성립하지 않는다.
 _FTS = """
 CREATE VIRTUAL TABLE IF NOT EXISTS chunk_fts USING fts5(
     ctx, title, body,
-    tokenize = 'unicode61 remove_diacritics 0'
+    tokenize = 'unicode61 remove_diacritics 0',
+    content='', contentless_delete=1
 );
 """
 
@@ -197,7 +207,8 @@ class Bm25Index:
     def _delete_doc_rows(self, cur: sqlite3.Cursor, doc_id: str) -> int:
         """chunk_meta와 chunk_fts를 함께 지운다.
 
-        chunk_fts는 외부 컨텐츠 테이블이 아니라 자기 데이터를 들고 있으므로, chunk_meta만
+        chunk_fts는 chunk_meta에 연결된 external content 테이블이 아니라 별도의 조각(콘텐츠는
+        없이 색인만 갖는 contentless) 테이블이므로 자동으로 같이 지워지지 않는다. chunk_meta만
         지우면 FTS 쪽에 고아 행이 남아 지운 문서가 검색 결과에 계속 나온다.
         """
         rows = cur.execute(

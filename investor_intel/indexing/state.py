@@ -32,8 +32,11 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 # 청킹·토크나이징·문맥 조립 규칙이 바뀔 때 손으로 올린다. 올리면 다음 `index update`가
-# 전량 재구축을 한다.
-BUILDER_VERSION = "2026-08-25.1"
+# 전량 재구축을 한다. 다만 chunk_fts의 content 모드(contentless 여부)처럼 CREATE VIRTUAL
+# TABLE 자체를 바꾸는 스키마 변경은 `index build`가 하는 DELETE FROM으로는 반영되지 않는다
+# (테이블 구조는 그대로 두고 행만 지우기 때문) - `data/search_index.sqlite3` 파일 자체를
+# 지우고 다시 만들어야 한다.
+BUILDER_VERSION = "2026-08-26.1"
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS index_state (
