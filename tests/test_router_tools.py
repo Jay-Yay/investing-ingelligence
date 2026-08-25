@@ -147,3 +147,148 @@ def test_holdings_table_row_count_column_is_read_when_present() -> None:
     (row,) = _parse_holdings_table(body)
     assert row["row_count"] == 12
     assert row["value_usd"] == 69_900_000_000
+
+
+# --- Hybrid Search 연결 ------------------------------------------------------------------
+
+
+def _companies_bundle(tmp_path: Path, companies: dict) -> Path:
+    bundle = tmp_path / "bundle" / "companies"
+    bundle.mkdir(parents=True, exist_ok=True)
+    for key, title in companies.items():
+        (bundle / f"{key}.md").write_text(
+            f"---\ntype: Company\ntitle: {title}\n---\n", encoding="utf-8")
+    return tmp_path / "bundle"
+
+
+def _seed_chunk_db(chunk_db: Path, records: list) -> None:
+    from investor_intel.indexing.bm25_index import Bm25Index
+    index = Bm25Index(chunk_db, korean_ngram=True, korean_keep_word=True)
+    index.build(records)
+    index.close()
+
+
+def _record(doc_id: str, body: str, *, source_name: str = "ch", entity_key: str = "",
+           okf_status: str = "stable") -> tuple:
+    return (
+        {"chunk_uid": f"{doc_id}#0", "doc_id": doc_id, "ord": 0, "doc_path": "p",
+         "source_type": "telegram", "source_name": source_name, "published_at": "2026-07-08",
+         "title": body[:10], "filing_type": None, "capture_mode": "full", "heading_path": "",
+         "kind": "prose", "n_chars": len(body), "raw_text": body,
+         "okf_status": okf_status, "entity_key": entity_key},
+        body, body[:10], body,
+    )
+
+
+def test_router_search_documents_works_bm25_only_when_no_vector_backend_given(
+    tmp_path: Path,
+) -> None:
+    """Hybrid는 선택 사항이다 - vector_index/encoder를 안 주면 BM25 단독으로 동작해야 한다."""
+    bundle = _companies_bundle(tmp_path, {})
+    chunk_db = tmp_path / "chunk.sqlite3"
+    _seed_chunk_db(chunk_db, [_record("a", "에이피알 실적 발표 좋은 소식")])
+    router = Router(bundle, chunk_db, tmp_path / "structured.sqlite3")
+    assert not router.docs.retriever.vector_enabled
+    result = router.answer("에이피알 실적 어땠나")
+    assert result.tool == "search_documents"
+    assert result.result.ok
+
+
+def test_router_search_documents_becomes_hybrid_when_vector_backend_given(
+    tmp_path: Path,
+) -> None:
+    from investor_intel.indexing.embedding import HashEncoder
+    from investor_intel.indexing.vector_index import VectorIndex
+
+    bundle = _companies_bundle(tmp_path, {})
+    chunk_db = tmp_path / "chunk.sqlite3"
+    _seed_chunk_db(chunk_db, [_record("a", "에이피알 실적 발표 좋은 소식")])
+
+    vec = VectorIndex(tmp_path / "vec.sqlite3")
+    vec.build([{"embed_text": "에이피알 실적 발표 좋은 소식", "chunk_uid": "a#0", "doc_id": "a",
+                "ord": 0, "title": "제목", "source_type": "telegram", "n_chars": 10,
+                "raw_text": "에이피알 실적 발표 좋은 소식"}], HashEncoder())
+
+    router = Router(bundle, chunk_db, tmp_path / "structured.sqlite3",
+                    vector_index=vec, encoder=HashEncoder())
+    assert router.docs.retriever.vector_enabled
+
+
+# --- corrupt 기본 제외가 Router.answer 경로 전체에서 지켜지는지 --------------------------
+
+
+def test_corrupt_evidence_carries_a_warning_note_through_the_router(tmp_path: Path) -> None:
+    """근거가 하나도 없어 corrupt를 최후 수단으로 꺼내면, 그 사실이 note에 반드시 남아야
+    한다 - 이게 빠지면 손상된 본문이 경고 없이 근거로 인용된다."""
+    bundle = _companies_bundle(tmp_path, {})
+    chunk_db = tmp_path / "chunk.sqlite3"
+    _seed_chunk_db(chunk_db, [_record("broken", "에이피알 실적 관련 내용", okf_status="corrupt")])
+    router = Router(bundle, chunk_db, tmp_path / "structured.sqlite3")
+    result = router.answer("에이피알 실적 발표")
+    assert result.result.ok
+    assert result.result.note is not None and "인코딩이 깨져" in result.result.note
+
+
+# --- 그래프 탐색 (2-hop) ------------------------------------------------------------------
+
+
+def test_graph_tool_finds_entities_co_mentioned_by_the_same_channel(tmp_path: Path) -> None:
+    from investor_intel.indexing.tools import GraphTool
+
+    bundle = _companies_bundle(tmp_path, {"kr-278470": "에이피알", "kr-090430": "아모레퍼시픽"})
+    chunk_db = tmp_path / "chunk.sqlite3"
+    _seed_chunk_db(chunk_db, [
+        _record("a", "에이피알 실적", source_name="뷰티채널", entity_key="|kr-278470|"),
+        _record("b", "아모레퍼시픽 실적", source_name="뷰티채널", entity_key="|kr-090430|"),
+        _record("c", "무관한 채널의 무관한 글", source_name="다른채널", entity_key="|kr-090430|"),
+    ])
+    from investor_intel.indexing.bm25_index import Bm25Index
+    from investor_intel.indexing.retrieval import EntityLexicon
+    index = Bm25Index(chunk_db, korean_ngram=True, korean_keep_word=True)
+    lex = EntityLexicon(bundle)
+    tool = GraphTool(index, lex)
+
+    res = tool.run("에이피알을 다룬 채널이 또 무엇을 언급했나")
+    assert res.ok
+    assert res.evidence[0]["entity_key"] == "kr-090430"
+    # '다른채널'은 에이피알을 다루지 않았으므로 hop 1에서 제외되고, 카운트에 안 들어간다.
+    assert res.evidence[0]["count"] == 1
+    index.close()
+
+
+def test_graph_tool_reports_no_channel_found(tmp_path: Path) -> None:
+    from investor_intel.indexing.tools import GraphTool
+
+    bundle = _companies_bundle(tmp_path, {"kr-278470": "에이피알"})
+    chunk_db = tmp_path / "chunk.sqlite3"
+    _seed_chunk_db(chunk_db, [_record("a", "무관한 내용")])
+    from investor_intel.indexing.bm25_index import Bm25Index
+    from investor_intel.indexing.retrieval import EntityLexicon
+    index = Bm25Index(chunk_db, korean_ngram=True, korean_keep_word=True)
+    tool = GraphTool(index, EntityLexicon(bundle))
+    res = tool.run("에이피알을 다룬 채널이 또 무엇을 언급했나")
+    assert not res.ok
+    index.close()
+
+
+def test_graph_tool_excludes_corrupt_chunks_from_both_hops(tmp_path: Path) -> None:
+    from investor_intel.indexing.tools import GraphTool
+
+    bundle = _companies_bundle(tmp_path, {"kr-278470": "에이피알"})
+    chunk_db = tmp_path / "chunk.sqlite3"
+    _seed_chunk_db(chunk_db, [
+        _record("a", "에이피알 실적", source_name="뷰티채널", entity_key="|kr-278470|",
+                okf_status="corrupt"),
+    ])
+    from investor_intel.indexing.bm25_index import Bm25Index
+    from investor_intel.indexing.retrieval import EntityLexicon
+    index = Bm25Index(chunk_db, korean_ngram=True, korean_keep_word=True)
+    tool = GraphTool(index, EntityLexicon(bundle))
+    res = tool.run("에이피알을 다룬 채널이 또 무엇을 언급했나")
+    assert not res.ok  # hop 1 자체가 corrupt만 있어 채널을 찾지 못한다
+    index.close()
+
+
+def test_router_routes_relationship_questions_to_the_graph_tool() -> None:
+    assert Router.route("에이피알을 다룬 채널이 최근 또 무엇을 언급했나") == "graph_traverse"
+    assert Router.route("에이피알과 함께 언급된 종목이 뭐야") == "graph_traverse"
