@@ -126,7 +126,7 @@ def test_render_labels_press_release_capture_distinctly_from_transcript() -> Non
         full_text="2분기 매출 발표 보도자료 본문",
         capture_kind="press_release",
     )
-    assert "(8-K 첨부 실적발표 보도자료 원문)" in body
+    assert "(첨부 실적발표 보도자료 원문)" in body
     assert "2분기 매출 발표 보도자료 본문" in body
 
 
@@ -139,4 +139,4 @@ def test_render_labels_transcript_capture_distinctly_from_press_release() -> Non
         full_text="Operator: welcome to the call",
         capture_kind="transcript",
     )
-    assert "(8-K 첨부 컨퍼런스콜 녹취록 원문)" in body
+    assert "(첨부 컨퍼런스콜 녹취록 원문)" in body

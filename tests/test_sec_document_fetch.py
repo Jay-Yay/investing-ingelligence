@@ -99,7 +99,13 @@ def test_find_earnings_exhibit_returns_transcript_when_operator_and_qa_present()
     )
     client = _client()
 
-    result = find_earnings_exhibit(client, _CIK, _ACCESSION, filing_items=["2.02", "9.01"])
+    result = find_earnings_exhibit(
+        client,
+        _CIK,
+        _ACCESSION,
+        filing_items=["2.02", "9.01"],
+        primary_document="be-20250801.htm",
+    )
     client.close()
 
     assert result is not None
@@ -138,7 +144,13 @@ def test_find_earnings_exhibit_falls_back_to_press_release_when_item_2_02_presen
     )
     client = _client()
 
-    result = find_earnings_exhibit(client, _CIK, _ACCESSION, filing_items=["2.02", "9.01"])
+    result = find_earnings_exhibit(
+        client,
+        _CIK,
+        _ACCESSION,
+        filing_items=["2.02", "9.01"],
+        primary_document="be-20250801.htm",
+    )
     client.close()
 
     assert result is not None
@@ -171,10 +183,127 @@ def test_find_earnings_exhibit_returns_none_when_no_results_item_and_no_transcri
     )
     client = _client()
 
-    result = find_earnings_exhibit(client, _CIK, _ACCESSION, filing_items=["5.02"])
+    result = find_earnings_exhibit(
+        client, _CIK, _ACCESSION, filing_items=["5.02"], primary_document="be-20250801.htm"
+    )
     client.close()
 
     assert result is None
+
+
+@respx.mock
+def test_find_earnings_exhibit_captures_press_release_named_without_ex99_convention() -> None:
+    """실사례(CRWV 2026-08-11 8-K): 실적 보도자료 exhibit이 "coreweave2q26earningspress.htm"처럼
+    회사가 임의로 지은 파일명을 쓰면 "ex99" 관례 기반 정규식으로는 후보에서 걸러져 금액
+    누락(metadata_only)으로 남았다. 파일명 관례가 아니라 primaryDocument/XBRL 뷰어 조각만
+    제외하는 방식으로 찾아야 한다.
+    """
+    respx.get(f"{_ARCHIVE_BASE}/index.json").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "directory": {
+                    "item": [
+                        {"name": "crwv-20260811.htm", "type": "text.gif"},
+                        {"name": "coreweave2q26earningspress.htm", "type": "text.gif"},
+                        {"name": "R1.htm", "type": "text.gif"},
+                    ]
+                }
+            },
+        )
+    )
+    respx.get(f"{_ARCHIVE_BASE}/coreweave2q26earningspress.htm").mock(
+        return_value=httpx.Response(200, text="<html><body>2분기 매출 12억 달러 발표</body></html>")
+    )
+    client = _client()
+
+    result = find_earnings_exhibit(
+        client,
+        _CIK,
+        _ACCESSION,
+        filing_items=["2.02", "9.01"],
+        primary_document="crwv-20260811.htm",
+    )
+    client.close()
+
+    assert result is not None
+    assert result.is_transcript is False
+    assert "매출" in result.text
+
+
+@respx.mock
+def test_find_earnings_exhibit_excludes_primary_document_and_xbrl_viewer_fragments() -> None:
+    """primaryDocument 자체와 iXBRL 뷰어가 생성하는 "R숫자.htm" 조각은 실적 exhibit 후보가
+    아니다 - 후보에 섞이면 R1.htm(커버페이지 XBRL 조각)이 실적 보도자료로 오인될 수 있다.
+    """
+    respx.get(f"{_ARCHIVE_BASE}/index.json").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "directory": {
+                    "item": [
+                        {"name": "be-20250801.htm", "type": "text.gif"},
+                        {"name": "R1.htm", "type": "text.gif"},
+                    ]
+                }
+            },
+        )
+    )
+    client = _client()
+
+    result = find_earnings_exhibit(
+        client,
+        _CIK,
+        _ACCESSION,
+        filing_items=["2.02", "9.01"],
+        primary_document="be-20250801.htm",
+    )
+    client.close()
+
+    assert result is None
+
+
+@respx.mock
+def test_find_earnings_exhibit_force_flag_captures_6k_earnings_exhibit_without_item_codes() -> None:
+    """실사례(NBIS 6-K): FPI의 6-K는 8-K 항목 코드가 없어 filing_items가 비어 있다. 호출부가
+    period_of_report 존재 등으로 "이 6-K는 실적 관련"이라 판단해 force_results_exhibit_search=True로
+    넘기면, 항목 코드 없이도 보도자료 exhibit을 캡처해야 한다.
+    """
+    respx.get(f"{_ARCHIVE_BASE}/index.json").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "directory": {
+                    "item": [
+                        {"name": "tm2622968d1_6k.htm", "type": "text.gif"},
+                        {"name": "tm2622968d1_ex99-1.htm", "type": "text.gif"},
+                        {"name": "tm2622968d1_ex99-2.htm", "type": "text.gif"},
+                    ]
+                }
+            },
+        )
+    )
+    respx.get(f"{_ARCHIVE_BASE}/tm2622968d1_ex99-1.htm").mock(
+        return_value=httpx.Response(200, text="<html><body>2분기 매출 5억 달러 발표</body></html>")
+    )
+    respx.get(f"{_ARCHIVE_BASE}/tm2622968d1_ex99-2.htm").mock(
+        return_value=httpx.Response(200, text="<html><body>투자자 프레젠테이션</body></html>")
+    )
+    client = _client()
+
+    result = find_earnings_exhibit(
+        client,
+        _CIK,
+        _ACCESSION,
+        filing_items=[],
+        primary_document="tm2622968d1_6k.htm",
+        force_results_exhibit_search=True,
+    )
+    client.close()
+
+    assert result is not None
+    assert result.is_transcript is False
+    assert "매출" in result.text
 
 
 @respx.mock
@@ -182,7 +311,9 @@ def test_find_earnings_exhibit_returns_none_when_index_fetch_fails() -> None:
     respx.get(f"{_ARCHIVE_BASE}/index.json").mock(return_value=httpx.Response(500))
     client = _client()
 
-    result = find_earnings_exhibit(client, _CIK, _ACCESSION, filing_items=["2.02"])
+    result = find_earnings_exhibit(
+        client, _CIK, _ACCESSION, filing_items=["2.02"], primary_document="be-20250801.htm"
+    )
     client.close()
 
     assert result is None

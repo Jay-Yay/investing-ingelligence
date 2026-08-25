@@ -31,6 +31,11 @@ def test_classify_sec_form_matches_quarterly_and_amendment() -> None:
     assert classify_sec_form("10-Q/A") == "분기"
 
 
+def test_classify_sec_form_matches_fpi_annual_report() -> None:
+    assert classify_sec_form("20-F") == "연간"
+    assert classify_sec_form("20-F/A") == "연간"
+
+
 def test_classify_sec_form_returns_none_for_other_forms() -> None:
     assert classify_sec_form("8-K") is None
     assert classify_sec_form("6-K") is None

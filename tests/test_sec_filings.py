@@ -300,3 +300,73 @@ def test_8k_captures_press_release_when_results_item_present_but_no_transcript_c
     assert eightk.title.startswith("[실적발표 보도자료] ")
     assert eightk.content_capture_mode == "full"
     assert "매출" in eightk.body_text
+
+
+def _fpi_company() -> CompanyConfig:
+    return CompanyConfig(
+        ticker="NBIS",
+        cik="0001513845",
+        name="Nebius Group",
+        filing_types=["20-F", "6-K"],
+        is_foreign_private_issuer=True,
+    )
+
+
+@respx.mock
+@freeze_time("2026-08-12")
+def test_6k_with_period_of_report_captures_earnings_exhibit_without_item_codes(
+    tmp_path,
+) -> None:
+    """실사례(NBIS): FPI의 6-K는 8-K 항목 코드가 없어 이전 로직으로는 exhibit을 절대 찾지
+    않았다(filing.form == "8-K" 분기에만 들어갔으므로). period_of_report가 채워진 6-K는
+    실적 관련으로 간주해 exhibit을 캡처해야 한다.
+    """
+    respx.get("https://data.sec.gov/submissions/CIK0001513845.json").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "cik": "1513845",
+                "name": "Nebius Group",
+                "filings": {
+                    "recent": {
+                        "accessionNumber": ["0001104659-26-094568"],
+                        "filingDate": ["2026-08-12"],
+                        "reportDate": ["2026-06-30"],
+                        "form": ["6-K"],
+                        "primaryDocument": ["tm2622968d1_6k.htm"],
+                        "primaryDocDescription": ["6-K"],
+                        "items": [""],
+                    }
+                },
+            },
+        )
+    )
+    archive = "https://www.sec.gov/Archives/edgar/data/1513845/000110465926094568"
+    respx.get(f"{archive}/index.json").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "directory": {
+                    "item": [
+                        {"name": "tm2622968d1_6k.htm", "type": "text.gif"},
+                        {"name": "tm2622968d1_ex99-1.htm", "type": "text.gif"},
+                    ]
+                }
+            },
+        )
+    )
+    respx.get(f"{archive}/tm2622968d1_ex99-1.htm").mock(
+        return_value=httpx.Response(200, text="<html><body>2분기 매출 5억 달러 발표</body></html>")
+    )
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+    client = SECClient(user_agent="Investor Intel test@example.com")
+    collector = SECFilingsCollector(_fpi_company(), client, CheckpointStore(conn))
+
+    result = collector.collect_incremental()
+    client.close()
+
+    sixk = next(item for item in result.items if item.filing_type == "6-K")
+    assert sixk.title.startswith("[실적발표 보도자료] ")
+    assert sixk.content_capture_mode == "full"
+    assert "매출" in sixk.body_text

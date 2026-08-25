@@ -189,6 +189,14 @@ companies:
       - 10-Q
       - 8-K
     is_foreign_private_issuer: false
+  - ticker: BRUN
+    cik: '0002090646'
+    name: Boost Run Inc.
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
+    is_foreign_private_issuer: false
   - ticker: CEG
     cik: '0001868275'
     name: Constellation Energy Corp
