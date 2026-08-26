@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import sqlite3
 import time
 from dataclasses import dataclass
@@ -7,6 +8,10 @@ from pathlib import Path
 from typing import Iterable, Sequence
 
 from investor_intel.indexing.tokenizer import to_fts_document, to_fts_query
+
+
+def _text_hash(text: str) -> str:
+    return hashlib.blake2b(text.encode("utf-8"), digest_size=8).hexdigest()
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS chunk_meta (
@@ -29,27 +34,45 @@ CREATE TABLE IF NOT EXISTS chunk_meta (
     pub_year       TEXT,
     okf_status     TEXT,
     n_chars        INTEGER NOT NULL,
-    -- 청크에 붙인 문맥(concept의 description)을 토큰화 전 원문으로 함께 보관한다.
-    -- chunk_fts.ctx는 토큰화된 형태라 되읽을 수 없다. 이 컬럼이 있어야 벡터 인덱스가
-    -- 번들을 다시 파싱해 다시 청킹하지 않고 같은 청크를 그대로 쓸 수 있다 - 청킹을 두 곳에서
-    -- 따로 하면 chunk_uid가 어긋나 RRF가 같은 조각을 다른 것으로 취급한다.
-    ctx_text       TEXT NOT NULL DEFAULT '',
+    -- 청크에 붙인 문맥(concept의 description)의 해시. 원문은 chunk_text에 값 하나당 한 벌만
+    -- 있다 - ctx_text는 문서 하나 안의 모든 청크에서 동일해(같은 concept의 description) 청크
+    -- 수만큼(문서당 평균 47개) 그대로 반복 저장하면 낭비다.
+    ctx_hash       TEXT NOT NULL DEFAULT '',
     -- 원본 vault 문서의 id. concept id와 다르다. 이게 있어야 "수집은 됐는데 색인 안 된
     -- 문서가 몇 건인가"를 카탈로그와 조인해서 정확히 셀 수 있다.
     native_doc_id  TEXT NOT NULL DEFAULT '',
-    raw_text       TEXT NOT NULL
+    -- 청크 본문의 해시. 실측: SEC 필링 표준 인증서/서명 문구, 반복되는 페이지 머리글 등으로
+    -- 서로 다른 문서의 청크 중 24%가 완전히 같은 텍스트였다 - chunk_text에 값 하나당 한 벌만
+    -- 두고 여기서는 해시로 참조한다.
+    raw_hash       TEXT NOT NULL DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS idx_chunk_doc ON chunk_meta(doc_id);
 CREATE INDEX IF NOT EXISTS idx_chunk_source ON chunk_meta(source_type, published_at);
 CREATE INDEX IF NOT EXISTS idx_chunk_capture ON chunk_meta(capture_mode);
+
+-- 청크 텍스트를 값 기준으로 한 벌만 보관한다(raw_text, ctx_text 공용). chunk_meta의
+-- raw_hash/ctx_hash가 이 테이블을 가리킨다. 여러 문서·청크가 같은 값을 참조해도 저장은
+-- 한 번이다.
+CREATE TABLE IF NOT EXISTS chunk_text (
+    text_hash TEXT PRIMARY KEY,
+    text      TEXT NOT NULL
+);
 """
+
+# 조회 시 chunk_meta.raw_hash/ctx_hash를 chunk_text에 조인해 raw_text/ctx_text 컬럼명 그대로
+# 돌려준다 - 호출부(search, chunk_records, vector_pipeline)가 sqlite3.Row에서
+# row["raw_text"]/row["ctx_text"]로 읽는 기존 코드를 그대로 쓸 수 있게 하기 위해서다.
+_TEXT_JOIN = """
+    LEFT JOIN chunk_text rt ON rt.text_hash = m.raw_hash
+    LEFT JOIN chunk_text ct ON ct.text_hash = m.ctx_hash
+"""
+_TEXT_COLUMNS = "COALESCE(rt.text, '') AS raw_text, COALESCE(ct.text, '') AS ctx_text"
 
 # 이미 만들어둔 옛 스키마의 인덱스 파일이 남아 있으면 CREATE TABLE IF NOT EXISTS는 컬럼을
 # 추가해주지 않는다. 새 컬럼을 참조하는 인덱스는 컬럼이 실제로 생긴 뒤에만 만들 수 있어
 # 분리해 둔다.
 _OKF_COLUMNS = {"okf_type": "TEXT", "entity_key": "TEXT", "period_year": "TEXT",
                 "pub_year": "TEXT", "okf_status": "TEXT",
-                "ctx_text": "TEXT NOT NULL DEFAULT ''",
                 "native_doc_id": "TEXT NOT NULL DEFAULT ''"}
 _OKF_INDEXES = """
 -- OKF 메타데이터로 '검색 전에 후보를 좁히는' 경로. 이게 있어야 지식 레이어의
@@ -61,10 +84,20 @@ CREATE INDEX IF NOT EXISTS idx_chunk_native ON chunk_meta(native_doc_id);
 
 # FTS5 컬럼을 셋으로 나눈 이유: bm25()가 컬럼별 가중치를 받기 때문에, 같은 토큰이라도
 # 제목/문맥헤더에서 맞았을 때와 본문에서 맞았을 때 점수를 다르게 줄 수 있다.
+#
+# content='' (contentless)인 이유: 기본(non-contentless) FTS5는 INSERT한 컬럼 원문을
+# chunk_fts_content 섀도 테이블에 통째로 한 벌 더 보관한다. 여기 넣는 값은 이미 bigram으로
+# 펼쳐 공백으로 이어 붙인 토큰 스트림(원문의 약 3배 크기, tokenizer.to_fts_document 참고)이라
+# 그 사본이 raw_text를 들고 있는 chunk_meta보다도 컸다(실측 4.3GB 중 chunk_fts_content가
+# 1.4GB). search()는 항상 chunk_meta.raw_text에서 본문을 읽고 chunk_fts 컬럼을 직접
+# SELECT하지 않으므로 그 사본은 애초에 쓸모가 없다. contentless_delete=1은 콘텐츠 없이도
+# rowid로 DELETE할 수 있게 해준다(SQLite 3.43+) - 없으면 삭제할 때마다 원래 컬럼값을 다시
+# 넘겨야 해서 _delete_doc_rows가 성립하지 않는다.
 _FTS = """
 CREATE VIRTUAL TABLE IF NOT EXISTS chunk_fts USING fts5(
     ctx, title, body,
-    tokenize = 'unicode61 remove_diacritics 0'
+    tokenize = 'unicode61 remove_diacritics 0',
+    content='', contentless_delete=1
 );
 """
 
@@ -122,19 +155,28 @@ class Bm25Index:
         self.conn.executescript(_FTS)
 
     # --- Store -------------------------------------------------------------
+    def _intern(self, cur: sqlite3.Cursor, text: str) -> str:
+        """text를 chunk_text에 값 기준으로 한 벌만 두고 해시를 돌려준다."""
+        h = _text_hash(text)
+        cur.execute("INSERT OR IGNORE INTO chunk_text (text_hash, text) VALUES (?, ?)", (h, text))
+        return h
+
     def _insert(self, cur: sqlite3.Cursor, record: tuple[dict, str, str, str]) -> int:
         meta, ctx, title, body = record
+        ctx_hash = self._intern(cur, ctx) if ctx else ""
+        raw_hash = self._intern(cur, body)
         cur.execute(
             """INSERT INTO chunk_meta (chunk_uid, doc_id, ord, doc_path, source_type,
                source_name, published_at, title, filing_type, capture_mode, heading_path,
                kind, okf_type, entity_key, period_year, pub_year, okf_status, n_chars,
-               ctx_text, native_doc_id, raw_text)
+               ctx_hash, native_doc_id, raw_hash)
                VALUES (:chunk_uid,:doc_id,:ord,:doc_path,:source_type,:source_name,
                :published_at,:title,:filing_type,:capture_mode,:heading_path,:kind,
                :okf_type,:entity_key,:period_year,:pub_year,:okf_status,:n_chars,
-               :ctx_text,:native_doc_id,:raw_text)""",
+               :ctx_hash,:native_doc_id,:raw_hash)""",
             {"okf_type": "", "entity_key": "", "period_year": "", "pub_year": "",
-             "okf_status": "stable", "ctx_text": ctx, "native_doc_id": "", **meta},
+             "okf_status": "stable", "ctx_hash": ctx_hash, "native_doc_id": "",
+             **meta, "raw_hash": raw_hash},
         )
         rid = cur.lastrowid
         cur.execute(
@@ -154,6 +196,7 @@ class Bm25Index:
         cur = self.conn.cursor()
         cur.execute("DELETE FROM chunk_meta")
         cur.execute("DELETE FROM chunk_fts")
+        cur.execute("DELETE FROM chunk_text")
         n_chunks = n_chars = 0
         docs: set[str] = set()
         for record in records:
@@ -178,6 +221,11 @@ class Bm25Index:
         청킹은 결정론적이라 같은 입력이면 같은 청크가 나온다. 그래서 문서 단위로 지우고
         다시 넣는 것이 안전하다 - 청크별로 비교해 부분 갱신하는 것보다 단순하고, 청크
         경계가 바뀌는 경우(본문이 조금 길어지면 뒤쪽 청크가 전부 밀린다)도 자동으로 맞는다.
+
+        chunk_text의 참조 카운트는 관리하지 않는다 - 문서를 지워도 그 문서만 참조하던
+        chunk_text 값이 orphan으로 남을 수 있다. 증분 갱신에서는 무시할 만한 크기이고,
+        `build()`(전량 재구축)가 매번 chunk_text를 통째로 비우고 다시 채우므로 주기적으로
+        정리된다.
         """
         cur = self.conn.cursor()
         self._delete_doc_rows(cur, doc_id)
@@ -199,7 +247,8 @@ class Bm25Index:
     def _delete_doc_rows(self, cur: sqlite3.Cursor, doc_id: str) -> int:
         """chunk_meta와 chunk_fts를 함께 지운다.
 
-        chunk_fts는 외부 컨텐츠 테이블이 아니라 자기 데이터를 들고 있으므로, chunk_meta만
+        chunk_fts는 chunk_meta에 연결된 external content 테이블이 아니라 별도의 조각(콘텐츠는
+        없이 색인만 갖는 contentless) 테이블이므로 자동으로 같이 지워지지 않는다. chunk_meta만
         지우면 FTS 쪽에 고아 행이 남아 지운 문서가 검색 결과에 계속 나온다.
         """
         rows = cur.execute(
@@ -242,15 +291,15 @@ class Bm25Index:
         따로 하면 `chunk_uid`가 어긋날 수 있고, 그러면 두 검색 결과를 RRF로 합칠 때 같은
         조각이 서로 다른 것으로 취급된다.
         """
+        base = f"SELECT m.*, {_TEXT_COLUMNS} FROM chunk_meta m {_TEXT_JOIN}"
         if doc_ids is None:
-            return self.conn.execute(
-                "SELECT * FROM chunk_meta ORDER BY doc_id, ord").fetchall()
+            return self.conn.execute(f"{base} ORDER BY m.doc_id, m.ord").fetchall()
         out: list[sqlite3.Row] = []
         for i in range(0, len(doc_ids), 500):
             batch = doc_ids[i : i + 500]
             placeholders = ",".join("?" * len(batch))
             out += self.conn.execute(
-                f"SELECT * FROM chunk_meta WHERE doc_id IN ({placeholders}) ORDER BY doc_id, ord",
+                f"{base} WHERE m.doc_id IN ({placeholders}) ORDER BY m.doc_id, m.ord",
                 list(batch),
             ).fetchall()
         return out
@@ -302,8 +351,9 @@ class Bm25Index:
             where.append("m.okf_status NOT IN (%s)" % ",".join("?" * len(exclude_status)))
             params.extend(exclude_status)
         sql = f"""
-            SELECT m.*, bm25(chunk_fts, ?, ?, ?) AS score
+            SELECT m.*, rt.text AS raw_text, bm25(chunk_fts, ?, ?, ?) AS score
             FROM chunk_fts JOIN chunk_meta m ON m.rowid_ref = chunk_fts.rowid
+            LEFT JOIN chunk_text rt ON rt.text_hash = m.raw_hash
             WHERE {' AND '.join(where)}
             ORDER BY score LIMIT ?
         """
@@ -312,7 +362,7 @@ class Bm25Index:
             Hit(
                 chunk_uid=r["chunk_uid"], doc_id=r["doc_id"], score=r["score"],
                 source_type=r["source_type"], title=r["title"] or "",
-                heading_path=r["heading_path"] or "", text=r["raw_text"],
+                heading_path=r["heading_path"] or "", text=r["raw_text"] or "",
                 capture_mode=r["capture_mode"] or "",
                 # 이 네 필드가 빠져 있으면 인덱스에는 저장돼 있는 okf_status 등이 검색
                 # 결과에서 항상 빈 문자열이 된다 - corrupt 문서(11,298개 청크)를 근거로

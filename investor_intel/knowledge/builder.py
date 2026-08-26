@@ -19,6 +19,8 @@ _MAP = {
     "naver": ("BlogPost", "blog"),
     "ib_insights": ("ResearchNote", "research"),
     "essay": ("Essay", "essays"),
+    "central_bank": ("CentralBankStatement", "central_bank"),
+    "web_search": ("WebSearchResult", "web_search"),
 }
 
 # concept type별 신선도 계약. OKF의 timestamp는 '언제 갱신됐나'만 말해주므로,
@@ -26,6 +28,7 @@ _MAP = {
 _STALE_DAYS = {
     "DartFiling": 400, "SecFiling": 400, "HoldingsSnapshot": 120,
     "MarketCommentary": 90, "BlogPost": 365, "ResearchNote": 365, "Essay": 3650,
+    "CentralBankStatement": 400, "WebSearchResult": 30,
 }
 
 _SLUG = re.compile(r"[^a-z0-9가-힣]+")
@@ -65,6 +68,16 @@ def lead_text(body: str) -> str:
     """머리말을 걷어낸 본문 앞부분."""
     t = _PREAMBLE.sub("", body.strip(), count=1).strip()
     return re.sub(r"^[\[\]\s*#]+", "", t)
+
+
+def _link_text(title: str) -> str:
+    """마크다운 링크 텍스트로 안전하게 쓸 수 있게 대괄호를 없앤다.
+
+    title은 본문에서 뽑힐 수 있어(`_first_sentence`) 원문에 `[원문](url)` 같은 마크다운
+    링크 문법이 그대로 포함될 수 있다. `[{title}](...)`로 감싸면 title 안의 짝 안 맞는
+    `]`가 바깥 링크를 조기에 닫아버려 링크가 깨진다.
+    """
+    return title.replace("[", "").replace("]", "")
 
 
 def _first_sentence(text: str, limit: int = 110) -> str:
@@ -199,7 +212,8 @@ def build_concepts(vault: Path, db_path: Path) -> tuple[list[Concept], CompanyRe
             investors[f"inv-{slug(d.source_name)}"] = d.author or d.source_name
         else:
             kind = {"telegram": "telegram", "naver": "naver", "ib_insights": "ib",
-                    "essay": "essay"}[d.source_type]
+                    "essay": "essay", "central_bank": "central_bank",
+                    "web_search": "web_search"}[d.source_type]
             channels[f"ch-{kind}-{slug(d.source_name)}"] = (d.author or d.source_name, kind)
 
     concepts: list[Concept] = []
@@ -236,7 +250,8 @@ def build_concepts(vault: Path, db_path: Path) -> tuple[list[Concept], CompanyRe
                 securities[f"sec-{slug(norm)}"] = norm
         else:
             kind = {"telegram": "telegram", "naver": "naver", "ib_insights": "ib",
-                    "essay": "essay"}[d.source_type]
+                    "essay": "essay", "central_bank": "central_bank",
+                    "web_search": "web_search"}[d.source_type]
             key = f"ch-{kind}-{slug(d.source_name)}"
             subject = EntityRef("channel", key, channels[key][0])
             # 수집 시점에 이미 해소된 관계가 있으면 그것을 쓴다. 같은 판정을 여기서 다시
@@ -326,7 +341,7 @@ def build_concepts(vault: Path, db_path: Path) -> tuple[list[Concept], CompanyRe
         latest = group[-1]
         for old in group[:-1]:
             old.status = "superseded"
-            old.extra_links.append(("대체 문서", f"[{latest.title}]({latest.key}.md)"))
+            old.extra_links.append(("대체 문서", f"[{_link_text(latest.title)}]({latest.key}.md)"))
             stats["superseded"] += 1
 
     for c in concepts:
@@ -357,7 +372,7 @@ def build_bundle(vault: Path, db_path: Path, out_root: Path) -> dict:
         shown = items[:200]
         for c in shown:
             flag = "" if c.status == "stable" else f" `{c.status}`"
-            lines.append(f"- [{c.title[:70]}]({c.key}.md) — {c.type}{flag}")
+            lines.append(f"- [{_link_text(c.title)[:70]}]({c.key}.md) — {c.type}{flag}")
         if len(items) > len(shown):
             lines.append(f"\n_외 {len(items) - len(shown)}건은 파일 시스템에서 직접 탐색._")
         (out_root / folder / "index.md").write_text("\n".join(lines) + "\n", encoding="utf-8")

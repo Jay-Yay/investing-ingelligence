@@ -183,7 +183,7 @@ def test_incremental_result_matches_a_full_rebuild(tmp_path: Path) -> None:
 
     def snapshot(index: Bm25Index) -> list[tuple]:
         return [
-            (r["chunk_uid"], r["doc_id"], r["ord"], r["raw_text"], r["ctx_text"],
+            (r["chunk_uid"], r["doc_id"], r["ord"], r["raw_hash"], r["ctx_hash"],
              r["entity_key"], r["okf_status"], r["native_doc_id"])
             for r in index.conn.execute(
                 "SELECT * FROM chunk_meta ORDER BY chunk_uid")
