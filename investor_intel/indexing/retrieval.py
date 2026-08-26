@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, Protocol
 import yaml
 
 from investor_intel.indexing.bm25_index import Bm25Index, Hit
+from investor_intel.indexing.rerank import RerankSignal, rerank
 from investor_intel.indexing.tokenizer import tokenize
 
 if TYPE_CHECKING:
@@ -222,12 +223,16 @@ class AdaptiveRetriever:
                  hybrid_kwargs: dict | None = None,
                  grade_threshold: float = 0.45,
                  policy: RetrievalPolicy | None = None,
-                 exclude_status: Sequence[str] = DEFAULT_EXCLUDE_STATUS):
+                 exclude_status: Sequence[str] = DEFAULT_EXCLUDE_STATUS,
+                 rerank_signal: RerankSignal | None = RerankSignal()):
         self.index = index
         self.lex = lex
         self.grade_threshold = grade_threshold
         self.policy = policy or RetrievalPolicy()
         self.exclude_status = tuple(exclude_status)
+        # None으로 주면 재랭킹을 끈다 - 원본 순위 그대로 돌려준다. 신호가 필요없는
+        # 평가(예: 변형 간 순수 검색 성능 비교)에서 쓴다.
+        self.rerank_signal = rerank_signal
         # vector_index/encoder를 둘 다 받았을 때만 Hybrid로 동작한다. 둘 중 하나라도
         # 없으면 BM25 단독으로 조용히 되돌아간다 - 벡터 인덱스가 아직 없는 환경에서도
         # 이 클래스는 그대로 동작해야 한다.
@@ -332,6 +337,12 @@ class AdaptiveRetriever:
                 cov: float | None = None) -> RetrievalResult:
         if cov is None:
             cov = steps[-1].coverage if steps else 0.0
+        if self.rerank_signal is not None and hits:
+            # 필터가 relax_filter로 풀렸어도 plan.entity_key/period_year는 사용자가
+            # 실제로 물은 종목·기간을 그대로 담고 있다 - 필터에서는 빠졌어도 순위에서는
+            # 그 종목을 우선할 수 있다.
+            hits = rerank(hits, plan.text, entity_key=plan.entity_key,
+                         period_year=plan.period_year, signal=self.rerank_signal)
         escalate = cov < self.policy.escalate_to_human_below
         if escalate:
             steps.append(Step("escalate",

@@ -151,3 +151,26 @@ def test_default_policy_preserves_the_original_three_step_budget(tmp_path: Path)
     retriever = AdaptiveRetriever(index, lex)
     assert retriever.max_steps == 3
     index.close()
+
+
+# --- Reranker가 실제 실패 사례를 고치는지 (통합) -------------------------------------------
+
+
+def test_rerank_promotes_the_target_company_over_the_analyst_house_flood(tmp_path: Path) -> None:
+    """"교보증권이 제시한 에이피알 목표주가" 실패 사례의 재현.
+
+    교보증권(분석 주체)이 다룬 다른 종목 리포트가 여러 건이라 BM25 원본 순위에서는
+    상위를 차지하지만, 실제 대상인 에이피알 문서는 entity_key가 명확하다. 필터가
+    relax됐더라도 재랭킹이 대상 종목 문서를 앞으로 당겨야 한다.
+    """
+    lex = _lexicon(tmp_path, {"kr-278470": "에이피알", "kr-030610": "교보증권"})
+    index = _index(tmp_path, [
+        _record("other1", "교보증권 리포트 현대위아 실적 리뷰", entity_key="|kr-004920|"),
+        _record("other2", "교보증권 리포트 하이브 실적 리뷰", entity_key="|kr-352820|"),
+        _record("other3", "교보증권 리포트 LS일렉트릭 실적 리뷰", entity_key="|kr-010120|"),
+        _record("target", "교보증권 리서치 에이피알 목표주가 상향", entity_key="|kr-278470|"),
+    ])
+    retriever = AdaptiveRetriever(index, lex)
+    result = retriever.search("교보증권이 제시한 에이피알 목표주가")
+    assert result.hits[0].doc_id == "target"
+    index.close()

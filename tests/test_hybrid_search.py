@@ -93,6 +93,13 @@ def test_load_encoder_rejects_unknown_model():
         load_encoder("이런-모델-없음")
 
 
+def test_load_encoder_round_trips_the_hash_encoders_own_stored_name():
+    """벡터 인덱스의 vec_info에는 encoder.name("hash-3gram")이 저장된다 - 그 이름을
+    그대로 다시 load_encoder에 넣어도 같은 인코더가 나와야 한다."""
+    enc = load_encoder("hash")
+    assert load_encoder(enc.name).name == enc.name
+
+
 # ---------------------------------------------------------- 벡터 인덱스
 
 def test_build_stores_every_chunk(built):
