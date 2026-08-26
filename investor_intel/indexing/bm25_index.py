@@ -370,7 +370,7 @@ class Bm25Index:
                 # 수 없다 - corrupt도 capture_mode='full'이다).
                 okf_type=r["okf_type"] or "", entity_key=r["entity_key"] or "",
                 period_year=r["period_year"] or "", okf_status=r["okf_status"] or "",
-                kind=r["kind"] or "",
+                kind=r["kind"] or "", doc_path=r["doc_path"] or "",
             )
             for r in rows
         ]
