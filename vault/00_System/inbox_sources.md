@@ -74,3 +74,10 @@ investor: CIK | 에세이URL(선택)
 - [x] telegram: https://t.me/china_kis
 - [x] telegram: https://t.me/miraeoillee
 - [x] telegram: https://t.me/KISemicon
+- [x] sec: AEP
+- [x] sec: DTE
+- [x] sec: FE
+- [x] sec: CMS
+- [x] sec: VIST
+- [x] sec: XE
+- [x] investor: 0001562087
