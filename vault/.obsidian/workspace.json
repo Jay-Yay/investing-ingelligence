@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "10_Sources/Telegram/akacommodity/2026/2026-08-04-5b21b34aeab5a974.md",
+                "file": "50_Reports/Daily/2026-08-01.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "2026-08-04-5b21b34aeab5a974"
+              "title": "2026-08-01"
             }
           }
         ]
@@ -187,6 +187,11 @@
   },
   "active": "009251780a79215d",
   "lastOpenFiles": [
+    "50_Reports/Brief/qna/qna_2026-08-26_2352.md",
+    "50_Reports/Brief/qna/qna_2026-08-26_2103.md",
+    "50_Reports/Daily/2026-08-25-decisions-local.md",
+    "10_Sources/Naver/tosoha1/2026/2026-02-08-ccb7fb7837043de5.md",
+    "10_Sources/Telegram/akacommodity/2026/2026-08-04-5b21b34aeab5a974.md",
     "10_Sources/Telegram/akacommodity/2026/2026-08-08-1b4a63542e4303ac.md",
     "10_Sources/Telegram/akacommodity/2026/2026-08-07-1583dd0d83fdbbfb.md",
     "10_Sources/Telegram/akacommodity/2026/2026-08-07-2ea537a25c3160be.md",
@@ -208,11 +213,6 @@
     "10_Sources/Telegram/akacommodity/2026/2026-08-06-e7ea08937360eb76.md",
     "10_Sources/Telegram/akacommodity/2026/2026-08-06-ae157057c446e588.md",
     "10_Sources/Telegram/akacommodity/2026/2026-08-06-ca620bcd490b6204.md",
-    "10_Sources/Telegram/akacommodity/2026/2026-08-06-2fc72bf524b8ccba.md",
-    "10_Sources/Telegram/akacommodity/2026/2026-08-06-524380f90197cb5f.md",
-    "10_Sources/Telegram/akacommodity/2026/2026-08-06-96deee4465aeb277.md",
-    "10_Sources/Telegram/akacommodity/2026/2026-08-06-bff3fd2c2939ed4f.md",
-    "10_Sources/Telegram/akacommodity/2026/2026-08-06-419b47bdb27c559b.md",
     "10_Sources/Telegram/KISemicon/2026",
     "10_Sources/Telegram/KISemicon",
     "10_Sources/Telegram/miraeoillee/2026",
