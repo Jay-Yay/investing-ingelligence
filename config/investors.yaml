@@ -24,3 +24,8 @@ investors:
     fund_name: Pershing Square Capital Management, L.P.
     cik: 0001336528
     related_essay_url: null
+  - id: thiel_macro_llc
+    name: Thiel Macro LLC
+    fund_name: Thiel Macro LLC
+    cik: 0001562087
+    related_essay_url: null

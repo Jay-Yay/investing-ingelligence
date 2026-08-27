@@ -126,7 +126,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: AAOI
-    cik: '0001158114'
+    cik: 0001158114
     name: APPLIED OPTOELECTRONICS, INC.
     filing_types:
       - 10-K
@@ -150,7 +150,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: ALAB
-    cik: '0001736297'
+    cik: 0001736297
     name: Astera Labs, Inc.
     filing_types:
       - 10-K
@@ -158,7 +158,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: ANET
-    cik: '0001596532'
+    cik: 0001596532
     name: Arista Networks, Inc.
     filing_types:
       - 10-K
@@ -166,7 +166,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: APP
-    cik: '0001751008'
+    cik: 0001751008
     name: AppLovin Corp
     filing_types:
       - 10-K
@@ -174,7 +174,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: ARRY
-    cik: '0001820721'
+    cik: 0001820721
     name: Array Technologies, Inc.
     filing_types:
       - 10-K
@@ -182,7 +182,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: AVGO
-    cik: '0001730168'
+    cik: 0001730168
     name: Broadcom Inc.
     filing_types:
       - 10-K
@@ -190,7 +190,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: BRUN
-    cik: '0002090646'
+    cik: 0002090646
     name: Boost Run Inc.
     filing_types:
       - 10-K
@@ -198,7 +198,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: CEG
-    cik: '0001868275'
+    cik: 0001868275
     name: Constellation Energy Corp
     filing_types:
       - 10-K
@@ -206,7 +206,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: COHR
-    cik: '0000820318'
+    cik: 0000820318
     name: COHERENT CORP.
     filing_types:
       - 10-K
@@ -214,7 +214,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: COIN
-    cik: '0001679788'
+    cik: 0001679788
     name: Coinbase Global, Inc.
     filing_types:
       - 10-K
@@ -222,7 +222,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: CRCL
-    cik: '0001876042'
+    cik: 0001876042
     name: Circle Internet Group, Inc.
     filing_types:
       - 10-K
@@ -230,7 +230,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: CRDO
-    cik: '0001807794'
+    cik: 0001807794
     name: Credo Technology Group Holding Ltd
     filing_types:
       - 10-K
@@ -238,7 +238,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: DASH
-    cik: '0001792789'
+    cik: 0001792789
     name: DoorDash, Inc.
     filing_types:
       - 10-K
@@ -246,14 +246,14 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: DLO
-    cik: '0001846832'
+    cik: 0001846832
     name: dLocal Ltd
     filing_types:
       - 20-F
       - 6-K
     is_foreign_private_issuer: true
   - ticker: DLR
-    cik: '0001297996'
+    cik: 0001297996
     name: DIGITAL REALTY TRUST, INC.
     filing_types:
       - 10-K
@@ -269,7 +269,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: EQIX
-    cik: '0001101239'
+    cik: 0001101239
     name: EQUINIX INC
     filing_types:
       - 10-K
@@ -277,7 +277,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: ETN
-    cik: '0001551182'
+    cik: 0001551182
     name: Eaton Corp plc
     filing_types:
       - 10-K
@@ -293,7 +293,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: FSLR
-    cik: '0001274494'
+    cik: 0001274494
     name: FIRST SOLAR, INC.
     filing_types:
       - 10-K
@@ -301,7 +301,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: GEV
-    cik: '0001996810'
+    cik: 0001996810
     name: GE Vernova Inc.
     filing_types:
       - 10-K
@@ -309,7 +309,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: HOOD
-    cik: '0001783879'
+    cik: 0001783879
     name: Robinhood Markets, Inc.
     filing_types:
       - 10-K
@@ -325,7 +325,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: LITE
-    cik: '0001633978'
+    cik: 0001633978
     name: Lumentum Holdings Inc.
     filing_types:
       - 10-K
@@ -333,7 +333,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: MELI
-    cik: '0001099590'
+    cik: 0001099590
     name: MERCADOLIBRE INC
     filing_types:
       - 10-K
@@ -341,7 +341,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: MRVL
-    cik: '0001835632'
+    cik: 0001835632
     name: Marvell Technology, Inc.
     filing_types:
       - 10-K
@@ -365,7 +365,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: NTNX
-    cik: '0001618732'
+    cik: 0001618732
     name: Nutanix, Inc.
     filing_types:
       - 10-K
@@ -373,7 +373,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: NVTS
-    cik: '0001821769'
+    cik: 0001821769
     name: Navitas Semiconductor Corp
     filing_types:
       - 10-K
@@ -381,7 +381,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: NXT
-    cik: '0001852131'
+    cik: 0001852131
     name: Nextpower Inc.
     filing_types:
       - 10-K
@@ -389,7 +389,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: OKLO
-    cik: '0001849056'
+    cik: 0001849056
     name: Oklo Inc.
     filing_types:
       - 10-K
@@ -397,7 +397,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: ORCL
-    cik: '0001341439'
+    cik: 0001341439
     name: ORACLE CORP
     filing_types:
       - 10-K
@@ -405,7 +405,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: PINS
-    cik: '0001506293'
+    cik: 0001506293
     name: PINTEREST, INC.
     filing_types:
       - 10-K
@@ -413,7 +413,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: POWL
-    cik: '0000080420'
+    cik: 0000080420
     name: POWELL INDUSTRIES INC
     filing_types:
       - 10-K
@@ -421,7 +421,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: PWR
-    cik: '0001050915'
+    cik: 0001050915
     name: QUANTA SERVICES, INC.
     filing_types:
       - 10-K
@@ -429,7 +429,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: RUN
-    cik: '0001469367'
+    cik: 0001469367
     name: Sunrun Inc.
     filing_types:
       - 10-K
@@ -437,21 +437,21 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: SAP
-    cik: '0001000184'
+    cik: 0001000184
     name: SAP SE
     filing_types:
       - 20-F
       - 6-K
     is_foreign_private_issuer: true
   - ticker: SE
-    cik: '0001703399'
+    cik: 0001703399
     name: Sea Ltd
     filing_types:
       - 20-F
       - 6-K
     is_foreign_private_issuer: true
   - ticker: SEI
-    cik: '0001697500'
+    cik: 0001697500
     name: Solaris Energy Infrastructure, Inc.
     filing_types:
       - 10-K
@@ -459,7 +459,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: SHLS
-    cik: '0001831651'
+    cik: 0001831651
     name: Shoals Technologies Group, Inc.
     filing_types:
       - 10-K
@@ -467,7 +467,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: SHOP
-    cik: '0001594805'
+    cik: 0001594805
     name: SHOPIFY INC.
     filing_types:
       - 10-K
@@ -483,7 +483,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: SMR
-    cik: '0001822966'
+    cik: 0001822966
     name: NUSCALE POWER Corp
     filing_types:
       - 10-K
@@ -491,7 +491,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: SMTC
-    cik: '0000088941'
+    cik: 0000088941
     name: SEMTECH CORP
     filing_types:
       - 10-K
@@ -499,7 +499,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: SNAP
-    cik: '0001564408'
+    cik: 0001564408
     name: Snap Inc
     filing_types:
       - 10-K
@@ -523,7 +523,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: TTD
-    cik: '0001671933'
+    cik: 0001671933
     name: Trade Desk, Inc.
     filing_types:
       - 10-K
@@ -531,7 +531,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: TWLO
-    cik: '0001447669'
+    cik: 0001447669
     name: TWILIO INC
     filing_types:
       - 10-K
@@ -539,7 +539,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: U
-    cik: '0001810806'
+    cik: 0001810806
     name: Unity Software Inc.
     filing_types:
       - 10-K
@@ -547,7 +547,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: VIAV
-    cik: '0000912093'
+    cik: 0000912093
     name: VIAVI SOLUTIONS INC.
     filing_types:
       - 10-K
@@ -555,7 +555,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: VICR
-    cik: '0000751978'
+    cik: 0000751978
     name: VICOR CORP
     filing_types:
       - 10-K
@@ -563,7 +563,7 @@ companies:
       - 8-K
     is_foreign_private_issuer: false
   - ticker: VST
-    cik: '0001692819'
+    cik: 0001692819
     name: Vistra Corp.
     filing_types:
       - 10-K
@@ -573,6 +573,53 @@ companies:
   - ticker: WDC
     cik: '0000106040'
     name: WESTERN DIGITAL CORP
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
+    is_foreign_private_issuer: false
+  - ticker: AEP
+    cik: 0000004904
+    name: AMERICAN ELECTRIC POWER CO INC
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
+    is_foreign_private_issuer: false
+  - ticker: DTE
+    cik: 0000936340
+    name: DTE ENERGY CO
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
+    is_foreign_private_issuer: false
+  - ticker: FE
+    cik: 0001031296
+    name: FIRSTENERGY CORP
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
+    is_foreign_private_issuer: false
+  - ticker: CMS
+    cik: 0000811156
+    name: CMS ENERGY CORP
+    filing_types:
+      - 10-K
+      - 10-Q
+      - 8-K
+    is_foreign_private_issuer: false
+  - ticker: VIST
+    cik: '0001762506'
+    name: Vista Energy, S.A.B. de C.V.
+    filing_types:
+      - 20-F
+      - 6-K
+    is_foreign_private_issuer: true
+  - ticker: XE
+    cik: 0002088896
+    name: X-Energy, Inc.
     filing_types:
       - 10-K
       - 10-Q
