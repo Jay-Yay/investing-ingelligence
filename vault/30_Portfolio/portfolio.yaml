@@ -1,6 +1,13 @@
-# key_kpis / invalidation_condition / next_catalyst / fair_value_low·high / max_position_weight는
-# 스캐폴딩만 돼 있고 비어 있다 — 포트폴리오 모니터 LLM이 "무엇이 달라졌는가"를 판단하는 기준이
-# 되므로, 직접 채워야 유효하게 동작한다. 채우는 법은 Runbook.md "투자 가설 원장 작성" 참고.
+# key_kpis / invalidation_condition / next_catalyst / fair_value_low·high는 포트폴리오 모니터
+# LLM이 "무엇이 달라졌는가"를 판단하는 기준이므로 채워야 유효하게 동작한다. 채우는 법은
+# Runbook.md "투자 가설 원장 작성" 참고.
+#
+# 2026-08-28 기준 상태:
+#   NBIS, BE — 작성 완료. 내재가치 모델(vault/30_Portfolio/ValuationModels/)에서 도출한 값이며,
+#              fair_value는 애널리스트 컨센서스가 아니라 SEC 공시·회사 supplemental(A등급 소스)
+#              기반 역산값이다. 분기 실적 발표 때마다 모델과 함께 갱신할 것.
+#   RDDT, 000660, 005930, 483650, 278470 — 미작성(스캐폴딩 상태). 해당 종목은 이 필드들이
+#              판단에서 빠진다.
 as_of: 2026-07-26
 base_currency: KRW
 constraints:
@@ -18,14 +25,41 @@ positions:
     quantity: 97
     average_cost: 205
     cost_currency: USD
-    thesis: ""
+    thesis: >
+      AI 클라우드 인프라 사업자. 투자논리의 핵심 축은 당기 매출이나 ARR 자체가 아니라
+      "확보한 계약전력이 매출창출 용량으로 얼마나 전환되는가"다. 회사 자신의 공시
+      (Q2'26 신규계약 ACV $20~25M/MW, AI Cloud 조정EBITDA 마진 50%, 투자회수기간
+      1년10개월에서 역산한 capex $20.6M/MW)로 1MW 가치를 $99M으로 산정하면, 현재가
+      $219.11(2026-08-27, EV $60.07B)은 YE2026 계약전력 5GW 중 약 12.1%만 전환된다고
+      전제하는 수준이다. 계약전력 가이던스는 4개 분기 연속 상향(2.5→3→4→5GW)됐고
+      ARR 가이던스 $7~9B는 4개 분기 내내 불변이라 남은 변수는 순수 실행이다.
+      주의 1: 외부 comp(CoreWeave/IREN) 멀티플 모델은 4개 분기 백테스트에서 평균오차
+      41~489%로 기각됐으므로 밸류에이션 판단에 쓰지 않는다.
+      주의 2: BE와 같은 AI 인프라 자본조달 서사에 이중 노출돼 있어(BE의 대형 고객이
+      NBIS) 두 종목은 사실상 1.5개 포지션으로 취급한다.
+      주의 3: 아래 target_price $227.5는 이 모델 도입 이전 값으로, 모델상 중립 구간
+      상단(fair_value_high $271, 전환율 15%)보다 낮다 — 재검토 필요.
+      상세: vault/30_Portfolio/ValuationModels/NBIS_model.md (2026-08-28 작성)
     target_price: 227.5
     stop_loss_price: null
-    key_kpis: []
-    invalidation_condition: ""
-    next_catalyst: ""
-    fair_value_low: null
-    fair_value_high: null
+    key_kpis:
+      - connected/active power MW 실적치 (계약전력→매출 전환의 유일한 직접 관측치)
+      - 신규계약 MW당 연간계약가치(ACV/MW) — $20~25M 유지 여부
+      - 분기 ARR의 $7~9B 가이던스 경로 정합성 (Q2'26 $3.0B = 목표 중간값의 37.5%)
+      - AI Cloud 조정 EBITDA 마진 (Q2'26 50%)
+      - 자금조달 방식과 발행주식수 — 희석(ATM/증자) vs 무희석(선수금·자산담보금융)
+    invalidation_condition: >
+      다음 중 둘 이상이 동시에 확인되면 "5GW 중 12% 전환" 전제 자체가 무너지므로
+      투자논리 전면 재검토: (1) 분기 ARR이 $7~9B 가이던스 경로에서 이탈, (2) 신규계약
+      ACV/MW가 $20M 아래로 하락(단가 재평가 논리 붕괴), (3) AI Cloud 조정EBITDA 마진이
+      50% 아래로 후퇴, (4) capex를 희석 조달(ATM/증자)에 지속 의존해 주당가치가
+      전환율 개선분을 상쇄.
+    next_catalyst: >
+      2026년 11월경 Q3 2026 실적 — ARR 경로, connected/active MW 실적치, ACV/MW 지속
+      여부. 이어 2027년 2월경 Q4/FY2026 실적에서 $7~9B ARR 최종 달성 여부가 확인되며,
+      이것이 역산 모델의 첫 실질 사후검증이다.
+    fair_value_low: 180
+    fair_value_high: 271
     max_position_weight: null
   - symbol: BE
     name: Bloom Energy
@@ -35,30 +69,49 @@ positions:
     average_cost: 185
     cost_currency: USD
     thesis: >
-      AI 데이터센터향 온사이트 전력(고체산화물 연료전지) 공급사. Oracle 2.8GW MSA,
-      Nebius $1.7B 계약, Brookfield 파이낸싱 프레임워크($5B→$25B 확대)가 백로그
-      성장을 뒷받침(2026-07-28 2Q26: 매출 $1.065B, 컨센서스 $827M 상회, FY26
-      가이던스 매출 $3.9~4.2B·조정EPS $2.55~2.85로 상향). 다만 Hunterbrook의
-      특수관계자(Nebius) 매출 집중 의혹(2026-07-08)과 세액공제 등 정책 의존
-      리스크 상존. 매수는 $180~200(200일선·평단 부근) 패닉성 급락 구간을 우선,
-      추격 매수는 $220~240. $280~300에서 1차 트림, $340~350(JPM $346, 52주
-      신고가 $351.28)에서 최종 목표. 상세: vault/50_Reports/Brief/qna/qna_2026-08-02_1121.md
+      AI 데이터센터향 온사이트 전력(고체산화물 연료전지) 공급사. Oracle 최대 2.8GW MSA,
+      Nebius $1.7B 계약, Brookfield 파이낸싱 프레임워크($5B→$25B 확대)가 백로그 성장을
+      뒷받침한다. 실적은 강력하다 — 2026-07-28 발표 Q2'26 매출 $1,065.4M(+165.5% YoY,
+      사상 첫 분기 $1B), non-GAAP 총마진 34.3%(+604bp), non-GAAP 영업이익 $239.6M(8.4배),
+      미국 매출 비중 59%→90%로 AI 데이터센터 피벗이 숫자로 확인. FY26 가이던스 매출
+      $3.9~4.2B·non-GAAP 영업이익 $800~900M.
+      다만 밸류에이션 안전마진은 얇다: 현재가 $219.20(2026-08-27, EV $64.25B)은 FY26
+      non-GAAP 영업이익의 75.6배로, 정상 배수 25x 기준 제품 백로그가 공시치 $6.0B에서
+      약 $17.2B로 2.9배 커지는 것을 이미 전제한다.
+      2026-08-28 1차 자료로 기존 논리 2건을 정정함 — (1) "특수관계자(Nebius) 매출 집중"은
+      사실과 다르다: 회계상 특수관계자는 Fund JV와 SK ecoplant이며 Q2'26 특수관계자 매출은
+      $2.8M(총매출의 0.3%)에 불과하다. 실질 리스크는 고객 집중이며 3개 고객이 매출채권의
+      87%(36/34/17%)를 차지한다. (2) "세액공제 축소 리스크"도 현시점 방향과 반대다:
+      2025-07-04 OBBBA가 연료전지의 무탄소 요건을 삭제하고 48E를 30%로, phase-out 개시를
+      2034년으로 설정해 오히려 우호적이다. 단 백로그 금액 산정 자체에 ITC가 반영되므로
+      정책은 여전히 파급력 최상위 요소다.
+      주의 1: 아래 target_price $300과 직전 fair_value(280/346)는 애널리스트 컨센서스
+      기반이었으나, Investment_Mandate의 소스 등급상 D등급이므로 A등급 공시 기반 모델값
+      (98/274)으로 교체했다. target_price는 사용자 설정값이라 유지했으며 재검토 필요.
+      주의 2: NBIS가 대형 고객이라 두 종목은 사실상 1.5개 포지션으로 취급한다.
+      상세: vault/30_Portfolio/ValuationModels/BE_model.md (2026-08-28),
+      매수·매도 구간 원안: vault/50_Reports/Brief/qna/qna_2026-08-02_1121.md
     target_price: 300
     stop_loss_price: null
     key_kpis:
-      - 분기 매출 YoY 성장률 및 컨센서스 대비 서프라이즈 폭
-      - 수주잔고(backlog) 규모 및 Brookfield 파이낸싱 집행 속도
-      - 특수관계자(Nebius 등) 매출 비중 공시
-      - 파나마 EdgeMode 1.2GW 데이터센터 2건 공급자 확정 여부
+      - 제품 백로그 규모 (연 1회 Q4 실적에서만 공시 — 다음 2027년 2월경, 최우선 지표)
+      - 신규 대형 수주의 GW·금액 명시 여부 (분기 중 백로그의 유일한 대리지표)
+      - non-GAAP 총마진 (Q2'26 34.3%) 및 opex 비율
+      - 고객 집중도 — 10-Q Credit Risk 주석의 상위 3사 매출채권 비중 (2026-06-30 87%)
+      - Brookfield 등 프로젝트 파이낸싱 프레임워크의 실제 집행 속도
     invalidation_condition: >
-      특수관계자 매출 비중이 과도하게 높은 것으로 확인되어 매출의 질이 훼손되거나,
-      연료전지 세액공제 축소/폐지로 프로젝트 경제성이 악화되는 경우 — 매수·목표가
-      논리 전체 재검토 필요.
+      2027년 2월경 공시되는 제품 백로그가 $14B에 못 미치면 현재가의 전제(정상 배수
+      30x로도 부족)가 무너지므로 비중 축소. 그 밖에 (1) non-GAAP 총마진이 34% 아래로
+      후퇴(1%p 하락은 필요매출을 약 5% 증가시킴), (2) 상위 3사 매출채권 비중이 87%에서
+      추가 상승하거나 주요 고객이 이탈, (3) 48E 세액공제가 축소되어 백로그 산정액이
+      기계적으로 하락하는 경우 논리 재검토.
     next_catalyst: >
-      파나마 EdgeMode 1.2GW 데이터센터 2건 공급자 확정 공시; 2026년 3분기 실적
-      발표(수주잔고·마진 지속성 확인).
-    fair_value_low: 280
-    fair_value_high: 346
+      2026년 10월경 Q3 2026 실적(총마진 34% 유지, FY26 가이던스 재확인, 고객 집중도
+      주석, 신규 수주). 결정적 이벤트는 2027년 2월경 Q4/FY2026 실적의 연 1회 백로그
+      공시로, 이 포지션의 실질 판정일이다. 그 밖에 파나마 EdgeMode 1.2GW 데이터센터
+      2건 공급자 확정 공시.
+    fair_value_low: 98
+    fair_value_high: 274
     max_position_weight: null
   - symbol: RDDT
     name: Reddit
