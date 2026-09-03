@@ -1,0 +1,221 @@
+# NBIS (Nebius Group) — Thesis Ledger
+#
+# 산문 근거: vault/30_Portfolio/ValuationModels/NBIS_model.md (2026-08-28 작성)
+# 이 파일은 "무엇을 어떻게 판정하는가"만 담는다. "왜 이 모델인가"는 모델 문서에.
+#
+# 편집 규칙(설계안 §5):
+# - 요인 선정·임계선 설정은 사람의 투자 판단이다. LLM은 초안 제안까지만.
+# - 자동 갱신은 `observed` 필드에만 허용한다 (triage가 관측치를 넣는다).
+# - 분기 실적 발표 직후 모델 문서와 함께 `observed`/`anchor` 전체 재계산.
+
+ticker: NBIS
+version: "2026-08-30"
+
+model:
+  kind: implied_expectations
+  doc: NBIS_model.md
+  anchor:
+    # NBIS_model.md §2.2 중심 시나리오 (ACV $20M/MW · 12x EV/EBITDA · capex $21M/MW)
+    name: contracted_power_conversion_rate
+    value: 12.1
+    unit: pct
+    priced_at: 219.11
+    as_of: 2026-08-27
+  # NBIS_model.md §2.5 (1차 근거 병기). 상단 초과 → 파생 take-profit(trim_review).
+  plausible_range: {low: 8, high: 20}
+  # portfolio.yaml fair_value_low/high (역산 모델 밴드)
+  fair_value: {low: 180, high: 271, currency: USD}
+
+drivers:
+  - id: nbis.acv_per_mw
+    name: MW당 연간계약가치 (ACV/MW)
+    weight: 0.30
+    unit: usd_millions
+    cadence: quarterly
+    observed: {value: 22.5, as_of: 2026-08-12, note: "Q2'26 신규계약 $20~25M 중앙값 (§1)"}
+    sensitivity: "$15M→$25M이면 MW당 가치 $69M→$129M (+87%)"
+    observability:
+      publisher: company
+      doc_kind: [sec_filing, earnings_transcript]
+      next_expected: 2026-11-15
+      match:
+        tickers: [NBIS]
+        any_of: ["ACV", "annual contract value", "MW당", "per MW", "$/MW", "신규계약"]
+
+  - id: nbis.connected_mw
+    name: 계약전력 → 활성전력 전환율·속도
+    weight: 0.35
+    unit: MW
+    cadence: quarterly
+    observed:
+      value: null
+      as_of: 2026-08-12
+      note: "Q2'26 주주서한에 활성 MW 절대치 미공시 — 전환율로 역산만 가능 (설계안 공백 D)"
+    required: {value: 900, by: 2026-12-31, note: "연결전력 가이던스 중앙값 800MW~1GW (§2.3)"}
+    sensitivity: "MW +100 → 반영 전환율 약 +2%p"
+    observability:
+      publisher: company
+      doc_kind: [sec_filing, earnings_transcript]
+      next_expected: 2026-11-15
+      match:
+        tickers: [NBIS]
+        any_of: ["connected power", "active power", "connected MW", "가동률", "utilization"]
+
+  - id: nbis.contracted_power_gw
+    name: 계약전력 총량
+    weight: 0.10
+    unit: GW
+    cadence: quarterly
+    observed: {value: 5.0, as_of: 2026-08-12, note: "YE2026 가이던스. 4개 분기 연속 상향"}
+    sensitivity: "상향 자체는 가치가 아니다 — 전환율(nbis.connected_mw)이 곱해져야 함 (§3)"
+    observability:
+      publisher: company
+      doc_kind: [sec_filing, earnings_transcript]
+      match:
+        tickers: [NBIS]
+        any_of: ["contracted power", "gigawatt", "계약전력", "GW"]
+
+  - id: nbis.ai_cloud_ebitda_margin
+    name: AI Cloud 조정 EBITDA 마진
+    weight: 0.15
+    unit: pct
+    cadence: quarterly
+    observed: {value: 50, as_of: 2026-08-12, note: "Q2'26. 24%→45%→50% 3분기 연속 개선"}
+    required: {value: 50, note: "50% 하회 시 행동(약세) — 모델에 선형 (§3)"}
+    observability:
+      publisher: company
+      doc_kind: [sec_filing, earnings_transcript]
+      match:
+        tickers: [NBIS]
+        any_of: ["adjusted EBITDA margin", "AI cloud", "EBITDA 마진", "segment margin"]
+
+  - id: nbis.arr
+    name: ARR 실행 궤적 vs $7~9B 가이던스
+    weight: 0.15
+    unit: usd_billions
+    cadence: quarterly
+    observed: {value: 3.0, as_of: 2026-08-12, note: "Q2'26 = 목표 중간값 $8B의 37.5%"}
+    required: {value: 8.0, by: 2027-02-28, note: "$7~9B 가이던스 중앙값. 첫 실질 사후검증"}
+    observability:
+      publisher: company
+      doc_kind: [sec_filing, earnings_transcript]
+      next_expected: 2026-11-15
+      match:
+        tickers: [NBIS]
+        any_of: ["ARR", "annualized run-rate", "annual recurring revenue", "run-rate revenue"]
+
+  - id: nbis.funding_mode
+    name: 자금조달 구조 (희석 vs 무희석)
+    weight: 0.10
+    unit: enum  # dilutive | non_dilutive
+    cadence: event
+    observed:
+      value: dilutive
+      as_of: 2026-08-24
+      note: "$5.75B 전환사채 (qna_2026-08-29). 단일 이벤트 — h2는 누적으로만 판정"
+    observability:
+      publisher: company
+      doc_kind: [sec_filing]
+      match:
+        tickers: [NBIS]
+        any_of: ["convertible", "ATM", "유상증자", "선수금", "prepayment", "asset-backed", "equity offering"]
+
+  - id: nbis.customer_concentration
+    name: 고객 집중도와 계약 상대방 신용
+    weight: 0.05
+    unit: usd_billions  # 최대 고객 계약 규모
+    cadence: event
+    observed: {value: 27, as_of: 2026-08-12, note: "Meta $27B = $12B 확정 + $15B 옵션 — 액면 주의"}
+    observability:
+      publisher: company
+      match:
+        tickers: [NBIS]
+        any_of: ["Microsoft", "Meta", "customer", "고객", "contract value", "backlog"]
+
+  - id: nbis.gpu_access
+    name: NVIDIA 관계 / 최신 GPU 접근권
+    weight: 0.03
+    unit: text
+    cadence: event
+    observed: {value: "Vera Rubin NVL72 초기 수령", as_of: 2026-08-12}
+    observability:
+      match:
+        tickers: [NBIS]
+        any_of: ["NVIDIA", "Vera Rubin", "Blackwell", "GB300", "GPU"]
+
+  # ── 매크로 요인 (regime 파이프라인에서 값이 온다. shared_with = 같이 흔들리는 종목) ──
+  - id: macro.ai_hyperscaler_capex_efficiency
+    name: 하이퍼스케일러 AI capex 사이클
+    weight: 0.20
+    unit: ratio
+    cadence: quarterly
+    link: regime:ai_hyperscaler_capex_efficiency
+    shared_with: [BE, "005930", "000660"]
+
+  - id: macro.credit_spread_hy_oas
+    name: 금리·크레딧 스프레드
+    weight: 0.05
+    unit: pct
+    cadence: daily
+    link: regime:credit_spread_hy_oas
+    shared_with: [BE]
+
+hypotheses:
+  - id: nbis.h1
+    statement: >
+      YE2026까지 계약전력 5GW 중 12% 이상이 매출창출 용량으로 전환되고, ARR이
+      $7~9B 가이던스 경로에 정합한다.
+    drivers: [nbis.connected_mw, nbis.arr, nbis.acv_per_mw]
+    state: open
+    confirm_if:
+      all:
+        - {driver: nbis.arr, op: ">=", value: 7.0, at: quarter_end}
+    refute_if:
+      any:
+        - {driver: nbis.arr, op: "<", value: 7.0, at: quarter_end}
+        - all:
+            - {driver: nbis.acv_per_mw, op: "<", value: 20}
+            - {driver: nbis.ai_cloud_ebitda_margin, op: "<", value: 50}
+    expires: 2027-02-28  # Q4/FY2026 실적 = 역산 모델의 첫 실질 사후검증
+    note: "portfolio.yaml invalidation_condition의 기계화. 앵커 전환율의 하한 12%."
+
+  - id: nbis.h2
+    statement: 자금조달이 희석 방식(ATM/증자/전환사채)에 지속 의존하지 않는다.
+    drivers: [nbis.funding_mode]
+    state: open
+    confirm_if:
+      all:
+        - {driver: nbis.funding_mode, op: "==", value: non_dilutive}
+    # 단일 희석 이벤트로 기각하지 않는다 — portfolio invalidation (4)는 "지속 의존".
+    # weakened 누적으로만 움직인다.
+    weakened_threshold: 2
+    expires: 2027-02-28
+    note: "2026-08 $5.75B 전환사채는 기록 대상 상시 반대 관측(triage가 넣는다)."
+
+triggers:
+  - id: nbis.exit_thesis_broken
+    action: reduce_review
+    when:
+      any:
+        - {hypothesis: nbis.h1, state: refuted}
+    note: "h1 기각 = '5GW 중 12% 전환' 전제 붕괴. portfolio.yaml invalidation 기계화."
+
+  - id: nbis.reduce_on_dilution
+    action: reduce_review
+    when:
+      any:
+        - {hypothesis: nbis.h2, state: refuted}
+        - {hypothesis: nbis.h2, state: weakened}
+    note: "희석 조달 지속 의존 — 전환율 개선분을 주당가치가 상쇄."
+
+  - id: nbis.add_on_weakness
+    action: buy_review
+    when:
+      all:
+        - {price: {op: "<=", value: 200}}
+        - {hypothesis: nbis.h1, state_in: [open, supported]}
+        - {driver: macro.credit_spread_hy_oas, op: "<=", value: 4.0}
+    note: "얕은 조정 + 논리 유지 + 신용 스프레드 정상 (qna_2026-08-29 매수 트리거)."
+
+  # 익절(trim_review)은 model.plausible_range.high=20에서 파생된다 (D3).
+  # 명시 트리거로 중복 정의하지 않는다 — thesis.triggers.evaluate_triggers가 항상 평가.

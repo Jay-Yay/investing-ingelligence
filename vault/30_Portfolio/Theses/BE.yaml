@@ -1,0 +1,225 @@
+# BE (Bloom Energy) — Thesis Ledger
+#
+# 산문 근거: vault/30_Portfolio/ValuationModels/BE_model.md (2026-08-28 작성)
+# 렌즈: 전력 부족과 분산전원 채택 (AI 인프라 렌즈 아님).
+#
+# 편집 규칙은 NBIS.yaml 머리말과 동일 (설계안 §5).
+
+ticker: BE
+version: "2026-08-30"
+
+model:
+  kind: implied_expectations
+  doc: BE_model.md
+  anchor:
+    # BE_model.md §2.2 중심 시나리오 (EV/EBIT 25x)
+    name: required_product_backlog
+    value: 17.2
+    unit: usd_billions
+    priced_at: 219.20
+    as_of: 2026-08-27
+  # BE_model.md §2.4 (1차 근거 병기). 상단 초과 → 파생 take-profit(trim_review).
+  plausible_range: {low: 6, high: 21}
+  fair_value: {low: 98, high: 274, currency: USD}
+
+drivers:
+  - id: be.product_backlog
+    name: 제품 백로그 규모
+    weight: 0.35
+    unit: usd_billions
+    cadence: annual
+    observed: {value: 6.0, as_of: 2026-02-09, note: "Q4'25 supplemental. 서비스 백로그 별도 ~$14B"}
+    required:
+      value: 17.2
+      by: 2027-02-28
+      note: "25x 중심 시나리오 앵커 (§2.2). h1 기각선은 $14B (§2.3 판정 임계선)."
+    sensitivity: "커버리지 1.6년 가정에 크게 좌우 — 2.5년이면 필요 백로그 1.6배 (§5 devil 4)"
+    observability:
+      publisher: company
+      doc_kind: [sec_filing]
+      next_expected: 2027-02-15  # 연 1회(Q4 실적)만 공시 — 그전까지 be.large_orders가 대리
+      match:
+        tickers: [BE]
+        any_of: ["product backlog", "제품 백로그", "backlog"]
+
+  - id: be.large_orders
+    name: 신규 대형 수주 (AI 데이터센터)
+    weight: 0.20
+    unit: gw
+    cadence: event
+    observed: {value: 2.8, as_of: 2026-04-15, note: "Oracle 최대 2.8GW MSA. 이어 Nebius $1.7B"}
+    sensitivity: "GW × MW당 단가로 백로그 기여분 추정 — 백로그의 유일한 분기 중 관측창 (§2)"
+    observability:
+      publisher: company
+      doc_kind: [sec_filing, earnings_transcript]
+      match:
+        tickers: [BE]
+        any_of: ["MSA", "Oracle", "Nebius", "data center", "gigawatt", "GW", "수주", "purchase order"]
+
+  - id: be.mfg_capacity
+    name: 제조 캐파 증설 속도
+    weight: 0.10
+    unit: text
+    cadence: quarterly
+    observed: {value: null, note: "분기 정량 공시 없음 — 10-Q 정성 서술만 (§1)"}
+    observability:
+      publisher: company
+      doc_kind: [sec_filing]
+      match:
+        tickers: [BE]
+        any_of: ["manufacturing capacity", "production capacity", "생산능력", "Fremont"]
+
+  - id: be.nongaap_gross_margin
+    name: non-GAAP 총마진 / 영업레버리지
+    weight: 0.15
+    unit: pct
+    cadence: quarterly
+    observed: {value: 34.3, as_of: 2026-07-28, note: "Q2'26 (+604bp). 6년 연속 개선"}
+    required: {value: 34.0, note: "34% 하회 = 행동(약세). 1%p 하락은 필요매출 약 +5% (§3)"}
+    observability:
+      publisher: company
+      doc_kind: [sec_filing, earnings_transcript]
+      match:
+        tickers: [BE]
+        any_of: ["non-GAAP gross margin", "총마진", "gross margin"]
+
+  - id: be.itc_policy
+    name: 48E 투자세액공제 정책
+    weight: 0.10
+    unit: enum  # favorable | neutral | adverse
+    cadence: event
+    observed:
+      value: favorable
+      as_of: 2025-07-04
+      note: "OBBBA — 무탄소 요건 삭제, 30% ITC, phase-out 2034 (§4-2). 백로그 산정에 ITC 직접 반영."
+    observability:
+      match:
+        tickers: [BE]
+        any_of: ["48E", "ITC", "investment tax credit", "세액공제", "Treasury", "OBBBA"]
+
+  - id: be.customer_concentration
+    name: 고객 집중도
+    weight: 0.05
+    unit: pct  # 상위 3사 매출채권 비중
+    cadence: quarterly
+    observed: {value: 87, as_of: 2026-06-30, note: "3개 고객 36/34/17% (10-Q Credit Risk 주석)"}
+    required: {value: 87, note: "87%에서 추가 상승 시 행동(약세)"}
+    observability:
+      publisher: company
+      doc_kind: [sec_filing]
+      match:
+        tickers: [BE]
+        any_of: ["credit risk", "accounts receivable", "매출채권", "customer concentration", "고객 집중"]
+
+  - id: be.project_financing
+    name: 프로젝트 파이낸싱 접근성
+    weight: 0.03
+    unit: usd_billions
+    cadence: event
+    observed: {value: 25, as_of: 2026-07-28, note: "Brookfield 프레임워크 $5B→$25B"}
+    observability:
+      match:
+        tickers: [BE]
+        any_of: ["Brookfield", "project financing", "financing framework", "파이낸싱"]
+
+  - id: be.grid_interconnect
+    name: 경쟁 기술 / 그리드 연결 대기시간
+    weight: 0.02
+    unit: text
+    cadence: event
+    observed: {value: null, note: "양방향 해석 — 전력수요 확대(+)와 온사이트 필요성 감소(−) 상충 (§3)"}
+    observability:
+      match:
+        tickers: [BE]
+        any_of: ["interconnection queue", "FERC", "grid connection", "gas turbine", "그리드 연결"]
+
+  # ── 매크로 요인 ──
+  - id: macro.natural_gas
+    name: 천연가스 가격
+    weight: 0.05
+    unit: usd_per_mmbtu
+    cadence: daily
+    # regime 파이프라인에 천연가스 지표가 없다 — 관측 불가. 설계안 공백 D의 실례:
+    # `thesis validate`가 WARNING으로 띄우고, Phase 6 컬렉터 백로그 1순위 후보가 된다.
+    shared_with: []
+
+  - id: macro.credit_spread_hy_oas
+    name: 금리 (프로젝트 파이낸싱 비용 + 성장주 배수)
+    weight: 0.05
+    unit: pct
+    cadence: daily
+    link: regime:credit_spread_hy_oas
+    shared_with: [NBIS]
+
+hypotheses:
+  - id: be.h1
+    statement: 2027년 2월경 공시되는 제품 백로그가 $14B 이상이다.
+    drivers: [be.product_backlog, be.large_orders]
+    state: open
+    confirm_if:
+      all:
+        - {driver: be.product_backlog, op: ">=", value: 14.0, at: quarter_end}
+    refute_if:
+      any:
+        - {driver: be.product_backlog, op: "<", value: 14.0, at: quarter_end}
+    expires: 2027-02-28
+    note: >
+      관측 빈도 연 1회 — 다음 공시(~2027-02)까지 반증 불가 (§2.3 경고). 그전까지는
+      be.large_orders가 유일한 대리지표이며 이 가설은 open으로 유지된다.
+
+  - id: be.h2
+    statement: non-GAAP 총마진이 34% 이상을 유지한다.
+    drivers: [be.nongaap_gross_margin]
+    state: open
+    confirm_if:
+      all:
+        - {driver: be.nongaap_gross_margin, op: ">=", value: 34.0, at: quarter_end}
+    refute_if:
+      any:
+        - {driver: be.nongaap_gross_margin, op: "<", value: 34.0, at: quarter_end}
+    expires: 2027-02-28
+
+  - id: be.h3
+    statement: 상위 3사 매출채권 집중도가 87%에서 추가로 오르지 않는다.
+    drivers: [be.customer_concentration]
+    state: open
+    confirm_if:
+      all:
+        - {driver: be.customer_concentration, op: "<=", value: 87}
+    refute_if:
+      any:
+        - {driver: be.customer_concentration, op: ">", value: 87}
+    expires: 2027-02-28
+
+triggers:
+  - id: be.exit_backlog_miss
+    action: reduce_review
+    when:
+      any:
+        - {hypothesis: be.h1, state: refuted}
+    note: "§2.3: 백로그 <$14B → 현재가 전제(30x로도 부족) 붕괴 → 비중 축소."
+
+  - id: be.reduce_margin_break
+    action: reduce_review
+    when:
+      any:
+        - {hypothesis: be.h2, state: refuted}
+    note: "총마진 34% 하회 — 모델에 선형 (§3)."
+
+  - id: be.reduce_concentration
+    action: reduce_review
+    when:
+      any:
+        - {hypothesis: be.h3, state: refuted}
+    note: "이미 3사 87% 상태에서 추가 집중 — 단일 고객 이탈 리스크 심화."
+
+  - id: be.add_on_weakness
+    action: buy_review
+    when:
+      all:
+        - {price: {op: "<=", value: 185}}
+        - {hypothesis: be.h1, state_in: [open, supported]}
+        - {hypothesis: be.h2, state_in: [open, supported]}
+    note: "평단 $185 근처 + 백로그·마진 논리 유지 (qna_2026-08-02 매수구간)."
+
+  # 익절(trim_review)은 model.plausible_range.high=21에서 파생된다 (D3).
