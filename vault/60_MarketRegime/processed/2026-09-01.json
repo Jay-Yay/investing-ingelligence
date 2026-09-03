@@ -1,0 +1,392 @@
+{
+  "report": {
+    "as_of": "2026-09-01",
+    "market_regime": "HEALTHY_RISK_ON",
+    "ai_regime": "INDETERMINATE",
+    "scores": {
+      "cooling_risk": 15.3,
+      "overheating_risk": 34.2,
+      "ai_cycle": null,
+      "data_confidence": 60.0
+    },
+    "confidence_level": "medium",
+    "signals": [
+      {
+        "indicator_id": "credit_spread_hy_oas",
+        "status": "confirmed",
+        "direction": "overheating",
+        "severity": 60,
+        "reason": "overheating_signal",
+        "observation_date": "2026-08-28",
+        "data_age_days": 4
+      },
+      {
+        "indicator_id": "chicago_fed_anfci",
+        "status": "confirmed",
+        "direction": "improving",
+        "severity": 40,
+        "reason": "easing_signal",
+        "observation_date": "2026-08-21",
+        "data_age_days": 11
+      },
+      {
+        "indicator_id": "yield_curve_10y3m",
+        "status": "normal",
+        "direction": "neutral",
+        "severity": 0,
+        "reason": "정상 범위",
+        "observation_date": "2026-08-31",
+        "data_age_days": 1
+      },
+      {
+        "indicator_id": "employment_cooling",
+        "status": "normal",
+        "direction": "neutral",
+        "severity": 0,
+        "reason": "정상 범위",
+        "observation_date": "2026-08-22",
+        "data_age_days": 10
+      },
+      {
+        "indicator_id": "vix_term_structure",
+        "status": "normal",
+        "direction": "neutral",
+        "severity": 0,
+        "reason": "정상 범위",
+        "observation_date": "2026-08-31",
+        "data_age_days": 1
+      },
+      {
+        "indicator_id": "market_breadth",
+        "status": "normal",
+        "direction": "neutral",
+        "severity": 0,
+        "reason": "정상 범위",
+        "observation_date": "2026-09-01",
+        "data_age_days": 0
+      },
+      {
+        "indicator_id": "leverage_positioning",
+        "status": "normal",
+        "direction": "neutral",
+        "severity": 0,
+        "reason": "정상 범위",
+        "observation_date": "2026-08-25",
+        "data_age_days": 7
+      },
+      {
+        "indicator_id": "ai_hyperscaler_capex_efficiency",
+        "status": "unavailable",
+        "direction": "neutral",
+        "severity": 0,
+        "reason": "no hyperscaler fundamentals could be fetched",
+        "observation_date": null,
+        "data_age_days": null
+      },
+      {
+        "indicator_id": "ai_semiconductor_demand",
+        "status": "unavailable",
+        "direction": "neutral",
+        "severity": 0,
+        "reason": "no semiconductor fundamentals could be fetched",
+        "observation_date": null,
+        "data_age_days": null
+      },
+      {
+        "indicator_id": "eps_revision_breadth",
+        "status": "unavailable",
+        "direction": "neutral",
+        "severity": 0,
+        "reason": "무료 API 없음 - I/B/E/S/Refinitiv 등 유료 컨센서스 데이터 필요 (유료 데이터 소스 확보 시 재검토)",
+        "observation_date": null,
+        "data_age_days": null
+      }
+    ],
+    "new_releases": [
+      "ICE BofA US High Yield OAS: 2.63 -> 2.6 (기준일 2026-08-28)",
+      "10년물-3개월물 금리차: 0.83 -> 0.84 (기준일 2026-08-31)",
+      "VIX 기간구조: 0.826 -> 0.851 (기준일 2026-08-31)",
+      "시장 폭(Market Breadth): 68.6 -> 65.8 (기준일 2026-09-01)"
+    ],
+    "warnings": [
+      "AI 산업 지표(하이퍼스케일러 Capex/AI 매출, 반도체 실수요)는 Phase 1에 미구현 - ai_cycle_score/ai_regime은 항상 indeterminate"
+    ],
+    "data_quality": {
+      "coverage_ratio": 0.7,
+      "stale_indicators": [
+        "Chicago Fed Adjusted National Financial Conditions Index"
+      ],
+      "unavailable_indicators": [
+        "하이퍼스케일러 AI 투자 효율",
+        "AI 반도체 실수요",
+        "S&P 500 EPS 전망치 수정 폭"
+      ],
+      "errors": []
+    }
+  },
+  "observations": {
+    "credit_spread_hy_oas": {
+      "indicator_id": "credit_spread_hy_oas",
+      "indicator_name": "ICE BofA US High Yield OAS",
+      "value": 2.6,
+      "unit": "pct",
+      "observation_date": "2026-08-28",
+      "release_date": null,
+      "fetched_at": "2026-09-01T04:42:53.458375Z",
+      "source_name": "FRED (Federal Reserve Bank of St. Louis)",
+      "source_url": "https://fred.stlouisfed.org/series/BAMLH0A0HYM2",
+      "frequency": "daily",
+      "data_age_days": 4,
+      "is_stale": false,
+      "is_revised": null,
+      "status": "ok",
+      "details": {
+        "change_5d_bps": -10.0,
+        "change_20d_bps": -25.0,
+        "percentile_3y": 0.5,
+        "percentile_5y": 0.5,
+        "percentile_10y": 0.5,
+        "zscore_5y_20d_change": -0.727,
+        "cooling_signal": false,
+        "overheating_signal": true
+      }
+    },
+    "chicago_fed_anfci": {
+      "indicator_id": "chicago_fed_anfci",
+      "indicator_name": "Chicago Fed Adjusted National Financial Conditions Index",
+      "value": -0.576,
+      "unit": "index",
+      "observation_date": "2026-08-21",
+      "release_date": null,
+      "fetched_at": "2026-09-01T04:42:53.458375Z",
+      "source_name": "FRED (Federal Reserve Bank of St. Louis)",
+      "source_url": "https://fred.stlouisfed.org/series/ANFCI",
+      "frequency": "weekly",
+      "data_age_days": 11,
+      "is_stale": true,
+      "is_revised": null,
+      "status": "ok",
+      "details": {
+        "change_4w": -0.007000000000000006,
+        "change_13w": -0.08299999999999996,
+        "percentile_5y": 6.9,
+        "tightening_signal": false,
+        "easing_signal": true
+      }
+    },
+    "yield_curve_10y3m": {
+      "indicator_id": "yield_curve_10y3m",
+      "indicator_name": "10년물-3개월물 금리차",
+      "value": 0.84,
+      "unit": "pct_points",
+      "observation_date": "2026-08-31",
+      "release_date": null,
+      "fetched_at": "2026-09-01T04:42:53.458375Z",
+      "source_name": "FRED (Federal Reserve Bank of St. Louis)",
+      "source_url": "https://fred.stlouisfed.org/series/T10Y3M",
+      "frequency": "daily",
+      "data_age_days": 1,
+      "is_stale": false,
+      "is_revised": null,
+      "status": "ok",
+      "details": {
+        "change_20d_bps": 5.0,
+        "change_63d_bps": 15.0,
+        "inverted_in_last_12m": true,
+        "trough_12m": -0.07,
+        "normalization_since_trough_bps": 91.0,
+        "rapid_normalization_signal": false
+      }
+    },
+    "employment_cooling": {
+      "indicator_id": "employment_cooling",
+      "indicator_name": "고용 냉각 복합지표",
+      "value": -9.9,
+      "unit": "pct_yoy",
+      "observation_date": "2026-08-22",
+      "release_date": null,
+      "fetched_at": "2026-09-01T04:42:53.458375Z",
+      "source_name": "FRED (Federal Reserve Bank of St. Louis)",
+      "source_url": "https://fred.stlouisfed.org/series/IC4WSA",
+      "frequency": "weekly",
+      "data_age_days": 10,
+      "is_stale": false,
+      "is_revised": null,
+      "status": "ok",
+      "details": {
+        "initial_claims_4wma": 205500.0,
+        "initial_claims_4wma_yoy_pct": -9.9,
+        "continued_claims": 1778000.0,
+        "continued_claims_yoy_pct": -8.4,
+        "sahm_rule_level": -0.03,
+        "sahm_rule_change_3m": -0.1,
+        "cooling_signal": false,
+        "sahm_approaching_signal": false,
+        "sahm_exceeded_signal": false
+      }
+    },
+    "vix_term_structure": {
+      "indicator_id": "vix_term_structure",
+      "indicator_name": "VIX 기간구조",
+      "value": 0.851,
+      "unit": "ratio",
+      "observation_date": "2026-08-31",
+      "release_date": null,
+      "fetched_at": "2026-09-01T04:42:53.458375Z",
+      "source_name": "Yahoo Finance (Cboe VIX/VIX3M)",
+      "source_url": "https://finance.yahoo.com/quote/%5EVIX",
+      "frequency": "daily",
+      "data_age_days": 1,
+      "is_stale": false,
+      "is_revised": null,
+      "status": "ok",
+      "details": {
+        "vix_level": 14.920000076293945,
+        "vix3m_level": 17.530000686645508,
+        "vix_1y_percentile": 8.4,
+        "vix_5y_percentile": 20.9,
+        "backwardation_signal": false,
+        "contango_calm_signal": false
+      }
+    },
+    "market_breadth": {
+      "indicator_id": "market_breadth",
+      "indicator_name": "시장 폭(Market Breadth)",
+      "value": 65.8,
+      "unit": "pct_above_200dma",
+      "observation_date": "2026-09-01",
+      "release_date": null,
+      "fetched_at": "2026-09-01T04:42:53.458375Z",
+      "source_name": "Wikipedia S&P 500 constituents + Yahoo Finance",
+      "source_url": "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",
+      "frequency": "daily",
+      "data_age_days": 0,
+      "is_stale": false,
+      "is_revised": null,
+      "status": "ok",
+      "details": {
+        "sample_size": 503,
+        "constituent_count": 503,
+        "pct_above_50dma": 49.5,
+        "pct_above_200dma": 65.8,
+        "new_highs_252d": 6,
+        "new_lows_252d": 12,
+        "new_high_low_ratio": 0.5,
+        "rsp_spy_return_20d_pct": 0.79,
+        "rsp_spy_return_63d_pct": 3.89,
+        "cooling_signal": false,
+        "narrow_leadership_signal": false
+      }
+    },
+    "leverage_positioning": {
+      "indicator_id": "leverage_positioning",
+      "indicator_name": "레버리지 및 포지셔닝",
+      "value": -17.57,
+      "unit": "pct_of_open_interest",
+      "observation_date": "2026-08-25",
+      "release_date": null,
+      "fetched_at": "2026-09-01T04:42:53.458375Z",
+      "source_name": "CFTC Traders in Financial Futures (Futures Only)",
+      "source_url": "https://www.cftc.gov/MarketReports/CommitmentsofTraders/HistoricalCompressed/index.htm",
+      "frequency": "weekly",
+      "data_age_days": 7,
+      "is_stale": false,
+      "is_revised": null,
+      "status": "ok",
+      "details": {
+        "instruments": {
+          "sp500_e_mini": {
+            "report_date": "2026-08-25",
+            "open_interest": 2045669.0,
+            "asset_mgr_net_pct_oi": 46.6,
+            "asset_mgr_net_pct_oi_5y_percentile": 81.4,
+            "leveraged_funds_net_pct_oi": -15.41,
+            "leveraged_funds_net_pct_oi_5y_percentile": 45.1,
+            "leveraged_funds_net_pct_oi_change_4w": -0.42
+          },
+          "nasdaq100_e_mini": {
+            "report_date": "2026-08-25",
+            "open_interest": 301987.0,
+            "asset_mgr_net_pct_oi": 24.24,
+            "asset_mgr_net_pct_oi_5y_percentile": 60.7,
+            "leveraged_funds_net_pct_oi": -13.65,
+            "leveraged_funds_net_pct_oi_5y_percentile": 41.4,
+            "leveraged_funds_net_pct_oi_change_4w": 6.12
+          },
+          "russell2000_e_mini": {
+            "report_date": "2026-08-25",
+            "open_interest": 413000.0,
+            "asset_mgr_net_pct_oi": 2.99,
+            "asset_mgr_net_pct_oi_5y_percentile": 32.2,
+            "leveraged_funds_net_pct_oi": -23.66,
+            "leveraged_funds_net_pct_oi_5y_percentile": 1.0,
+            "leveraged_funds_net_pct_oi_change_4w": -5.77
+          }
+        },
+        "leveraged_funds_net_pct_oi_change_4w_avg": -0.02,
+        "overheating_signal": false,
+        "deleveraging_signal": false,
+        "margin_debt_status": "unavailable",
+        "margin_debt_reason": "FINRA margin statistics page blocks automated access (HTTP 403)",
+        "scope_caveat": "CFTC 데이터는 선물(및 옵션) 시장에 보고되는 대형 트레이더 포지션의 일부이며 시장 전체 롱/숏 비중이 아니다"
+      }
+    },
+    "ai_hyperscaler_capex_efficiency": {
+      "indicator_id": "ai_hyperscaler_capex_efficiency",
+      "indicator_name": "하이퍼스케일러 AI 투자 효율",
+      "value": null,
+      "unit": "ratio",
+      "observation_date": "2026-09-01",
+      "release_date": null,
+      "fetched_at": "2026-09-01T04:42:53.458375Z",
+      "source_name": "Yahoo Finance 분기 재무제표 (CapEx/영업현금흐름)",
+      "source_url": "https://finance.yahoo.com/",
+      "frequency": "quarterly",
+      "data_age_days": 0,
+      "is_stale": false,
+      "is_revised": null,
+      "status": "unavailable",
+      "details": {
+        "error_reason": "no hyperscaler fundamentals could be fetched"
+      }
+    },
+    "ai_semiconductor_demand": {
+      "indicator_id": "ai_semiconductor_demand",
+      "indicator_name": "AI 반도체 실수요",
+      "value": null,
+      "unit": "pct_yoy",
+      "observation_date": "2026-09-01",
+      "release_date": null,
+      "fetched_at": "2026-09-01T04:42:53.458375Z",
+      "source_name": "Yahoo Finance 분기 재무제표 (매출)",
+      "source_url": "https://finance.yahoo.com/",
+      "frequency": "quarterly",
+      "data_age_days": 0,
+      "is_stale": false,
+      "is_revised": null,
+      "status": "unavailable",
+      "details": {
+        "error_reason": "no semiconductor fundamentals could be fetched"
+      }
+    },
+    "eps_revision_breadth": {
+      "indicator_id": "eps_revision_breadth",
+      "indicator_name": "S&P 500 EPS 전망치 수정 폭",
+      "value": null,
+      "unit": "pct",
+      "observation_date": "2026-09-01",
+      "release_date": null,
+      "fetched_at": "2026-09-01T04:42:53.458375Z",
+      "source_name": "N/A (Phase 1 미구현)",
+      "source_url": "",
+      "frequency": "monthly",
+      "data_age_days": 0,
+      "is_stale": false,
+      "is_revised": null,
+      "status": "unavailable",
+      "details": {
+        "error_reason": "무료 API 없음 - I/B/E/S/Refinitiv 등 유료 컨센서스 데이터 필요 (유료 데이터 소스 확보 시 재검토)"
+      }
+    }
+  }
+}
