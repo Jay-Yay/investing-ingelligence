@@ -129,6 +129,52 @@ def test_persist_reuses_existing_id_when_duplicate_detected_via_content_hash(tmp
     assert conn.execute("SELECT COUNT(*) AS n FROM documents").fetchone()["n"] == 1
 
 
+def test_persist_keeps_original_source_name_when_a_different_source_hits_the_same_document(
+    tmp_path,
+) -> None:
+    # naver_research와 naver_weekly_hot처럼 서로 다른 source_name의 수집기가 같은
+    # canonical_url(같은 리포트)을 가리킬 수 있다. find_duplicate는 canonical_url로
+    # 기존 문서를 찾아 id를 재사용하는데, source_name까지 새 수집기 것으로 바꿔버리면
+    # id(원래 source_name으로 해시)와 frontmatter의 source_name이 어긋난 문서가 된다.
+    vault_path = tmp_path / "vault"
+    conn = connect(tmp_path / "index.sqlite3")
+    init_db(conn)
+
+    original = _item(
+        source_specific_id="96006", canonical_url="https://example.com/research/96006"
+    )
+    persist_collect_result(
+        CollectResult(
+            source_id="naver_research", success=True, items=[original], errors=[], new_count=1
+        ),
+        source_type=SourceType.IB_INSIGHTS, source_name="naver",
+        vault_path=vault_path, conn=conn,
+    )
+    original_doc, _ = collect_item_to_source_document(
+        original, source_type=SourceType.IB_INSIGHTS, source_name="naver"
+    )
+
+    # 다른 source_name, 다른 본문(다른 content_hash)이지만 같은 canonical_url.
+    reranked = _item(
+        source_specific_id="96006",
+        canonical_url="https://example.com/research/96006",
+        body_text="주간 인기 리포트로 다시 렌더링된 본문",
+    )
+    persist_collect_result(
+        CollectResult(
+            source_id="naver_weekly_hot", success=True, items=[reranked], errors=[], new_count=1
+        ),
+        source_type=SourceType.IB_INSIGHTS, source_name="naver-weekly-hot",
+        vault_path=vault_path, conn=conn,
+    )
+
+    row = get_document_by_id(conn, original_doc.id)
+    assert row is not None
+    assert row["source_name"] == "naver"
+    files = list(vault_path.rglob("*.md"))
+    assert len(files) == 1
+
+
 def _persist(vault_path, conn, item):
     return persist_collect_result(
         CollectResult(source_id="cb_boj", success=True, items=[item], errors=[], new_count=1),

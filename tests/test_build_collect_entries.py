@@ -154,7 +154,9 @@ def test_build_collect_entries_skips_telegram_private_without_credentials(tmp_pa
     conn = connect(tmp_path / "index.sqlite3")
     init_db(conn)
     checkpoint_store = CheckpointStore(conn)
-    settings = AppSettings()
+    # AppSettings()는 실제 프로젝트 .env를 읽는다 - 로컬에 텔레그램 자격증명이 채워져
+    # 있으면 "자격증명 없음" 시나리오가 깨지므로 명시적으로 None을 넘겨 덮어쓴다.
+    settings = AppSettings(telegram_api_id=None, telegram_api_hash=None, telegram_session=None)
 
     entries, setup_errors = build_collect_entries(tmp_path, settings, checkpoint_store, conn)
 

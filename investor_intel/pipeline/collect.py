@@ -173,8 +173,20 @@ def persist_collect_result(
             # 그냥 부르면 재수집할 때마다 같은 문서의 새 사본이 생긴다.
             existing_path: Path | None = None
             if existing_id is not None:
-                doc = doc.model_copy(update={"id": existing_id})
                 row = get_document_by_id(conn, existing_id)
+                # canonical_url/content_hash/title+author+published_at 매칭은 source_name이
+                # 다른 소스끼리도 걸린다(예: naver_research와 naver_weekly_hot이 같은
+                # research_id를 가리키는 경우). id만 기존 것으로 바꾸고 source_name은
+                # 새 수집기 것을 그대로 두면 frontmatter의 id(원래 source_name으로 해시)와
+                # source_name이 서로 어긋난 문서가 생긴다 - 항상 기존 레코드의 source_name도
+                # 함께 가져와 일관성을 유지한다.
+                update: dict = {"id": existing_id}
+                if row is not None and row["source_name"] != source_name:
+                    update["source_name"] = row["source_name"]
+                    update["entities"] = doc.entities.model_copy(
+                        update={"subject": row["source_name"]}
+                    )
+                doc = doc.model_copy(update=update)
                 if row is not None:
                     existing_path = resolve_document_path(vault_path, row["file_path"])
                     if existing_path is not None and row["content_hash"] == doc.content_hash:
