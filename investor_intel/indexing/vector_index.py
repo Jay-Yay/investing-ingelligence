@@ -57,6 +57,9 @@ class VectorHit:
     heading: str
     text: str
     source_type: str = ""
+    okf_status: str = ""
+    entity_key: str = ""
+    period_year: str = ""
 
 
 @dataclass
@@ -237,7 +240,9 @@ class VectorIndex:
         hits = [
             VectorHit(chunk_uid=r["chunk_uid"], doc_id=r["doc_id"], score=by_row[r["row_id"]],
                       title=r["title"] or "", heading=r["heading"] or "",
-                      text=r["raw_text"] or "", source_type=r["source_type"] or "")
+                      text=r["raw_text"] or "", source_type=r["source_type"] or "",
+                      okf_status=r["okf_status"] or "", entity_key=r["entity_key"] or "",
+                      period_year=r["period_year"] or "")
             for r in got
         ]
         hits.sort(key=lambda h: -h.score)

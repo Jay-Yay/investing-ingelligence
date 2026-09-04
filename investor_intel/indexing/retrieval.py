@@ -1,13 +1,28 @@
 from __future__ import annotations
 
 import re
+import time
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TYPE_CHECKING, Any, Protocol
 
 import yaml
 
 from investor_intel.indexing.bm25_index import Bm25Index, Hit
+from investor_intel.indexing.rerank import RerankSignal, rerank
 from investor_intel.indexing.tokenizer import tokenize
+
+if TYPE_CHECKING:
+    from investor_intel.indexing.embedding import Encoder
+    from investor_intel.indexing.vector_index import VectorIndex
+
+# corrupt 문서는 capture_mode='full'이면서 본문만 깨진 상태라 그것만으로는 걸러낼 수
+# 없다(2026-08-25 이전에는 Hit에 okf_status가 실려 있지도 않았다 - 검색 결과에서 corrupt
+# 여부 자체를 알 수 없었다). stub/superseded는 기본으로 지우지 않는다 - V4 사건(본문 없는
+# 문서를 지웠다가 식별자 질의 정확도가 0.993→0.340으로 무너짐)의 교훈이 stub에 그대로
+# 적용된다.
+DEFAULT_EXCLUDE_STATUS: tuple[str, ...] = ("corrupt",)
 
 # 맨 숫자 4자리를 연도로 보면 안 된다. 이 코퍼스에는 금액·수량·계좌번호에 4자리 숫자가
 # 널려 있어서, 실측에서 오탐 연도 슬롯 하나 때문에 자동 평가셋 636건 중 50건의 정답이
@@ -162,6 +177,36 @@ class RetrievalResult:
     hits: list[Hit]
     steps: list[Step]
     plan: QueryPlan
+    # 근거 커버리지가 policy.escalate_to_human_below 밑이면 True. Router/Tool이 이 값을
+    # 보고 "자신 있게 틀린 답"을 내는 대신 사람 확인이 필요하다는 신호를 낼 수 있다.
+    escalate: bool = False
+
+
+@dataclass
+class RetrievalPolicy:
+    """4주차 §12가 말한 '운영 시 필요한 추가 통제'를 값으로 박아 둔 것.
+
+    루프를 도는 코드에 이 숫자들이 흩어져 있으면 나중에 무엇이 상한인지 알 수 없다.
+    AdaptiveRetriever.search()가 다섯 필드를 모두 실제로 강제한다 - 예전에는 이 클래스가
+    router.py에 선언만 돼 있었고 min_evidence 하나만 Router에서 읽혔다.
+    """
+
+    max_retries: int = 2                 # 최대 재검색 횟수 (완화·재작성·상태해제 합산)
+    forbid_repeat_query: bool = True     # 동일한 (질의, 필터) 조합 반복 방지
+    min_evidence: int = 1                # 근거가 이보다 적으면 중단
+    escalate_to_human_below: float = 0.2 # 근거 커버리지가 이 밑이면 사람에게 넘김
+    max_latency_ms: int = 3000           # 지연시간 상한
+
+
+class SearchBackend(Protocol):
+    """`Bm25Index`와 `HybridSearcher`가 함께 만족하는 인터페이스.
+
+    AdaptiveRetriever는 둘 중 어느 쪽을 받았는지 몰라도 된다 - Hybrid를 실제 질의
+    경로에 연결하는 지점이 여기다. HybridSearcher.search_documents는 hybrid.py에서
+    Bm25Index와 이름을 맞추기 위해 별칭으로 추가했다.
+    """
+
+    def search_documents(self, query: str, k: int = 10, **filters: Any) -> list[Any]: ...
 
 
 class AdaptiveRetriever:
@@ -172,19 +217,59 @@ class AdaptiveRetriever:
     LLM이 아니므로 '에이전트'라고 부르지는 않는다 - 통제 흐름만 같은 모양이다.
     """
 
-    def __init__(self, index: Bm25Index, lex: EntityLexicon, *, grade_threshold: float = 0.45,
-                 max_steps: int = 3):
+    def __init__(self, index: Bm25Index, lex: EntityLexicon, *,
+                 vector_index: VectorIndex | None = None,
+                 encoder: Encoder | None = None,
+                 hybrid_kwargs: dict | None = None,
+                 grade_threshold: float = 0.45,
+                 policy: RetrievalPolicy | None = None,
+                 exclude_status: Sequence[str] = DEFAULT_EXCLUDE_STATUS,
+                 rerank_signal: RerankSignal | None = RerankSignal()):
         self.index = index
         self.lex = lex
         self.grade_threshold = grade_threshold
-        self.max_steps = max_steps
+        self.policy = policy or RetrievalPolicy()
+        self.exclude_status = tuple(exclude_status)
+        # None으로 주면 재랭킹을 끈다 - 원본 순위 그대로 돌려준다. 신호가 필요없는
+        # 평가(예: 변형 간 순수 검색 성능 비교)에서 쓴다.
+        self.rerank_signal = rerank_signal
+        # vector_index/encoder를 둘 다 받았을 때만 Hybrid로 동작한다. 둘 중 하나라도
+        # 없으면 BM25 단독으로 조용히 되돌아간다 - 벡터 인덱스가 아직 없는 환경에서도
+        # 이 클래스는 그대로 동작해야 한다.
+        self.backend: SearchBackend = index
+        if vector_index is not None and encoder is not None:
+            from investor_intel.indexing.hybrid import HybridSearcher
+            self.backend = HybridSearcher(index, vector_index, encoder, **(hybrid_kwargs or {}))
+
+    @property
+    def vector_enabled(self) -> bool:
+        return self.backend is not self.index
+
+    @property
+    def max_steps(self) -> int:
+        return self.policy.max_retries + 1
+
+    def _search(self, query: str, k: int, filters: dict, tried: set[tuple]) -> list | None:
+        """`forbid_repeat_query`를 강제한다. 이미 시도한 (질의, 필터) 조합이면 None."""
+        sig = (query, tuple(sorted(
+            (key, tuple(value) if isinstance(value, (list, tuple)) else value)
+            for key, value in filters.items()
+        )))
+        if self.policy.forbid_repeat_query and sig in tried:
+            return None
+        tried.add(sig)
+        return self.backend.search_documents(query, k=k, **filters)
 
     def search(self, query: str, k: int = 10, *, use_plan: bool = True,
                adaptive: bool = True) -> RetrievalResult:
+        start = time.monotonic()
         plan = plan_query(query, self.lex) if use_plan else QueryPlan(text=query)
         steps: list[Step] = []
+        tried: set[tuple] = set()
 
         filters: dict = {}
+        if self.exclude_status:
+            filters["exclude_status"] = self.exclude_status
         if use_plan:
             if plan.entity_key:
                 filters["entity_key"] = plan.entity_key
@@ -193,38 +278,77 @@ class AdaptiveRetriever:
             if plan.okf_types:
                 filters["okf_types"] = plan.okf_types
 
-        hits = self.index.search_documents(query, k=k, **filters)
+        hits = self._search(query, k, filters, tried) or []
         cov = _coverage(query, hits)
         steps.append(Step("retrieve", f"필터 {plan.describe() if use_plan else '없음'}",
                           len(hits), round(cov, 3)))
         if not adaptive:
-            return RetrievalResult(hits, steps, plan)
+            return self._finish(hits, steps, plan)
+
+        def _timed_out() -> bool:
+            elapsed = (time.monotonic() - start) * 1000
+            if elapsed <= self.policy.max_latency_ms:
+                return False
+            steps.append(Step("timeout",
+                f"{self.policy.max_latency_ms}ms 초과 - 중단", len(hits), round(cov, 3)))
+            return True
 
         # 1차 완화: 결과가 없거나 근거 커버리지가 낮으면 가장 좁은 슬롯부터 푼다.
         order = ["okf_types", "period_year", "entity_key"]
         while (len(hits) < 3 or cov < self.grade_threshold) and len(steps) < self.max_steps:
-            dropped = None
-            for key in order:
-                if key in filters:
-                    dropped = key
-                    filters.pop(key)
-                    break
+            if _timed_out():
+                return self._finish(hits, steps, plan)
+            dropped = next((key for key in order if key in filters), None)
             if dropped is None:
                 break
-            hits = self.index.search_documents(query, k=k, **filters)
-            cov = _coverage(query, hits)
+            filters.pop(dropped)
+            new_hits = self._search(query, k, filters, tried)
+            if new_hits is None:
+                continue  # 이미 시도한 조합 - 필터는 이미 뺐으니 다음 슬롯으로 넘어간다
+            hits, cov = new_hits, _coverage(query, new_hits)
             steps.append(Step("relax_filter", f"`{dropped}` 필터 해제", len(hits), round(cov, 3)))
 
         # 2차: 그래도 부족하면 질의를 재작성한다(엔티티 정식 명칭을 덧붙이고 흔한 조각을 뺀다).
-        if cov < self.grade_threshold and len(steps) < self.max_steps:
+        if cov < self.grade_threshold and len(steps) < self.max_steps and not _timed_out():
             rewritten = self._rewrite(query, plan)
             if rewritten != query:
-                h2 = self.index.search_documents(rewritten, k=k, **filters)
-                c2 = _coverage(rewritten, h2)
-                steps.append(Step("rewrite_query", f"→ “{rewritten}”", len(h2), round(c2, 3)))
-                if c2 > cov:
-                    hits, cov = h2, c2
-        return RetrievalResult(hits, steps, plan)
+                h2 = self._search(rewritten, k, filters, tried)
+                if h2 is not None:
+                    c2 = _coverage(rewritten, h2)
+                    steps.append(Step("rewrite_query", f"→ “{rewritten}”", len(h2), round(c2, 3)))
+                    if c2 > cov:
+                        hits, cov = h2, c2
+
+        # 최후 수단: 그래도 근거가 전혀 없으면 corrupt 제외를 해제한다. 완전한 무응답보다
+        # "있지만 못 읽는 문서가 있다"는 것을 아는 쪽이 낫다 - 다만 상태는 그대로 실려
+        # 있으므로 소비자가 반드시 경고를 붙여야 한다(tools.py DocumentSearchTool 참고).
+        if not hits and "exclude_status" in filters and len(steps) < self.max_steps:
+            filters.pop("exclude_status")
+            h3 = self._search(query, k, filters, tried)
+            if h3:
+                hits, cov = h3, _coverage(query, h3)
+                steps.append(Step("relax_status_filter",
+                    "근거가 전혀 없어 corrupt 제외를 해제함 - 결과에 손상된 문서가 섞일 수 있음",
+                    len(hits), round(cov, 3)))
+
+        return self._finish(hits, steps, plan, cov)
+
+    def _finish(self, hits: list, steps: list[Step], plan: QueryPlan,
+                cov: float | None = None) -> RetrievalResult:
+        if cov is None:
+            cov = steps[-1].coverage if steps else 0.0
+        if self.rerank_signal is not None and hits:
+            # 필터가 relax_filter로 풀렸어도 plan.entity_key/period_year는 사용자가
+            # 실제로 물은 종목·기간을 그대로 담고 있다 - 필터에서는 빠졌어도 순위에서는
+            # 그 종목을 우선할 수 있다.
+            hits = rerank(hits, plan.text, entity_key=plan.entity_key,
+                         period_year=plan.period_year, signal=self.rerank_signal)
+        escalate = cov < self.policy.escalate_to_human_below
+        if escalate:
+            steps.append(Step("escalate",
+                f"근거 커버리지 {cov:.2f} < {self.policy.escalate_to_human_below} - "
+                "사람 확인이 필요합니다", len(hits), round(cov, 3)))
+        return RetrievalResult(hits, steps, plan, escalate=escalate)
 
     def _rewrite(self, query: str, plan: QueryPlan) -> str:
         """LangGraph의 rewrite_question 자리. LLM 대신 슬롯을 근거로 질의를 다시 쓴다."""

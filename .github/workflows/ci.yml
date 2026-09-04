@@ -79,3 +79,25 @@ jobs:
             --search-db state/data/search_index.sqlite3 \
             --structured-db state/data/structured.sqlite3 \
             --max-corrupt 0
+
+      # 검색 품질 게이트. 번들이 없으면(첫 실행이거나 아직 안 만들었으면) 여기서 새로
+      # 만든다 - 결정론적 파생물이라 vault만 있으면 언제든 다시 만들 수 있다.
+      # `index update`는 상태 기록이 없으면 자동으로 전량 빌드로 떨어진다(state/data는
+      # gitignore돼 매 실행마다 비어 있으므로 매번 전량 빌드다).
+      #
+      # 임계값은 현재 측정치(recall@10 0.458 / hit@1 0.208, 24건 수동 평가셋)보다 낮게
+      # 잡았다 - 정답 문서 중 일부(D-005~D-008)가 실제로 인코딩이 깨진 DART 문서라
+      # corrupt 기본 제외 정책상 원리적으로 못 찾는다(재수집 전까지는 버그가 아니다).
+      # `refetch --reason corrupt`로 그 문서들을 되살리면 임계값을 올릴 여지가 있다.
+      - name: Build search index and check retrieval quality
+        if: steps.data.outputs.present == 'true'
+        run: |
+          uv run python scripts/build_knowledge_bundle.py \
+            --vault state/vault --db state/data/index.sqlite3
+          uv run python -m investor_intel index update \
+            --vault-path state/vault --search-db state/data/search_index.sqlite3
+          uv run python scripts/eval_okf_retrieval.py --gate \
+            --search-db state/data/search_index.sqlite3 \
+            --bundle state/vault/20_Knowledge \
+            --queries eval/manual_queries.json \
+            --min-recall10 0.35 --min-hit1 0.10

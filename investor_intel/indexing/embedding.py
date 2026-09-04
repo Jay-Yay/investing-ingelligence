@@ -223,7 +223,10 @@ def load_encoder(spec: str = DEFAULT_MODEL, **kwargs) -> Encoder:
     `api:...`  임베딩 API
     그 외  MODEL_PRESETS의 로컬 모델 이름
     """
-    if spec == "hash":
+    if spec == "hash" or spec.startswith("hash-"):
+        # HashEncoder.name이 "hash-3gram"이라 vec_info에 그 이름으로 저장된다 - 저장된
+        # 이름 그대로 다시 load_encoder에 넣어도 왕복이 되어야 한다("hash"만 받으면
+        # 벡터 인덱스를 만들 때 쓴 이름과 다시 로딩할 때 쓰는 이름이 달라진다).
         return HashEncoder(**kwargs)
     if spec.startswith("api:"):
         return ApiEncoder(model=spec[4:], **kwargs)

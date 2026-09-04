@@ -116,6 +116,8 @@ class Hit:
     entity_key: str = ""
     period_year: str = ""
     okf_status: str = ""
+    kind: str = ""
+    doc_path: str = ""
 
 
 @dataclass
@@ -362,6 +364,13 @@ class Bm25Index:
                 source_type=r["source_type"], title=r["title"] or "",
                 heading_path=r["heading_path"] or "", text=r["raw_text"] or "",
                 capture_mode=r["capture_mode"] or "",
+                # 이 네 필드가 빠져 있으면 인덱스에는 저장돼 있는 okf_status 등이 검색
+                # 결과에서 항상 빈 문자열이 된다 - corrupt 문서(11,298개 청크)를 근거로
+                # 걸러낼 방법이 호출부에 없어진다(capture_mode만으로는 corrupt를 구분할
+                # 수 없다 - corrupt도 capture_mode='full'이다).
+                okf_type=r["okf_type"] or "", entity_key=r["entity_key"] or "",
+                period_year=r["period_year"] or "", okf_status=r["okf_status"] or "",
+                kind=r["kind"] or "", doc_path=r["doc_path"] or "",
             )
             for r in rows
         ]
@@ -397,10 +406,15 @@ class Bm25Index:
             hits.sort(key=lambda h: h.score)  # bm25는 작을수록 관련도 높음
             doc_score = sum(h.score for h in hits[:top_chunks_per_doc])
             best = hits[0]
-            scored.append((doc_score, Hit(best.chunk_uid, best.doc_id, doc_score,
-                                          best.source_type, best.title, best.heading_path,
-                                          best.text, best.capture_mode, best.okf_type,
-                                          best.entity_key, best.period_year, best.okf_status)))
+            # 위치 인자로 지으면 Hit에 필드가 추가될 때마다 값이 조용히 밀린다
+            # (search()의 okf_status 유실이 그렇게 생겼다) - 키워드로만 짓는다.
+            scored.append((doc_score, Hit(
+                chunk_uid=best.chunk_uid, doc_id=best.doc_id, score=doc_score,
+                source_type=best.source_type, title=best.title, heading_path=best.heading_path,
+                text=best.text, capture_mode=best.capture_mode, okf_type=best.okf_type,
+                entity_key=best.entity_key, period_year=best.period_year,
+                okf_status=best.okf_status, kind=best.kind, doc_path=best.doc_path,
+            )))
         scored.sort(key=lambda x: x[0])
         return [h for _, h in scored[:k]]
 

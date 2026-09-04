@@ -2,12 +2,22 @@ from __future__ import annotations
 
 import re
 import sqlite3
+from collections import Counter
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from investor_intel.indexing.bm25_index import Bm25Index
-from investor_intel.indexing.retrieval import AdaptiveRetriever, EntityLexicon, plan_query
+from investor_intel.indexing.embedding import Encoder
+from investor_intel.indexing.retrieval import (
+    DEFAULT_EXCLUDE_STATUS,
+    AdaptiveRetriever,
+    EntityLexicon,
+    RetrievalPolicy,
+    plan_query,
+)
+from investor_intel.indexing.vector_index import VectorIndex
 
 # ---------------------------------------------------------------------------
 # 4주차 자료의 "Retriever를 Tool로 만드는 이유"를 그대로 옮긴 부분이다.
@@ -27,7 +37,7 @@ class Tool:
     name: str
     description: str          # 모델에 bind할 때 그대로 쓰는 설명
     parameters: dict          # JSON Schema
-    run: Callable[..., "ToolResult"]
+    run: Callable[..., ToolResult]
 
 
 @dataclass
@@ -37,16 +47,29 @@ class ToolResult:
     evidence: list[dict] = field(default_factory=list)
     note: str | None = None            # 품질 경고 등
     tool: str = ""
+    # AdaptiveRetriever가 근거 커버리지 부족을 판단했을 때만 True가 된다(다른 도구는
+    # 이 개념이 없어 항상 False). Router.answer()가 이 값을 RouteResult로 옮긴다.
+    escalate: bool = False
 
 
 # ---------------------------------------------------------------------------
 # 1) 비정형 문서 검색 도구
 # ---------------------------------------------------------------------------
 class DocumentSearchTool:
-    """4주차 표의 '비정형 문서 내용 -> Vector Store, BM25, Hybrid Search' 자리."""
+    """4주차 표의 '비정형 문서 내용 -> Vector Store, BM25, Hybrid Search' 자리.
 
-    def __init__(self, index: Bm25Index, lex: EntityLexicon):
-        self.retriever = AdaptiveRetriever(index, lex)
+    `vector_index`/`encoder`를 함께 주면 내부적으로 Hybrid Search로 동작한다. 둘 다
+    없으면 BM25 단독이다 - 벡터 인덱스를 아직 만들지 않은 환경에서도 그대로 쓸 수 있어야
+    하기 때문에 필수가 아니라 선택 의존성으로 둔다.
+    """
+
+    def __init__(self, index: Bm25Index, lex: EntityLexicon, *,
+                 vector_index: VectorIndex | None = None, encoder: Encoder | None = None,
+                 policy: RetrievalPolicy | None = None,
+                 exclude_status: Sequence[str] = DEFAULT_EXCLUDE_STATUS):
+        self.retriever = AdaptiveRetriever(
+            index, lex, vector_index=vector_index, encoder=encoder,
+            policy=policy, exclude_status=exclude_status)
 
     def as_tool(self) -> Tool:
         return Tool(
@@ -63,9 +86,101 @@ class DocumentSearchTool:
     def run(self, query: str, k: int = 10) -> ToolResult:
         res = self.retriever.search(query, k=k)
         ev = [{"doc_id": h.doc_id, "title": h.title, "text": h.text[:200],
-               "status": h.okf_status} for h in res.hits[:5]]
+               "status": h.okf_status, "doc_path": getattr(h, "doc_path", "")}
+              for h in res.hits[:5]]
+        notes: list[str] = []
+        if not ev:
+            notes.append("검색 결과가 없습니다")
+        # AdaptiveRetriever의 최후 수단(exclude_status 해제)이 corrupt 문서를 근거에
+        # 섞어 넣었을 수 있다 - 여기서 반드시 경고해야 한다. 이 경고 없이 corrupt 본문이
+        # 그대로 인용되는 것이 §1에서 고친 버그(Hit가 okf_status를 잃던 문제)의 실질적
+        # 위험이었다.
+        if any(e["status"] == "corrupt" for e in ev):
+            notes.append(
+                "근거 중 일부는 원문 인코딩이 깨져 있습니다 - 본문을 인용하지 말고 "
+                "원문 링크만 제시하십시오")
+        if res.escalate:
+            notes.append("근거 커버리지가 낮습니다 - 사람 확인을 권장합니다")
         return ToolResult(ok=bool(ev), evidence=ev, tool="search_documents",
-                          note=None if ev else "검색 결과가 없습니다")
+                          note=" / ".join(notes) if notes else None, escalate=res.escalate)
+
+
+# ---------------------------------------------------------------------------
+# 4) 관계 그래프 탐색 도구 (2-hop)
+# ---------------------------------------------------------------------------
+class GraphTool:
+    """OKF 링크 그래프를 SQL 두 번으로 탐색한다.
+
+    entity_key(종목)와 source_name(발행 채널)이 이미 chunk_meta 컬럼이므로, "이 종목을
+    다룬 채널들이 최근 또 무엇을 언급했나" 같은 2-hop 질의에 새 저장소 없이 답할 수 있다.
+    1-hop(단순 종목 언급 문서 찾기)는 이미 `search_documents`가 entity_key 필터로 하고
+    있으므로, 이 도구는 그 위에 한 단계를 더 얹는 질의에만 쓴다.
+    """
+
+    def __init__(self, index: Bm25Index, lex: EntityLexicon):
+        self.index = index
+        self.lex = lex
+
+    def as_tool(self) -> Tool:
+        return Tool(
+            name="graph_traverse",
+            description=(
+                "한 종목을 다룬 채널·리포트들이 최근 함께 언급한 다른 종목을 찾는다. "
+                "'또 무엇을 언급했나', '함께 언급된 종목' 같은 2단계 관계 질문에 쓴다."),
+            parameters={"type": "object", "properties": {
+                "company": {"type": "string"}}, "required": ["company"]},
+            run=self.run)
+
+    def run(self, query: str, limit: int = 5) -> ToolResult:
+        hit = self.lex.find(query)
+        if not hit:
+            return ToolResult(False, note="질문에서 종목을 찾지 못했습니다", tool="graph_traverse")
+        entity_key, entity_name = hit
+
+        # hop 1: 이 종목을 다룬 발행 채널.
+        channels = [
+            r["source_name"] for r in self.index.conn.execute(
+                "SELECT DISTINCT source_name FROM chunk_meta "
+                "WHERE (entity_key = ? OR entity_key LIKE ?) AND okf_status != 'corrupt' "
+                "AND source_name != ''",
+                (f"|{entity_key}|", f"%|{entity_key}|%"),
+            ).fetchall()
+        ]
+        if not channels:
+            return ToolResult(False, tool="graph_traverse",
+                              note=f"{entity_name}을 다룬 채널을 찾지 못했습니다")
+
+        # hop 2: 그 채널들이 최근 언급한 다른 종목.
+        placeholders = ",".join("?" * len(channels))
+        rows = self.index.conn.execute(
+            f"SELECT entity_key, doc_id, title, published_at FROM chunk_meta "
+            f"WHERE source_name IN ({placeholders}) AND entity_key != '' "
+            f"AND okf_status != 'corrupt' ORDER BY published_at DESC LIMIT 300",
+            channels,
+        ).fetchall()
+
+        counts: Counter[str] = Counter()
+        latest: dict[str, sqlite3.Row] = {}
+        for row in rows:
+            for key in filter(None, row["entity_key"].split("|")):
+                if key == entity_key:
+                    continue
+                counts[key] += 1
+                latest.setdefault(key, row)
+        if not counts:
+            return ToolResult(True, tool="graph_traverse",
+                              answer=f"{entity_name}을 다룬 채널 {len(channels)}개가 최근 "
+                                     "함께 언급한 다른 종목이 없습니다")
+
+        top = counts.most_common(limit)
+        answer = (f"{entity_name}을 다룬 채널({len(channels)}개)이 최근 함께 언급한 종목: "
+                  + ", ".join(f"{key}({n}회)" for key, n in top))
+        evidence = [
+            {"entity_key": key, "count": n, "doc_id": latest[key]["doc_id"],
+             "title": latest[key]["title"], "published_at": latest[key]["published_at"]}
+            for key, n in top
+        ]
+        return ToolResult(True, answer=answer, evidence=evidence, tool="graph_traverse")
 
 
 # ---------------------------------------------------------------------------

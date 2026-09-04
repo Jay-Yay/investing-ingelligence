@@ -38,6 +38,10 @@ class FakeHit:
     title: str = ""
     text: str = ""
     source_type: str = ""
+    okf_status: str = ""
+    entity_key: str = ""
+    period_year: str = ""
+    kind: str = ""
 
 
 def _records():
@@ -87,6 +91,13 @@ def test_empty_text_does_not_crash():
 def test_load_encoder_rejects_unknown_model():
     with pytest.raises(ValueError):
         load_encoder("이런-모델-없음")
+
+
+def test_load_encoder_round_trips_the_hash_encoders_own_stored_name():
+    """벡터 인덱스의 vec_info에는 encoder.name("hash-3gram")이 저장된다 - 그 이름을
+    그대로 다시 load_encoder에 넣어도 같은 인코더가 나와야 한다."""
+    enc = load_encoder("hash")
+    assert load_encoder(enc.name).name == enc.name
 
 
 # ---------------------------------------------------------- 벡터 인덱스
@@ -257,3 +268,29 @@ def test_coverage_report_counts_by_axis():
     assert rep["by_axis"]["dart"]["gold_not_embedded"] == 1
     assert rep["by_axis"]["telegram"]["gold_not_embedded"] == 0
     assert rep["total_gold_not_embedded"] == 1
+
+
+# --- FusedHit이 OKF 메타데이터를 잃지 않는지 --------------------------------------------
+# rrf_fuse가 title/text/source_type만 옮기던 시절에는, 순위를 합친 뒤 corrupt 문서를
+# 걸러내거나(exclude_status) 재랭킹에 entity_key를 쓸 방법이 없었다.
+
+
+def test_rrf_fuse_carries_okf_metadata_through() -> None:
+    bm = [FakeHit("p", okf_status="corrupt", entity_key="|kr-005930|", kind="table")]
+    vec = [FakeHit("q", okf_status="stable", period_year="2026")]
+    fused = {h.doc_id: h for h in rrf_fuse(bm, vec, k=5)}
+    assert fused["p"].okf_status == "corrupt"
+    assert fused["p"].entity_key == "|kr-005930|"
+    assert fused["p"].kind == "table"
+    assert fused["q"].okf_status == "stable"
+    assert fused["q"].period_year == "2026"
+
+
+def test_hybrid_searcher_exposes_search_documents_alias(built) -> None:
+    """AdaptiveRetriever가 BM25 단독/Hybrid 어느 쪽이든 같은 메서드 이름으로 부를 수 있다."""
+    index, _ = built
+    bm = FakeBm25([FakeHit("a"), FakeHit("b")])
+    searcher = HybridSearcher(bm, index, HashEncoder(), pool=10)
+    via_alias = searcher.search_documents("삼성전자", k=3)
+    via_search = searcher.search("삼성전자", k=3)
+    assert [h.doc_id for h in via_alias] == [h.doc_id for h in via_search]

@@ -32,6 +32,10 @@ class FusedHit:
     bm25_rank: int | None = None
     vector_rank: int | None = None
     found_by: tuple[str, ...] = field(default_factory=tuple)
+    okf_status: str = ""
+    entity_key: str = ""
+    period_year: str = ""
+    kind: str = ""
 
     @property
     def only_vector(self) -> bool:
@@ -57,25 +61,28 @@ def rrf_fuse(
     bm_rank: dict[str, int] = {}
     vec_rank: dict[str, int] = {}
 
+    def _meta(hit) -> dict:
+        return {
+            "title": getattr(hit, "title", "") or "",
+            "text": getattr(hit, "text", "") or "",
+            "source_type": getattr(hit, "source_type", "") or "",
+            "okf_status": getattr(hit, "okf_status", "") or "",
+            "entity_key": getattr(hit, "entity_key", "") or "",
+            "period_year": getattr(hit, "period_year", "") or "",
+            "kind": getattr(hit, "kind", "") or "",
+        }
+
     for rank, hit in enumerate(bm25_hits, start=1):
         doc = hit.doc_id
         scores[doc] = scores.get(doc, 0.0) + bm25_weight / (rrf_k + rank)
         bm_rank.setdefault(doc, rank)
-        meta.setdefault(doc, {
-            "title": getattr(hit, "title", "") or "",
-            "text": getattr(hit, "text", "") or "",
-            "source_type": getattr(hit, "source_type", "") or "",
-        })
+        meta.setdefault(doc, _meta(hit))
 
     for rank, hit in enumerate(vector_hits, start=1):
         doc = hit.doc_id
         scores[doc] = scores.get(doc, 0.0) + vector_weight / (rrf_k + rank)
         vec_rank.setdefault(doc, rank)
-        meta.setdefault(doc, {
-            "title": getattr(hit, "title", "") or "",
-            "text": getattr(hit, "text", "") or "",
-            "source_type": getattr(hit, "source_type", "") or "",
-        })
+        meta.setdefault(doc, _meta(hit))
 
     fused = [
         FusedHit(
@@ -89,6 +96,10 @@ def rrf_fuse(
             found_by=tuple(x for x in (
                 "bm25" if doc in bm_rank else None,
                 "vector" if doc in vec_rank else None) if x),
+            okf_status=meta[doc]["okf_status"],
+            entity_key=meta[doc]["entity_key"],
+            period_year=meta[doc]["period_year"],
+            kind=meta[doc]["kind"],
         )
         for doc, score in scores.items()
     ]
@@ -127,6 +138,14 @@ class HybridSearcher:
     @property
     def vector_enabled(self) -> bool:
         return self.vectors is not None and self.encoder is not None
+
+    def search_documents(self, query: str, k: int = 10, **filters) -> list[FusedHit]:
+        """`Bm25Index.search_documents`와 이름을 맞춘 별칭.
+
+        AdaptiveRetriever가 BM25 단독/Hybrid 어느 쪽이든 같은 메서드 이름으로 호출할 수
+        있게 한다 - 호출부가 백엔드 종류를 몰라도 되게 하는 것이 이 별칭의 목적이다.
+        """
+        return self.search(query, k=k, **filters)
 
     def search(self, query: str, k: int = 10, **filters) -> list[FusedHit]:
         bm_hits = self.bm25.search_documents(query, k=self.pool, **filters)
