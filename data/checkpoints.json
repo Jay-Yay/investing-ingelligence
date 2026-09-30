@@ -99,8 +99,8 @@
     "backfill_completed": false,
     "failure_count": 0,
     "last_accession_number": null,
-    "last_seen_id": "20260814001262",
-    "last_success_at": "2026-08-15T01:32:52.721168+00:00",
+    "last_seen_id": "20260928000146",
+    "last_success_at": "2026-09-29T05:07:00.406070+00:00",
     "next_retry_at": null
   },
   "earnings_transcript_web_aaoi": {
