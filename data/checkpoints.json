@@ -4,7 +4,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "https://www.berkshirehathaway.com/letters/2024ltr.pdf",
-    "last_success_at": "2026-10-31T04:56:20.745634+00:00",
+    "last_success_at": "2026-11-01T05:23:36.401215+00:00",
     "next_retry_at": null
   },
   "blackrock_insights_blackrock": {
@@ -12,7 +12,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "https://www.blackrock.com/us/individual/insights/newyork-muni-commentary",
-    "last_success_at": "2026-10-31T04:56:03.442984+00:00",
+    "last_success_at": "2026-11-01T05:23:15.259329+00:00",
     "next_retry_at": null
   },
   "boe_summary_minutes": {
@@ -20,7 +20,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/september-2026",
-    "last_success_at": "2026-10-31T04:56:37.720694+00:00",
+    "last_success_at": "2026-11-01T05:23:52.940089+00:00",
     "next_retry_at": null
   },
   "bofa_insights_bofa": {
@@ -28,7 +28,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "https://business.bofa.com/en-us/content/ai-10-secret-ingredients.html",
-    "last_success_at": "2026-10-31T04:56:01.964446+00:00",
+    "last_success_at": "2026-11-01T05:23:14.047730+00:00",
     "next_retry_at": null
   },
   "boj_minutes": {
@@ -36,7 +36,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "https://www.boj.or.jp/en/mopo/mpmsche_minu/minu_2026/g260731.pdf",
-    "last_success_at": "2026-10-31T04:56:39.518275+00:00",
+    "last_success_at": "2026-11-01T05:23:54.843311+00:00",
     "next_retry_at": null
   },
   "boj_statements": {
@@ -44,7 +44,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "https://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k261030a.pdf",
-    "last_success_at": "2026-10-31T04:56:38.728500+00:00",
+    "last_success_at": "2026-11-01T05:23:53.771337+00:00",
     "next_retry_at": null
   },
   "bok_minutes": {
@@ -52,7 +52,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "https://www.bok.or.kr/portal/cmmn/file/fileDown.do?menuNo=200755&atchFileId=57a2f420e26141f39682fdb4696208b2&fileSn=12",
-    "last_success_at": "2026-10-31T04:56:42.960463+00:00",
+    "last_success_at": "2026-11-01T05:23:58.059920+00:00",
     "next_retry_at": null
   },
   "bok_statements": {
@@ -60,7 +60,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "https://www.bok.or.kr/portal/cmmn/file/fileDown.do?menuNo=200755&atchFileId=a371bacfa6d14a20948d8d1c8629a246&fileSn=2",
-    "last_success_at": "2026-10-31T04:56:41.973621+00:00",
+    "last_success_at": "2026-11-01T05:23:57.065686+00:00",
     "next_retry_at": null
   },
   "citi_insights_citi": {
@@ -68,7 +68,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "https://www.citigroup.com/global/insights/-middle-east-turmoil-unsettled-and-unsettling",
-    "last_success_at": "2026-10-31T04:56:02.622677+00:00",
+    "last_success_at": "2026-11-01T05:23:14.395068+00:00",
     "next_retry_at": null
   },
   "dart_000660": {
@@ -684,7 +684,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "https://www.ecb.europa.eu/press/accounts/2026/html/ecb.mg261008~a10153d090.en.html",
-    "last_success_at": "2026-10-31T04:56:36.454102+00:00",
+    "last_success_at": "2026-11-01T05:23:52.113836+00:00",
     "next_retry_at": null
   },
   "ecb_statements": {
@@ -692,7 +692,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "https://www.ecb.europa.eu/press/press_conference/monetary-policy-statement/2026/html/ecb.is261029~5c5ffe99e5.en.html",
-    "last_success_at": "2026-10-31T04:56:34.951686+00:00",
+    "last_success_at": "2026-11-01T05:23:50.614199+00:00",
     "next_retry_at": null
   },
   "essay_situational_awareness_lp": {
@@ -700,7 +700,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "2026-07-26T14:08:09.846724+00:00",
-    "last_success_at": "2026-10-31T04:54:06.808372+00:00",
+    "last_success_at": "2026-11-01T05:20:51.797272+00:00",
     "next_retry_at": null
   },
   "fed_minutes": {
@@ -708,7 +708,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "https://www.federalreserve.gov/monetarypolicy/files/fomcminutes20260916.pdf",
-    "last_success_at": "2026-10-31T04:56:32.997443+00:00",
+    "last_success_at": "2026-11-01T05:23:49.030761+00:00",
     "next_retry_at": null
   },
   "fed_statements": {
@@ -716,7 +716,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
-    "last_success_at": "2026-10-31T04:56:32.616266+00:00",
+    "last_success_at": "2026-11-01T05:23:48.561409+00:00",
     "next_retry_at": null
   },
   "gs_insights_goldman_sachs": {
@@ -724,7 +724,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "https://www.goldmansachs.com/insights/goldman-sachs-exchanges/why-oil-prices-are-surging-despite-recovering-supply",
-    "last_success_at": "2026-10-31T04:56:00.906251+00:00",
+    "last_success_at": "2026-11-01T05:23:12.689252+00:00",
     "next_retry_at": null
   },
   "jpm_insights_jpmorgan": {
@@ -732,7 +732,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "https://www.jpmorgan.com/insights/global-research/outlook/mid-year-outlook",
-    "last_success_at": "2026-10-31T04:56:01.460275+00:00",
+    "last_success_at": "2026-11-01T05:23:13.239037+00:00",
     "next_retry_at": null
   },
   "naver_a463508": {
@@ -755,8 +755,8 @@
     "backfill_completed": false,
     "failure_count": 0,
     "last_accession_number": null,
-    "last_seen_id": "https://blog.naver.com/deskhunter/224459567749",
-    "last_success_at": "2026-10-30T21:50:36.781018+00:00",
+    "last_seen_id": "https://blog.naver.com/deskhunter/224460536959",
+    "last_success_at": "2026-11-01T05:23:41.251542+00:00",
     "next_retry_at": null
   },
   "naver_engineerinvestor": {
@@ -771,8 +771,8 @@
     "backfill_completed": false,
     "failure_count": 0,
     "last_accession_number": null,
-    "last_seen_id": "https://blog.naver.com/ranto28/224459750833",
-    "last_success_at": "2026-10-31T04:56:27.054707+00:00",
+    "last_seen_id": "https://blog.naver.com/ranto28/224453721474",
+    "last_success_at": "2026-11-01T05:23:43.328282+00:00",
     "next_retry_at": null
   },
   "naver_research_naver": {
@@ -780,7 +780,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "97383",
-    "last_success_at": "2026-10-31T04:56:04.823558+00:00",
+    "last_success_at": "2026-11-01T05:23:17.019639+00:00",
     "next_retry_at": null
   },
   "naver_royvalue": {
@@ -828,7 +828,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "97383",
-    "last_success_at": "2026-10-31T04:56:20.466230+00:00",
+    "last_success_at": "2026-11-01T05:23:36.331932+00:00",
     "next_retry_at": null
   },
   "oaktree_memos_oaktree": {
@@ -836,7 +836,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "https://www.oaktreecapital.com/insights/memo/shall-we-repeal-the-laws-of-economics---part-iii",
-    "last_success_at": "2026-10-31T04:56:21.159923+00:00",
+    "last_success_at": "2026-11-01T05:23:36.945231+00:00",
     "next_retry_at": null
   },
   "pershing_square_letters_pershing_square": {
@@ -1563,16 +1563,16 @@
     "backfill_completed": false,
     "failure_count": 0,
     "last_accession_number": null,
-    "last_seen_id": "4915",
-    "last_success_at": "2026-10-31T04:55:55.496917+00:00",
+    "last_seen_id": "4920",
+    "last_success_at": "2026-11-01T05:23:04.684085+00:00",
     "next_retry_at": null
   },
   "telegram_akacommodity": {
     "backfill_completed": false,
     "failure_count": 0,
     "last_accession_number": null,
-    "last_seen_id": "24844",
-    "last_success_at": "2026-10-31T04:56:50.247353+00:00",
+    "last_seen_id": "24869",
+    "last_success_at": "2026-11-01T05:24:39.098743+00:00",
     "next_retry_at": null
   },
   "telegram_allbareun": {
@@ -1595,48 +1595,48 @@
     "backfill_completed": false,
     "failure_count": 0,
     "last_accession_number": null,
-    "last_seen_id": "4000",
-    "last_success_at": "2026-10-29T05:27:55.054213+00:00",
+    "last_seen_id": "4001",
+    "last_success_at": "2026-11-01T05:29:23.837210+00:00",
     "next_retry_at": null
   },
   "telegram_dolbikong": {
     "backfill_completed": false,
     "failure_count": 0,
     "last_accession_number": null,
-    "last_seen_id": "5018",
-    "last_success_at": "2026-10-30T21:49:54.698054+00:00",
+    "last_seen_id": "5020",
+    "last_success_at": "2026-11-01T05:22:49.130896+00:00",
     "next_retry_at": null
   },
   "telegram_getfeed": {
     "backfill_completed": false,
     "failure_count": 0,
     "last_accession_number": null,
-    "last_seen_id": "153239",
-    "last_success_at": "2026-10-31T04:55:34.979065+00:00",
+    "last_seen_id": "153323",
+    "last_success_at": "2026-11-01T05:22:42.539958+00:00",
     "next_retry_at": null
   },
   "telegram_kimcharger": {
     "backfill_completed": false,
     "failure_count": 0,
     "last_accession_number": null,
-    "last_seen_id": "14442",
-    "last_success_at": "2026-10-31T04:55:28.921491+00:00",
+    "last_seen_id": "14446",
+    "last_success_at": "2026-11-01T05:22:33.925298+00:00",
     "next_retry_at": null
   },
   "telegram_kyobofnbcosmetic": {
     "backfill_completed": false,
     "failure_count": 0,
     "last_accession_number": null,
-    "last_seen_id": "2504",
-    "last_success_at": "2026-10-30T21:50:08.229016+00:00",
+    "last_seen_id": "2510",
+    "last_success_at": "2026-11-01T05:23:12.508132+00:00",
     "next_retry_at": null
   },
   "telegram_merITz_tech": {
     "backfill_completed": false,
     "failure_count": 0,
     "last_accession_number": null,
-    "last_seen_id": "19275",
-    "last_success_at": "2026-10-31T04:58:40.334238+00:00",
+    "last_seen_id": "19280",
+    "last_success_at": "2026-11-01T05:29:12.137202+00:00",
     "next_retry_at": null
   },
   "telegram_miraeoillee": {
@@ -1651,8 +1651,8 @@
     "backfill_completed": false,
     "failure_count": 0,
     "last_accession_number": null,
-    "last_seen_id": "103787",
-    "last_success_at": "2026-10-31T04:58:33.980373+00:00",
+    "last_seen_id": "103811",
+    "last_success_at": "2026-11-01T05:29:04.307657+00:00",
     "next_retry_at": null
   },
   "telegram_shStrategy": {
@@ -1684,7 +1684,7 @@
     "failure_count": 0,
     "last_accession_number": null,
     "last_seen_id": "https://investor.vanguard.com/investor-resources-education/retirement/rmd-rules-for-inherited-iras",
-    "last_success_at": "2026-10-31T04:56:03.776798+00:00",
+    "last_success_at": "2026-11-01T05:23:15.561168+00:00",
     "next_retry_at": null
   }
 }
